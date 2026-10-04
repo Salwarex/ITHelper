@@ -1,0 +1,4 @@
+extension=ith
+mime-type=application/x-ith
+icon=package/windows/invc.ico
+description=ITH Data File

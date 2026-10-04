@@ -8,6 +8,7 @@ import ru.vit4liy.it72h.lib.logger.output.Output;
 import ru.vit4liy.it72h.lib.logger.output.OutputPreset;
 import ru.vit4liy.modular.ModuleLoader;
 import ru.vit4liy.perm.PermissionModule;
+import ru.vit4liy.util.FileUtils;
 
 import java.util.concurrent.ExecutorService;
 
@@ -21,7 +22,7 @@ public class CommonModuleLoader extends ModuleLoader {
 
     @Override
     protected void loadStandardModules(){
-        modules.put(PermissionModule.class, new PermissionModule(this));
+        modules.put(PermissionModule.class, new PermissionModule(this, FileUtils.getBaseDir()));
         modules.put(DatabaseModule.class, new DatabaseModule(
                 this,
                 CONFIG.getString("database.type", "SQLite").equalsIgnoreCase("MySQL"),

@@ -4,25 +4,23 @@ plugins {
     id 'java'
     id 'application'
     id 'org.openjfx.javafxplugin' version '0.1.0'
-    id 'com.gradleup.shadow' version '8.3.1'
     id 'org.panteleyev.jpackageplugin' version '1.6.0'
+    // Плагин shadow удален, он ломает сборку JavaFX в jpackage
 }
 
 def versionFile = file('version.txt')
-def defaultVersion = '0.0'
-
+def defaultVersion = '0.1.14'
 def currentVersion = versionFile.exists() ? versionFile.text.trim() : defaultVersion
 if (!versionFile.exists()) {
     versionFile.text = currentVersion
 }
 
 def versionParts = currentVersion.split('\\.')
-while (versionParts.length < 2) {
+while (versionParts.length < 3) {
     currentVersion += ".0"
     versionParts = currentVersion.split('\\.')
 }
-
-def nextVersion = "${versionParts[0]}.${(versionParts[1] as int) + 1}"
+def nextVersion = "${versionParts[0]}.${versionParts[1]}.${(versionParts[2] as int) + 1}"
 
 group = 'ru.vit4liy'
 version = currentVersion
@@ -37,24 +35,24 @@ javafx {
 }
 
 dependencies {
-    implementation files('libs/it72h-config-lib-1.3.jar')
-    implementation files('libs/it72h-logger-lib.jar')
+    implementation files('libs/config-lib-1.3.1.jar')
+    implementation files('libs/logger-lib-1.3.2.jar')
     implementation files('libs/module-lib-1.2.8.jar')
     implementation files('libs/rsc-lib-1.3.6.jar')
     implementation files('libs/web-lib-1.0.jar')
-    implementation files('libs/perm-lib-1.3.jar')
+    implementation files('libs/perm-lib-1.3.1.jar')
     implementation files('libs/events-lib-1.1.jar')
 
     implementation("org.slf4j:slf4j-simple:2.0.13")
     implementation("io.javalin:javalin:6.7.0")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.17.2")
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.17.2'
-
     runtimeOnly 'org.xerial:sqlite-jdbc:3.46.0.0'
 }
 
+// 1. Главная точка входа - наш Launcher, а не App
 application {
-    mainClass = 'ru.vit4liy.App'
+    mainClass = 'ru.vit4liy.Launcher'
 }
 
 tasks.register('generateVersionProperties') {
@@ -66,14 +64,19 @@ tasks.register('generateVersionProperties') {
 }
 processResources.dependsOn generateVersionProperties
 
-shadowJar {
-    archiveClassifier = ''
-    mergeServiceFiles()
-    dependencies {
-        include(dependency('org.openjfx:javafx-controls:21:win'))
-        include(dependency('org.openjfx:javafx-fxml:21:win'))
-        include(dependency('org.openjfx:javafx-graphics:21:win'))
+// 2. Настраиваем обычный jar с правильным манифестом
+jar {
+    manifest {
+        attributes 'Main-Class': 'ru.vit4liy.Launcher'
     }
+}
+
+// 3. ИСПРАВЛЕННАЯ задача копирования: ЖДЕМ завершения jar, затем копируем всё
+tasks.register('copyDeps', Copy) {
+    dependsOn jar // <-- ЭТО РЕШАЕТ ПРОБЛЕМУ "jar does not exist"
+    from configurations.runtimeClasspath
+    from jar.archiveFile
+    into "$buildDir/deps"
 }
 
 def osName = System.getProperty("os.name").toLowerCase()
@@ -82,15 +85,20 @@ def isLinux = osName.contains("linux")
 def isMac = osName.contains("mac")
 
 jpackage {
-    dependsOn shadowJar
+    dependsOn copyDeps
 
-    appName = "InventoryHelper"
+    appName = "ItHelper"
     appVersion = project.version.toString()
     vendor = "ru.vit4liy"
     destination = "$buildDir/distributions"
-    input = "$buildDir/libs"
-    mainJar = shadowJar.archiveFileName.get()
-    mainClass = "ru.vit4liy.App"
+
+    // Указываем папку, куда мы скопировали jar и все зависимости
+    input = "$buildDir/deps"
+    mainJar = jar.archiveFileName.get()
+    mainClass = "ru.vit4liy.Launcher"
+
+    fileAssociations = ["package/windows/file.associations"]
+
     verbose = true
 
     if (isWindows) {
@@ -104,13 +112,13 @@ jpackage {
     } else if (isLinux) {
         type = ImageType.RPM
         icon = "package/linux/invc.png"
-        linuxPackageName = "inventoryhelper"
+        linuxPackageName = "ithelper"
         linuxShortcut = true
         linuxMenuGroup = "Utility"
     } else if (isMac) {
         type = ImageType.DMG
         icon = "package/macos/invc.icns"
-        macPackageName = "InventoryHelper"
+        macPackageName = "ItHelper"
     } else {
         throw new GradleException("Неподдерживаемая ОС для сборки jpackage: ${osName}")
     }
@@ -119,9 +127,6 @@ jpackage {
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
     options.release.set(21)
-}
-
-tasks.withType(JavaCompile) {
     options.compilerArgs << "-Xlint:deprecation" << "-Xlint:unchecked"
 }
 

@@ -37,7 +37,7 @@ public class TypeMarkRepository extends EntityRepository<TypeMark> {
         return new String[]{
                 "id", "{primary}",
                 "type_id", "{int} NOT NULL",
-                "display_name", "VARCHAR(255) NOT NULL UNIQUE",
+                "display_name", "VARCHAR(255) NOT NULL",
                 "created_at", "{long} NOT NULL",
         };
     }

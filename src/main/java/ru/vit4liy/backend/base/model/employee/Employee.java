@@ -11,8 +11,9 @@ public class Employee implements DatabaseEntity  {
     private long lastStatusChange;
     private long lastChecked;
     private int status;
+    private String phone;
 
-    public Employee(long id, String surname, String name, String thirdname, long createdAt, long lastStatusChange, long lastChecked, int status) {
+    public Employee(long id, String surname, String name, String thirdname, long createdAt, long lastStatusChange, long lastChecked, int status, String phone) {
         this.id = id;
         this.surname = surname;
         this.name = name;
@@ -21,6 +22,7 @@ public class Employee implements DatabaseEntity  {
         this.lastStatusChange = lastStatusChange;
         this.lastChecked = lastChecked;
         this.status = status;
+        this.phone = phone;
     }
 
     public Employee() {
@@ -93,5 +95,13 @@ public class Employee implements DatabaseEntity  {
 
     public void setStatus(int status) {
         this.status = status;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 }

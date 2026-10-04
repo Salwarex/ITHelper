@@ -73,6 +73,9 @@
 
                         <Label text="Отчество:" GridPane.rowIndex="3" GridPane.columnIndex="0" styleClass="field-label"/>
                         <TextField fx:id="tfEmployeeThirdname" promptText="Необязательно" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+                        <Label text="Телефон:" GridPane.rowIndex="4" GridPane.columnIndex="0" styleClass="field-label"/>
+                        <TextField fx:id="tfEmployeePhone" promptText="Необязательно" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
                     </GridPane>
 
                     <Button text="✅ Добавить сотрудника" onAction="#onSubmitEmployee" styleClass="btn-primary" maxWidth="250"/>

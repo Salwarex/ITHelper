@@ -1,6 +1,5 @@
-package ru.vit4liy.util;
+package ru.vit4liy.util; // Или твой пакет
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -8,59 +7,50 @@ import java.nio.file.Paths;
 
 public class FileUtils {
 
-    public static Path getAppDataDirectory(String appName) {
-        String os = System.getProperty("os.name").toLowerCase();
-        if (os.contains("win")) {
-            String appData = System.getenv("APPDATA");
-            return Paths.get(appData, appName);
-        } else if (os.contains("mac")) {
-            String userHome = System.getProperty("user.home");
-            return Paths.get(userHome, "Library", "Application Support", appName);
-        } else {
-            String userHome = System.getProperty("user.home");
-            return Paths.get(userHome, ".config", appName);
-        }
-    }
+    private static Path BASE_DIR;
+    private static boolean isInitialized = false;
+    
+    public static void initDirectories(boolean useSystemDir, String appName) {
+        if (isInitialized) return;
 
-    public static void initializeAppWorkingDirectory(String appName) {
-        Path appDir = getAppDataDirectory(appName);
-
-        try {
-            Files.createDirectories(appDir);
-
-            System.setProperty("user.dir", appDir.toAbsolutePath().toString());
-
-            System.setProperty("config.path", appDir.resolve("config.yml").toString());
-            System.setProperty("config.dir", appDir.toString());
-
-            System.out.println("Рабочая директория приложения установлена в: " + appDir.toAbsolutePath());
-        } catch (Exception e) {
-            System.err.println("Не удалось создать рабочую директорию: " + e.getMessage());
-        }
-    }
-
-    public static void createSymlinks(String appName) {
-        Path appDir = getAppDataDirectory(appName);
-        Path launchDir = Paths.get(System.getProperty("user.dir"));
-
-        try {
-            createSymlinkIfNotExists(launchDir.resolve("permission"), appDir.resolve("permission"));
-            createSymlinkIfNotExists(launchDir.resolve("logs"), appDir.resolve("logs"));
-            createSymlinkIfNotExists(launchDir.resolve("config.yml"), appDir.resolve("config.yml"));
-        } catch (Exception e) {
-            System.err.println("Не удалось создать символические ссылки: " + e.getMessage());
-        }
-    }
-
-    private static void createSymlinkIfNotExists(Path link, Path target) throws IOException {
-        if (!Files.exists(link)) {
-            if (Files.exists(target)) {
-                Files.createSymbolicLink(link, target);
+        if (useSystemDir) {
+            String os = System.getProperty("os.name").toLowerCase();
+            if (os.contains("win")) {
+                BASE_DIR = Paths.get(System.getenv("APPDATA"), appName);
+            } else if (os.contains("mac")) {
+                BASE_DIR = Paths.get(System.getProperty("user.home"), "Library", "Application Support", appName);
             } else {
-                Files.createDirectories(target.getParent());
-                Files.createDirectories(target);
-                Files.createSymbolicLink(link, target);
+                BASE_DIR = Paths.get(System.getProperty("user.home"), ".config", appName);
             }
+        } else {
+            BASE_DIR = Paths.get(System.getProperty("user.dir")).toAbsolutePath();
         }
+
+        try {
+            Files.createDirectories(BASE_DIR);
+            System.setProperty("user.dir", BASE_DIR.toAbsolutePath().toString());
+            System.out.println("✅ Базовая директория: " + BASE_DIR.toAbsolutePath());
+        } catch (IOException e) {
+            System.err.println("❌ Ошибка создания директории: " + e.getMessage());
+        }
+
+        isInitialized = true;
+    }
+
+    public static Path getBaseDir() {
+        if (!isInitialized) throw new IllegalStateException("FileUtils не инициализирован! Вызови initDirectories() первым.");
+        return BASE_DIR;
+    }
+
+    public static Path getConfigPath() {
+        return getBaseDir().resolve("config.yml");
+    }
+
+    public static Path getLogsDir() {
+        return getBaseDir().resolve("logs");
+    }
+
+    public static Path getPermissionsDir() {
+        return getBaseDir().resolve("permission");
     }
 }

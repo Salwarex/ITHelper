@@ -41,7 +41,7 @@ public class PhoneRepository extends EntityRepository<Phone> {
     protected String[] sqlTableAttributes() {
         return new String[]{
                 "id", "{primary}",
-                "corp_phone_number", "VARCHAR(4) NOT NULL",
+                "corp_phone_number", "VARCHAR(4) NOT NULL UNIQUE",
                 "public_phone_number", "VARCHAR(6)",
                 "ip", "VARCHAR(45)",
                 "last_checked", "{long} NOT NULL",

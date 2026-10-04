@@ -99,7 +99,7 @@ public class MainController {
         }
     }
 
-    private void refreshAllTabs() {
+    public void refreshAllTabs() {
         if (locationsController != null) locationsController.reloadTree();
         if (devicesController != null) devicesController.reload();
         if (employeesController != null) employeesController.reload();

@@ -53,6 +53,7 @@ public class DataEntryController extends BaseTabController {
     @FXML private TextField tfPhoneCorp;
     @FXML private TextField tfPhonePublic;
     @FXML private TextField tfPhoneIp;
+    @FXML private TextField tfEmployeePhone;
 
     private List<ComboBox<Location>> deviceLocationBoxes = new ArrayList<>();
     private List<ComboBox<Location>> employeeLocationBoxes = new ArrayList<>();
@@ -449,6 +450,7 @@ public class DataEntryController extends BaseTabController {
                 emp.setCreatedAt(now);
                 emp.setLastStatusChange(now);
                 emp.setLastChecked(now);
+                emp.setPhone(tfEmployeePhone.getText().isBlank() ? null : tfEmployeePhone.getText().trim());
 
                 long empId = Backend.db().getEmployeeService().create(emp);
 
@@ -494,6 +496,7 @@ public class DataEntryController extends BaseTabController {
         tfEmployeeSurname.clear();
         tfEmployeeName.clear();
         tfEmployeeThirdname.clear();
+        tfEmployeePhone.clear();
     }
 
 

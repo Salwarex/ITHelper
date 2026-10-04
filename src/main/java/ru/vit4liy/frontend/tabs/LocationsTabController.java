@@ -524,8 +524,9 @@ public class LocationsTabController extends BaseTabController {
         addDetailRow(grid, 1, "Фамилия:", emp.getSurname() != null ? emp.getSurname() : "—");
         addDetailRow(grid, 2, "Имя:", emp.getName() != null ? emp.getName() : "—");
         addDetailRow(grid, 3, "Отчество:", emp.getThirdname() != null ? emp.getThirdname() : "—");
-        addDetailRow(grid, 4, "Статус:", EmployeeStatusUtil.getDisplayName(emp.getStatus()));
-        addDetailRow(grid, 5, "Последняя проверка:", DateUtil.format(emp.getLastChecked()));
+        addDetailRow(grid, 4, "Телефон:", emp.getPhone() != null ? emp.getPhone() : "—");
+        addDetailRow(grid, 5, "Статус:", EmployeeStatusUtil.getDisplayName(emp.getStatus()));
+        addDetailRow(grid, 6, "Последняя проверка:", DateUtil.format(emp.getLastChecked()));
 
         showInfoDialog("Детали сотрудника", grid);
     }

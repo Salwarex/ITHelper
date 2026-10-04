@@ -33,6 +33,7 @@ public class EmployeesTabController extends BaseTabController {
     @FXML private TableColumn<Employee, String> colThirdname;
     @FXML private TableColumn<Employee, String> colLocation;
     @FXML private TableColumn<Employee, String> colStatus;
+    @FXML private TableColumn<Employee, String> colPhone;
 
     @FXML private TextField tfSearch;
     @FXML private ComboBox<String> cbSearchMode;
@@ -44,6 +45,7 @@ public class EmployeesTabController extends BaseTabController {
     @FXML private Label lblLocation;
     @FXML private Label lblStatus;
     @FXML private Label lblLastChecked;
+    @FXML private Label lblPhone;
 
     private final ObservableList<Employee> data = FXCollections.observableArrayList();
     private Map<Long, String> employeeLocationPaths = new HashMap<>();
@@ -59,6 +61,9 @@ public class EmployeesTabController extends BaseTabController {
         ));
         colStatus.setCellValueFactory(cd -> new SimpleStringProperty(
                 EmployeeStatusUtil.getDisplayName(cd.getValue().getStatus())
+        ));
+        colPhone.setCellValueFactory(cd -> new SimpleStringProperty(
+                cd.getValue().getPhone() != null ? cd.getValue().getPhone() : "—"
         ));
 
         employeesTable.setItems(data);
@@ -141,6 +146,7 @@ public class EmployeesTabController extends BaseTabController {
         lblLocation.setText(employeeLocationPaths.getOrDefault(emp.getId(), "Не назначено"));
         lblStatus.setText(EmployeeStatusUtil.getDisplayName(emp.getStatus()));
         lblLastChecked.setText(DateUtil.format(emp.getLastChecked()));
+        lblPhone.setText(emp.getPhone() != null ? emp.getPhone() : "—");
     }
 
     private void clearDetails() {

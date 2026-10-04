@@ -51,6 +51,7 @@ public class EmployeeRepository extends EntityRepository<Employee> {
                 "last_status_change", "{long} NOT NULL",
                 "last_checked", "{long} NOT NULL",
                 "status", "{int} NOT NULL DEFAULT 1",
+                "phone", "VARCHAR(12)"
         };
     }
 
@@ -64,6 +65,7 @@ public class EmployeeRepository extends EntityRepository<Employee> {
         e.setLastStatusChange(rs.getLong("last_status_change"));
         e.setLastChecked(rs.getLong("last_checked"));
         e.setStatus(rs.getInt("status"));
+        e.setPhone(rs.getString("phone"));
         return e;
     }
 
@@ -90,6 +92,11 @@ public class EmployeeRepository extends EntityRepository<Employee> {
         stmt.setLong(5, employee.getLastStatusChange());
         stmt.setLong(6 ,employee.getLastChecked());
         stmt.setInt(7, employee.getStatus());
+        if (employee.getPhone() == null) {
+            stmt.setNull(8, java.sql.Types.VARCHAR);
+        } else {
+            stmt.setString(8, employee.getPhone());
+        }
     }
 
     @Override

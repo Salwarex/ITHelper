@@ -27,6 +27,7 @@
             <TableColumn fx:id="colName" text="Имя" prefWidth="150"/>
             <TableColumn fx:id="colThirdname" text="Отчество" prefWidth="150"/>
             <TableColumn fx:id="colLocation" text="Локация" prefWidth="200"/>
+            <TableColumn fx:id="colPhone" text="Телефон" prefWidth="120"/>
             <TableColumn fx:id="colStatus" text="Статус" prefWidth="120"/>
         </columns>
         <columnResizePolicy>
@@ -58,11 +59,14 @@
             <Label text="Локация:" GridPane.rowIndex="4" GridPane.columnIndex="0" styleClass="field-label"/>
             <Label fx:id="lblLocation" text="—" GridPane.rowIndex="4" GridPane.columnIndex="1" styleClass="field-value"/>
 
-            <Label text="Статус:" GridPane.rowIndex="5" GridPane.columnIndex="0" styleClass="field-label"/>
-            <Label fx:id="lblStatus" text="—" GridPane.rowIndex="5" GridPane.columnIndex="1" styleClass="field-value"/>
+            <Label text="Телефон:" GridPane.rowIndex="5" GridPane.columnIndex="0" styleClass="field-label"/>
+            <Label fx:id="lblPhone" text="—" GridPane.rowIndex="5" GridPane.columnIndex="1" styleClass="field-value"/>
 
-            <Label text="Последняя проверка:" GridPane.rowIndex="6" GridPane.columnIndex="0" styleClass="field-label"/>
-            <Label fx:id="lblLastChecked" text="—" GridPane.rowIndex="6" GridPane.columnIndex="1" styleClass="field-value"/>
+            <Label text="Статус:" GridPane.rowIndex="6" GridPane.columnIndex="0" styleClass="field-label"/>
+            <Label fx:id="lblStatus" text="—" GridPane.rowIndex="6" GridPane.columnIndex="1" styleClass="field-value"/>
+
+            <Label text="Последняя проверка:" GridPane.rowIndex="7" GridPane.columnIndex="0" styleClass="field-label"/>
+            <Label fx:id="lblLastChecked" text="—" GridPane.rowIndex="7" GridPane.columnIndex="1" styleClass="field-value"/>
         </GridPane>
     </TitledPane>
 </VBox>
