@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox spacing="10"
+      xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="ru.vit4liy.frontend.tabs.DevicesTabController">
+    <padding><Insets top="10" right="15" bottom="10" left="15"/></padding>
+
+    <!-- Панель поиска и фильтров -->
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <TextField fx:id="tfSearch" promptText="🔍 Поиск по серийному номеру..." prefWidth="200"/>
+        <TextField fx:id="tfIpFilter" promptText=" IP-адрес..." prefWidth="150"/>
+        <ComboBox fx:id="cbStatusFilter" promptText="Статус" prefWidth="150"/>
+        <ComboBox fx:id="cbOsFilter" promptText="ОС" prefWidth="150"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button text="➕ Добавить" onAction="#onAddDevice" styleClass="btn-primary"/>
+        <Button text=" Редактировать" onAction="#onEditDevice"/>
+        <Button text="🔄 Обновить" onAction="#onReload"/>
+        <Button text="🗑 Удалить" onAction="#onDeleteDevice" styleClass="btn-danger"/>
+    </HBox>
+
+    <!-- Таблица устройств -->
+    <TableView fx:id="devicesTable" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="colId" text="ID" prefWidth="60"/>
+            <TableColumn fx:id="colSerial" text="Серийный номер" prefWidth="150"/>
+            <TableColumn fx:id="colType" text="Тип" prefWidth="120"/>
+            <TableColumn fx:id="colOs" text="ОС" prefWidth="120"/>
+            <TableColumn fx:id="colIp" text="IP" prefWidth="120"/>
+            <TableColumn fx:id="colLocation" text="Локация" prefWidth="180"/>
+            <TableColumn fx:id="colStatus" text="Статус" prefWidth="120"/>
+            <TableColumn fx:id="colDescription" text="Описание" prefWidth="200"/>
+        </columns>
+        <columnResizePolicy><TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/></columnResizePolicy>
+    </TableView>
+
+    <!-- Панель деталей -->
+    <TitledPane text="Детали устройства" expanded="true">
+        <GridPane hgap="15" vgap="10">
+            <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
+            <columnConstraints>
+                <ColumnConstraints minWidth="120" halignment="RIGHT"/>
+                <ColumnConstraints hgrow="ALWAYS"/>
+            </columnConstraints>
+
+            <Label text="ID:" GridPane.rowIndex="0" GridPane.columnIndex="0" styleClass="field-label"/>
+            <Label fx:id="lblId" text="—" GridPane.rowIndex="0" GridPane.columnIndex="1" styleClass="field-value"/>
+
+            <Label text="Серийный №:" GridPane.rowIndex="1" GridPane.columnIndex="0" styleClass="field-label"/>
+            <Label fx:id="lblSerial" text="—" GridPane.rowIndex="1" GridPane.columnIndex="1" styleClass="field-value"/>
+
+            <Label text="Тип:" GridPane.rowIndex="2" GridPane.columnIndex="0" styleClass="field-label"/>
+            <Label fx:id="lblType" text="—" GridPane.rowIndex="2" GridPane.columnIndex="1" styleClass="field-value"/>
+
+            <Label text="ОС:" GridPane.rowIndex="3" GridPane.columnIndex="0" styleClass="field-label"/>
+            <Label fx:id="lblOs" text="—" GridPane.rowIndex="3" GridPane.columnIndex="1" styleClass="field-value"/>
+
+            <Label text="IP:" GridPane.rowIndex="4" GridPane.columnIndex="0" styleClass="field-label"/>
+            <Label fx:id="lblIp" text="—" GridPane.rowIndex="4" GridPane.columnIndex="1" styleClass="field-value"/>
+
+            <Label text="Локация:" GridPane.rowIndex="5" GridPane.columnIndex="0" styleClass="field-label"/>
+            <Label fx:id="lblLocation" text="—" GridPane.rowIndex="5" GridPane.columnIndex="1" styleClass="field-value"/>
+
+            <Label text="Статус:" GridPane.rowIndex="6" GridPane.columnIndex="0" styleClass="field-label"/>
+            <Label fx:id="lblStatus" text="—" GridPane.rowIndex="6" GridPane.columnIndex="1" styleClass="field-value"/>
+
+            <Label text="Описание:" GridPane.rowIndex="7" GridPane.columnIndex="0" styleClass="field-label"/>
+            <Label fx:id="lblDescription" text="—" GridPane.rowIndex="7" GridPane.columnIndex="1" styleClass="field-value" wrapText="true"/>
+        </GridPane>
+    </TitledPane>
+</VBox>

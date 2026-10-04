@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<TabPane fx:id="dictTabPane" tabClosingPolicy="UNAVAILABLE"
+         xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+         fx:controller="ru.vit4liy.frontend.tabs.DictionariesTabController">
+    <tabs>
+        <Tab text="Типы устройств">
+            <VBox spacing="10">
+                <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
+                <HBox spacing="10">
+                    <Button text="➕ Добавить" onAction="#onAddType" styleClass="btn-primary"/>
+                    <Button text="✏ Редактировать" onAction="#onEditType"/>
+                    <Button text=" Удалить" onAction="#onDeleteType" styleClass="btn-danger"/>
+                </HBox>
+                <TableView fx:id="typesTable" VBox.vgrow="ALWAYS">
+                    <columns><TableColumn fx:id="colTypeName" text="Название" prefWidth="400"/></columns>
+                </TableView>
+            </VBox>
+        </Tab>
+        <Tab text="Марки устройств">
+            <VBox spacing="10">
+                <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
+                <HBox spacing="10">
+                    <Button text="➕ Добавить" onAction="#onAddMark" styleClass="btn-primary"/>
+                    <Button text="✏ Редактировать" onAction="#onEditMark"/>
+                    <Button text=" Удалить" onAction="#onDeleteMark" styleClass="btn-danger"/>
+                </HBox>
+                <TableView fx:id="marksTable" VBox.vgrow="ALWAYS">
+                    <columns>
+                        <TableColumn fx:id="colMarkName" text="Название" prefWidth="250"/>
+                        <TableColumn fx:id="colMarkType" text="Тип" prefWidth="250"/>
+                    </columns>
+                </TableView>
+            </VBox>
+        </Tab>
+        <Tab text="Телефоны">
+            <VBox spacing="10">
+                <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
+                <HBox spacing="10">
+                    <Button text=" Добавить" onAction="#onAddPhone" styleClass="btn-primary"/>
+                    <Button text="✏ Редактировать" onAction="#onEditPhone"/>
+                    <Button text="🗑 Удалить" onAction="#onDeletePhone" styleClass="btn-danger"/>
+                </HBox>
+                <TableView fx:id="phonesTable" VBox.vgrow="ALWAYS">
+                    <columns>
+                        <TableColumn fx:id="colPhoneCorp" text="Корпоративный" prefWidth="200"/>
+                        <TableColumn fx:id="colPhonePublic" text="Городской" prefWidth="200"/>
+                    </columns>
+                </TableView>
+            </VBox>
+        </Tab>
+        <Tab text="Операционные системы">
+            <VBox spacing="10">
+                <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
+                <HBox spacing="10">
+                    <Button text="➕ Добавить" onAction="#onAddOs" styleClass="btn-primary"/>
+                    <Button text="✏ Редактировать" onAction="#onEditOs"/>
+                    <Button text="🗑 Удалить" onAction="#onDeleteOs" styleClass="btn-danger"/>
+                </HBox>
+                <TableView fx:id="osTable" VBox.vgrow="ALWAYS">
+                    <columns>
+                        <TableColumn fx:id="colOsName" text="Название" prefWidth="400"/>
+                    </columns>
+                </TableView>
+            </VBox>
+        </Tab>
+    </tabs>
+</TabPane>

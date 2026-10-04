@@ -1,41 +1,30 @@
 package ru.vit4liy;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import ru.vit4liy.backend.data.repository.*;
-import ru.vit4liy.backend.data.service.*;
-import ru.vit4liy.backend.database.DatabaseManager;
+import ru.vit4liy.backend.modules.CommonModuleLoader;
 import ru.vit4liy.it72h.lib.config.Config;
 import ru.vit4liy.it72h.lib.logger.log.FileTerminalLogger;
 import ru.vit4liy.it72h.lib.logger.log.Logger;
+import ru.vit4liy.modular.ModuleLoader;
+import ru.vit4liy.util.FileUtils;
 
-import java.awt.*;
-import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class App extends Application {
-    private final static Config CONFIG = new Config("config.yml");
-    private final static Logger LOGGER = new FileTerminalLogger();
-
-    private final static DatabaseManager database = new DatabaseManager();
-
-    private final static DeviceRepository deviceR = new DeviceRepository(database);
-    private final static EmployeeRepository employeeR = new EmployeeRepository(database);
-    private final static LocationRepository locationR = new LocationRepository(database);
-    private final static PhoneRepository phoneR = new PhoneRepository(database);
-    private final static TypeMarksRepository typeMarksR = new TypeMarksRepository(database);
-    private final static TypeRepository typeR = new TypeRepository(database);
-
-    private final static DeviceService deviceS = new DeviceService(deviceR);
-    private final static EmployeeService employeeS = new EmployeeService(employeeR);
-    private final static LocationService locationS = new LocationService(locationR);
-    private final static PhoneService phoneS = new PhoneService(phoneR);
-    private final static TypeMarkService typeMarkS = new TypeMarkService(typeMarksR);
-    private final static TypeService typeS = new TypeService(typeR);
-
+    private static final Config CONFIG = new Config("config.yml");
+    private static final Logger LOGGER = new FileTerminalLogger(
+            DateTimeFormatter.ofPattern("dd-MM-yyyy_HH_mm_ss").format(LocalDateTime.now())
+    );
+    private static final ExecutorService POOL = Executors.newVirtualThreadPerTaskExecutor();
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     public static Config getConfig() {
         return CONFIG;
@@ -45,23 +34,58 @@ public class App extends Application {
         return LOGGER;
     }
 
+    private static App instance;
+
+    private ModuleLoader moduleLoader;
+
     @Override
     public void start(Stage stage) throws Exception {
-        var fxmlLocation = App.class.getResource("/ru/vit4liy/frontend/hello-view.fxml");
+        CONFIG.saveDefaultConfig();
+        instance = this;
+        moduleLoader = new CommonModuleLoader(POOL, false);
 
+        System.out.println("⏳ Синхронная инициализация модулей...");
+
+        try {
+            moduleLoader.getModule(ru.vit4liy.perm.PermissionModule.class).run();
+            moduleLoader.getModule(ru.vit4liy.backend.modules.data.DatabaseModule.class).run();
+        } catch (Exception e) {
+            throw new RuntimeException("Критическая ошибка инициализации модулей", e);
+        }
+
+        System.out.println("✅ Модули успешно инициализированы!");
+
+        var fxmlLocation = App.class.getResource("/ru/vit4liy/frontend/main-view.fxml");
         if (fxmlLocation == null) {
-            throw new IllegalStateException("Не удалось найти FXML файл! Проверьте путь в папке resources.");
+            throw new IllegalStateException("Не удалось найти main-view.fxml! Проверьте путь в папке resources.");
         }
 
         FXMLLoader fxmlLoader = new FXMLLoader(fxmlLocation);
-        Scene scene = new Scene(fxmlLoader.load(), 400, 250);
+        Scene scene = new Scene(fxmlLoader.load(), 1100, 650);
 
-        stage.setTitle("Архитектура FXML + Controller");
+        scene.getStylesheets().add(App.class.getResource("/ru/vit4liy/frontend/main.css").toExternalForm());
+
+        stage.setTitle("InventoryHelper — Инвентаризация");
         stage.setScene(scene);
         stage.show();
+
     }
 
     public static void main(String[] args) {
+        FileUtils.initializeAppWorkingDirectory(".ith");
+        FileUtils.createSymlinks(".ith");
         launch(args);
+    }
+
+    public static App getInstance() {
+        return instance;
+    }
+
+    public ModuleLoader getModuleLoader() {
+        return moduleLoader;
+    }
+
+    public static ExecutorService getPool(){
+        return POOL;
     }
 }

@@ -1,0 +1,12 @@
+version: 1
+groups:
+  default:
+    name: "Пользователь"
+    permissions:
+      - "*"
+  admin:
+    name: "Администратор"
+    inherits:
+      - "default"
+    permissions:
+      - "*"

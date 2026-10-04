@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<SplitPane dividerPositions="0.3"
+           xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="ru.vit4liy.frontend.tabs.LocationsTabController">
+
+    <!-- Левая панель: дерево локаций -->
+    <VBox spacing="10">
+        <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <Button fx:id="btnAdd" text="➕ Добавить" onAction="#onAddLocation" styleClass="btn-primary"/>
+            <Button fx:id="btnRefresh" text="🔄 Обновить" onAction="#onRefresh"/>
+        </HBox>
+        <TreeView fx:id="locationsTree" VBox.vgrow="ALWAYS"/>
+    </VBox>
+
+    <!-- Правая панель: детали -->
+    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
+        <VBox spacing="15">
+            <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
+            <Label text="Детали локации" styleClass="h2"/>
+
+            <GridPane hgap="15" vgap="12">
+                <columnConstraints>
+                    <ColumnConstraints minWidth="120" halignment="RIGHT"/>
+                    <ColumnConstraints hgrow="ALWAYS" fillWidth="true"/>
+                </columnConstraints>
+
+                <Label text="ID:" GridPane.rowIndex="0" GridPane.columnIndex="0" styleClass="field-label"/>
+                <Label fx:id="lblId" text="—" GridPane.rowIndex="0" GridPane.columnIndex="1" styleClass="field-value"/>
+
+                <Label text="Название:" GridPane.rowIndex="1" GridPane.columnIndex="0" styleClass="field-label"/>
+                <Label fx:id="lblDisplayName" text="—" GridPane.rowIndex="1" GridPane.columnIndex="1" styleClass="field-value"/>
+
+                <Label text="Ключ:" GridPane.rowIndex="2" GridPane.columnIndex="0" styleClass="field-label"/>
+                <Label fx:id="lblKey" text="—" GridPane.rowIndex="2" GridPane.columnIndex="1" styleClass="field-value"/>
+
+                <Label text="Расположение:" GridPane.rowIndex="3" GridPane.columnIndex="0" styleClass="field-label"/>
+                <Label fx:id="lblParent" text="—" GridPane.rowIndex="3" GridPane.columnIndex="1" styleClass="field-value" wrapText="true"/>
+            </GridPane>
+
+            <!-- Связанные сущности (без VBox.vgrow, чтобы ScrollPane мог скроллить) -->
+            <TitledPane text="🖨 Устройства" expanded="true">
+                <VBox spacing="5">
+                    <HBox alignment="CENTER_RIGHT">
+                        <Button text="➕ Привязать устройство" onAction="#onAttachDevice" styleClass="btn-primary" maxWidth="200"/>
+                    </HBox>
+                    <ListView fx:id="lvDevices" minHeight="150" prefHeight="180"/>
+                </VBox>
+            </TitledPane>
+
+            <TitledPane text="👥 Сотрудники" expanded="true">
+                <VBox spacing="5">
+                    <HBox alignment="CENTER_RIGHT">
+                        <Button text=" Привязать сотрудника" onAction="#onAttachEmployee" styleClass="btn-primary" maxWidth="200"/>
+                    </HBox>
+                    <ListView fx:id="lvEmployees" minHeight="150" prefHeight="180"/>
+                </VBox>
+            </TitledPane>
+
+            <TitledPane text="📞 Телефоны" expanded="true">
+                <VBox spacing="5">
+                    <HBox alignment="CENTER_RIGHT">
+                        <Button text="➕ Привязать телефон" onAction="#onAttachPhone" styleClass="btn-primary" maxWidth="200"/>
+                    </HBox>
+                    <ListView fx:id="lvPhones" minHeight="150" prefHeight="180"/>
+                </VBox>
+            </TitledPane>
+
+            <Region VBox.vgrow="ALWAYS"/>
+
+            <HBox spacing="10">
+                <Button fx:id="btnEdit" text=" Редактировать" onAction="#onEditLocation" styleClass="btn-primary"/>
+                <Button fx:id="btnDelete" text="🗑 Удалить" onAction="#onDeleteLocation" styleClass="btn-danger"/>
+            </HBox>
+        </VBox>
+    </ScrollPane>
+</SplitPane>

@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox spacing="15"
+      xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="ru.vit4liy.frontend.tabs.DataEntryController">
+    <padding><Insets top="15" right="20" bottom="15" left="20"/></padding>
+
+    <TabPane tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
+        <tabs>
+            <!-- Вкладка Устройства -->
+            <Tab text="🖨 Устройства">
+                <VBox spacing="12">
+                    <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
+
+                    <GridPane hgap="10" vgap="10">
+                        <columnConstraints>
+                            <ColumnConstraints minWidth="150" halignment="RIGHT"/>
+                            <ColumnConstraints hgrow="ALWAYS"/>
+                        </columnConstraints>
+
+                        <Label text="Расположение:" GridPane.rowIndex="0" GridPane.columnIndex="0" styleClass="field-label"/>
+                        <HBox fx:id="deviceLocationCascade" spacing="5" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+                        <Label text="Инвентарный номер:" GridPane.rowIndex="1" GridPane.columnIndex="0" styleClass="field-label"/>
+                        <TextField fx:id="tfDeviceSerial" promptText="Обязательно" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+                        <Label text="Тип устройства:" GridPane.rowIndex="2" GridPane.columnIndex="0" styleClass="field-label"/>
+                        <ComboBox fx:id="cbDeviceType" promptText="Выберите или введите" editable="true" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+                        <Label text="Марка устройства:" GridPane.rowIndex="3" GridPane.columnIndex="0" styleClass="field-label"/>
+                        <ComboBox fx:id="cbDeviceMark" promptText="Выберите или введите" editable="true" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+                        <Label text="IP адрес:" GridPane.rowIndex="4" GridPane.columnIndex="0" styleClass="field-label"/>
+                        <TextField fx:id="tfDeviceIp" promptText="Необязательно" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+
+                        <Label text="ОС:" GridPane.rowIndex="5" GridPane.columnIndex="0" styleClass="field-label"/>
+                        <ComboBox fx:id="cbDeviceOs" promptText="Выберите или введите (необязательно)" editable="true" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+
+                        <Label text="Статус:" GridPane.rowIndex="6" GridPane.columnIndex="0" styleClass="field-label"/>
+                        <ComboBox fx:id="cbDeviceStatus" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
+
+                        <Label text="Описание:" GridPane.rowIndex="7" GridPane.columnIndex="0" styleClass="field-label"/>
+                        <TextField fx:id="tfDeviceDescription" promptText="Необязательно" GridPane.rowIndex="7" GridPane.columnIndex="1"/>
+                    </GridPane>
+
+                    <Button text="✅ Добавить устройство" onAction="#onSubmitDevice" styleClass="btn-primary" maxWidth="250"/>
+                </VBox>
+            </Tab>
+
+            <!-- Вкладка Сотрудники -->
+            <Tab text="👥 Сотрудники">
+                <VBox spacing="12">
+                    <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
+
+                    <GridPane hgap="10" vgap="10">
+                        <columnConstraints>
+                            <ColumnConstraints minWidth="150" halignment="RIGHT"/>
+                            <ColumnConstraints hgrow="ALWAYS"/>
+                        </columnConstraints>
+
+                        <Label text="Расположение:" GridPane.rowIndex="0" GridPane.columnIndex="0" styleClass="field-label"/>
+                        <HBox fx:id="employeeLocationCascade" spacing="5" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+                        <Label text="Фамилия:" GridPane.rowIndex="1" GridPane.columnIndex="0" styleClass="field-label"/>
+                        <TextField fx:id="tfEmployeeSurname" promptText="Обязательно" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+                        <Label text="Имя:" GridPane.rowIndex="2" GridPane.columnIndex="0" styleClass="field-label"/>
+                        <TextField fx:id="tfEmployeeName" promptText="Обязательно" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+                        <Label text="Отчество:" GridPane.rowIndex="3" GridPane.columnIndex="0" styleClass="field-label"/>
+                        <TextField fx:id="tfEmployeeThirdname" promptText="Необязательно" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+                    </GridPane>
+
+                    <Button text="✅ Добавить сотрудника" onAction="#onSubmitEmployee" styleClass="btn-primary" maxWidth="250"/>
+                </VBox>
+            </Tab>
+
+            <!-- Вкладка Телефоны -->
+            <Tab text="📞 Телефоны">
+                <VBox spacing="12">
+                    <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
+
+                    <GridPane hgap="10" vgap="10">
+                        <columnConstraints>
+                            <ColumnConstraints minWidth="150" halignment="RIGHT"/>
+                            <ColumnConstraints hgrow="ALWAYS"/>
+                        </columnConstraints>
+
+                        <Label text="Расположение:" GridPane.rowIndex="0" GridPane.columnIndex="0" styleClass="field-label"/>
+                        <HBox fx:id="phoneLocationCascade" spacing="5" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+                        <Label text="Внутренний номер:" GridPane.rowIndex="1" GridPane.columnIndex="0" styleClass="field-label"/>
+                        <TextField fx:id="tfPhoneCorp" promptText="4 цифры, обязательно" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+                        <Label text="Внешний номер:" GridPane.rowIndex="2" GridPane.columnIndex="0" styleClass="field-label"/>
+                        <TextField fx:id="tfPhonePublic" promptText="6 цифр, необязательно" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+                        <Label text="IP адрес:" GridPane.rowIndex="3" GridPane.columnIndex="0" styleClass="field-label"/>
+                        <TextField fx:id="tfPhoneIp" promptText="Необязательно" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+                    </GridPane>
+
+                    <Button text="✅ Добавить телефон" onAction="#onSubmitPhone" styleClass="btn-primary" maxWidth="250"/>
+                </VBox>
+            </Tab>
+        </tabs>
+    </TabPane>
+</VBox>

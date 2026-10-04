@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox spacing="10"
+      xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="ru.vit4liy.frontend.tabs.EmployeesTabController">
+    <padding><Insets top="10" right="15" bottom="10" left="15"/></padding>
+
+    <!-- Панель поиска -->
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <ComboBox fx:id="cbSearchMode" prefWidth="180"/>
+        <TextField fx:id="tfSearch" promptText="🔍 Поиск сотрудника..." prefWidth="320" HBox.hgrow="ALWAYS"/>
+        <Button text="➕ Добавить" onAction="#onAddEmployee" styleClass="btn-primary"/>
+        <Button text="✏ Редактировать" onAction="#onEditEmployee"/>
+        <Button text="🔄 Обновить" onAction="#onReload"/>
+        <Button text="🗑 Удалить" onAction="#onDeleteEmployee" styleClass="btn-danger"/>
+    </HBox>
+
+    <!-- Таблица сотрудников -->
+    <TableView fx:id="employeesTable" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="colId" text="ID" prefWidth="60"/>
+            <TableColumn fx:id="colSurname" text="Фамилия" prefWidth="150"/>
+            <TableColumn fx:id="colName" text="Имя" prefWidth="150"/>
+            <TableColumn fx:id="colThirdname" text="Отчество" prefWidth="150"/>
+            <TableColumn fx:id="colLocation" text="Локация" prefWidth="200"/>
+            <TableColumn fx:id="colStatus" text="Статус" prefWidth="120"/>
+        </columns>
+        <columnResizePolicy>
+            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+        </columnResizePolicy>
+    </TableView>
+
+    <!-- Панель деталей -->
+    <TitledPane text="Детали сотрудника" expanded="true">
+        <GridPane hgap="15" vgap="10">
+            <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
+            <columnConstraints>
+                <ColumnConstraints minWidth="120" halignment="RIGHT"/>
+                <ColumnConstraints hgrow="ALWAYS"/>
+            </columnConstraints>
+
+            <Label text="ID:" GridPane.rowIndex="0" GridPane.columnIndex="0" styleClass="field-label"/>
+            <Label fx:id="lblId" text="—" GridPane.rowIndex="0" GridPane.columnIndex="1" styleClass="field-value"/>
+
+            <Label text="Фамилия:" GridPane.rowIndex="1" GridPane.columnIndex="0" styleClass="field-label"/>
+            <Label fx:id="lblSurname" text="—" GridPane.rowIndex="1" GridPane.columnIndex="1" styleClass="field-value"/>
+
+            <Label text="Имя:" GridPane.rowIndex="2" GridPane.columnIndex="0" styleClass="field-label"/>
+            <Label fx:id="lblName" text="—" GridPane.rowIndex="2" GridPane.columnIndex="1" styleClass="field-value"/>
+
+            <Label text="Отчество:" GridPane.rowIndex="3" GridPane.columnIndex="0" styleClass="field-label"/>
+            <Label fx:id="lblThirdname" text="—" GridPane.rowIndex="3" GridPane.columnIndex="1" styleClass="field-value"/>
+
+            <Label text="Локация:" GridPane.rowIndex="4" GridPane.columnIndex="0" styleClass="field-label"/>
+            <Label fx:id="lblLocation" text="—" GridPane.rowIndex="4" GridPane.columnIndex="1" styleClass="field-value"/>
+
+            <Label text="Статус:" GridPane.rowIndex="5" GridPane.columnIndex="0" styleClass="field-label"/>
+            <Label fx:id="lblStatus" text="—" GridPane.rowIndex="5" GridPane.columnIndex="1" styleClass="field-value"/>
+
+            <Label text="Последняя проверка:" GridPane.rowIndex="6" GridPane.columnIndex="0" styleClass="field-label"/>
+            <Label fx:id="lblLastChecked" text="—" GridPane.rowIndex="6" GridPane.columnIndex="1" styleClass="field-value"/>
+        </GridPane>
+    </TitledPane>
+</VBox>
