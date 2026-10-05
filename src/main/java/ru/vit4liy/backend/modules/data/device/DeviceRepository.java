@@ -1,6 +1,6 @@
 package ru.vit4liy.backend.modules.data.device;
 
-import ru.vit4liy.backend.base.model.device.Device;
+import ru.vit4liy.base.model.device.Device;
 import ru.vit4liy.rsc.DatabaseManager;
 import ru.vit4liy.rsc.repository.EntityRepository;
 

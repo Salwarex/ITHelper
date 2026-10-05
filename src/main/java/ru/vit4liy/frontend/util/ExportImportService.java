@@ -2,16 +2,16 @@ package ru.vit4liy.frontend.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import ru.vit4liy.backend.base.model.device.Device;
-import ru.vit4liy.backend.base.model.device.system.OSystem;
-import ru.vit4liy.backend.base.model.employee.Employee;
-import ru.vit4liy.backend.base.model.intersections.DeviceLocation;
-import ru.vit4liy.backend.base.model.intersections.EmployeeLocation;
-import ru.vit4liy.backend.base.model.intersections.LocationPhone;
-import ru.vit4liy.backend.base.model.location.Location;
-import ru.vit4liy.backend.base.model.phone.Phone;
-import ru.vit4liy.backend.base.model.type.Type;
-import ru.vit4liy.backend.base.model.typemark.TypeMark;
+import ru.vit4liy.base.model.device.Device;
+import ru.vit4liy.base.model.device.system.OSystem;
+import ru.vit4liy.base.model.employee.Employee;
+import ru.vit4liy.base.model.intersections.DeviceLocation;
+import ru.vit4liy.base.model.intersections.EmployeeLocation;
+import ru.vit4liy.base.model.intersections.LocationPhone;
+import ru.vit4liy.base.model.location.Location;
+import ru.vit4liy.base.model.phone.Phone;
+import ru.vit4liy.base.model.type.Type;
+import ru.vit4liy.base.model.typemark.TypeMark;
 
 import java.io.File;
 import java.io.IOException;
@@ -48,16 +48,16 @@ public final class ExportImportService {
         data.exportDate = LocalDateTime.now().format(FORMATTER);
 
         try {
-            data.locations = Backend.db().getLocationService().getAll();
-            data.types = Backend.db().getTypeService().getAll();
-            data.typeMarks = Backend.db().getTypeMarkService().getAll();
-            data.osSystems = Backend.db().getOSystemService().getAll();
-            data.devices = Backend.db().getDeviceService().getAll();
-            data.employees = Backend.db().getEmployeeService().getAll();
-            data.phones = Backend.db().getPhoneService().getAll();
-            data.deviceLocations = Backend.db().getDeviceLocationService().getAll();
-            data.employeeLocations = Backend.db().getEmployeeLocationService().getAll();
-            data.locationPhones = Backend.db().getLocationPhoneService().getAll();
+            data.locations = BackendConnection.db().getLocationService().getAll();
+            data.types = BackendConnection.db().getTypeService().getAll();
+            data.typeMarks = BackendConnection.db().getTypeMarkService().getAll();
+            data.osSystems = BackendConnection.db().getOSystemService().getAll();
+            data.devices = BackendConnection.db().getDeviceService().getAll();
+            data.employees = BackendConnection.db().getEmployeeService().getAll();
+            data.phones = BackendConnection.db().getPhoneService().getAll();
+            data.deviceLocations = BackendConnection.db().getDeviceLocationService().getAll();
+            data.employeeLocations = BackendConnection.db().getEmployeeLocationService().getAll();
+            data.locationPhones = BackendConnection.db().getLocationPhoneService().getAll();
         } catch (Exception e) {
             throw new IOException("Ошибка чтения данных из БД: " + e.getMessage(), e);
         }
@@ -69,7 +69,7 @@ public final class ExportImportService {
         ExportData data = MAPPER.readValue(file, ExportData.class);
 
         try {
-            java.sql.Connection conn = Backend.db().getConnection();
+            java.sql.Connection conn = BackendConnection.db().getConnection();
 
             conn.createStatement().execute("PRAGMA foreign_keys = OFF;");
 
@@ -137,7 +137,7 @@ public final class ExportImportService {
                     } else {
                         loc.setParentId(0L);
                     }
-                    Long newId = Backend.db().getLocationService().create(loc);
+                    Long newId = BackendConnection.db().getLocationService().create(loc);
                     locationIdMap.put(oldId, newId);
                 }
             }
@@ -149,7 +149,7 @@ public final class ExportImportService {
                     typeIdMap.put(oldId, existingId);
                 } else {
                     type.setId(0L);
-                    Long newId = Backend.db().getTypeService().create(type);
+                    Long newId = BackendConnection.db().getTypeService().create(type);
                     typeIdMap.put(oldId, newId);
                 }
             }
@@ -163,7 +163,7 @@ public final class ExportImportService {
                     tm.setId(0L);
                     Long mappedTypeId = typeIdMap.get((long) tm.getTypeId());
                     tm.setTypeId(mappedTypeId != null ? mappedTypeId.intValue() : 1);
-                    Long newId = Backend.db().getTypeMarkService().create(tm);
+                    Long newId = BackendConnection.db().getTypeMarkService().create(tm);
                     typeMarkIdMap.put(oldId, newId);
                 }
             }
@@ -175,7 +175,7 @@ public final class ExportImportService {
                     osIdMap.put(oldId, existingId);
                 } else {
                     os.setId(0L);
-                    Long newId = Backend.db().getOSystemService().create(os);
+                    Long newId = BackendConnection.db().getOSystemService().create(os);
                     osIdMap.put(oldId, newId);
                 }
             }
@@ -197,7 +197,7 @@ public final class ExportImportService {
                     if (dev.getOsId() != null) {
                         dev.setOsId(osIdMap.get(dev.getOsId()));
                     }
-                    Long newId = Backend.db().getDeviceService().create(dev);
+                    Long newId = BackendConnection.db().getDeviceService().create(dev);
                     deviceIdMap.put(oldId, newId);
                 }
             }
@@ -209,7 +209,7 @@ public final class ExportImportService {
                     employeeIdMap.put(oldId, existingId);
                 } else {
                     emp.setId(0L);
-                    Long newId = Backend.db().getEmployeeService().create(emp);
+                    Long newId = BackendConnection.db().getEmployeeService().create(emp);
                     employeeIdMap.put(oldId, newId);
                 }
             }
@@ -221,7 +221,7 @@ public final class ExportImportService {
                     phoneIdMap.put(oldId, existingId);
                 } else {
                     phone.setId(0L);
-                    Long newId = Backend.db().getPhoneService().create(phone);
+                    Long newId = BackendConnection.db().getPhoneService().create(phone);
                     phoneIdMap.put(oldId, newId);
                 }
             }
@@ -236,7 +236,7 @@ public final class ExportImportService {
                         newDl.setBId(newLocationId);
                         newDl.setCreatedAt(dl.getCreatedAt());
                         newDl.setLastChecked(dl.getLastChecked());
-                        Backend.db().getDeviceLocationService().create(newDl);
+                        BackendConnection.db().getDeviceLocationService().create(newDl);
                     }
                 }
             }
@@ -251,7 +251,7 @@ public final class ExportImportService {
                         newEl.setBId(newLocationId);
                         newEl.setCreatedAt(el.getCreatedAt());
                         newEl.setLastChecked(el.getLastChecked());
-                        Backend.db().getEmployeeLocationService().create(newEl);
+                        BackendConnection.db().getEmployeeLocationService().create(newEl);
                     }
                 }
             }
@@ -266,7 +266,7 @@ public final class ExportImportService {
                         newLp.setBId(newPhoneId);
                         newLp.setCreatedAt(lp.getCreatedAt());
                         newLp.setLastChecked(lp.getLastChecked());
-                        Backend.db().getLocationPhoneService().create(newLp);
+                        BackendConnection.db().getLocationPhoneService().create(newLp);
                     }
                 }
             }
@@ -277,7 +277,7 @@ public final class ExportImportService {
 
     private static Long findExistingId(String tableName, String columnName, Object value) {
         if (value == null) return null;
-        try (java.sql.Connection conn = Backend.db().getConnection();
+        try (java.sql.Connection conn = BackendConnection.db().getConnection();
              java.sql.PreparedStatement stmt = conn.prepareStatement("SELECT id FROM " + tableName + " WHERE " + columnName + " = ?")) {
             stmt.setObject(1, value);
             try (java.sql.ResultSet rs = stmt.executeQuery()) {
@@ -291,7 +291,7 @@ public final class ExportImportService {
     }
 
     private static Long findExistingLocationByNameAndParent(String displayName, Long parentId) {
-        try (java.sql.Connection conn = Backend.db().getConnection();
+        try (java.sql.Connection conn = BackendConnection.db().getConnection();
              java.sql.PreparedStatement stmt = conn.prepareStatement(
                      "SELECT id FROM Location WHERE display_name = ? AND parent_id = ?")) {
             stmt.setString(1, displayName);
@@ -307,7 +307,7 @@ public final class ExportImportService {
     }
 
     private static Long findExistingEmployee(String surname, String name, String thirdname) {
-        try (java.sql.Connection conn = Backend.db().getConnection();
+        try (java.sql.Connection conn = BackendConnection.db().getConnection();
              java.sql.PreparedStatement stmt = conn.prepareStatement(
                      "SELECT id FROM Employee WHERE surname = ? AND name = ? AND (thirdname = ? OR (thirdname IS NULL AND ? IS NULL))")) {
             stmt.setString(1, surname != null ? surname : "");
@@ -325,7 +325,7 @@ public final class ExportImportService {
     }
 
     private static boolean isLinkExists(String tableName, String col1Name, Long val1, String col2Name, Long val2) {
-        try (java.sql.Connection conn = Backend.db().getConnection();
+        try (java.sql.Connection conn = BackendConnection.db().getConnection();
              java.sql.PreparedStatement stmt = conn.prepareStatement(
                      "SELECT 1 FROM " + tableName + " WHERE " + col1Name + " = ? AND " + col2Name + " = ? LIMIT 1")) {
             stmt.setLong(1, val1);
@@ -341,34 +341,34 @@ public final class ExportImportService {
     private static void importData(ExportData data) throws Exception {
         // Вставляем в правильном порядке (сначала справочники, потом сущности, потом связи)
         for (Location loc : data.locations) {
-            Backend.db().getLocationService().create(loc);
+            BackendConnection.db().getLocationService().create(loc);
         }
         for (Type type : data.types) {
-            Backend.db().getTypeService().create(type);
+            BackendConnection.db().getTypeService().create(type);
         }
         for (TypeMark tm : data.typeMarks) {
-            Backend.db().getTypeMarkService().create(tm);
+            BackendConnection.db().getTypeMarkService().create(tm);
         }
         for (OSystem os : data.osSystems) {
-            Backend.db().getOSystemService().create(os);
+            BackendConnection.db().getOSystemService().create(os);
         }
         for (Device dev : data.devices) {
-            Backend.db().getDeviceService().create(dev);
+            BackendConnection.db().getDeviceService().create(dev);
         }
         for (Employee emp : data.employees) {
-            Backend.db().getEmployeeService().create(emp);
+            BackendConnection.db().getEmployeeService().create(emp);
         }
         for (Phone phone : data.phones) {
-            Backend.db().getPhoneService().create(phone);
+            BackendConnection.db().getPhoneService().create(phone);
         }
         for (DeviceLocation dl : data.deviceLocations) {
-            Backend.db().getDeviceLocationService().create(dl);
+            BackendConnection.db().getDeviceLocationService().create(dl);
         }
         for (EmployeeLocation el : data.employeeLocations) {
-            Backend.db().getEmployeeLocationService().create(el);
+            BackendConnection.db().getEmployeeLocationService().create(el);
         }
         for (LocationPhone lp : data.locationPhones) {
-            Backend.db().getLocationPhoneService().create(lp);
+            BackendConnection.db().getLocationPhoneService().create(lp);
         }
     }
 }

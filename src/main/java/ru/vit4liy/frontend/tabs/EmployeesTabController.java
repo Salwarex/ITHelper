@@ -7,13 +7,12 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.layout.GridPane;
-import ru.vit4liy.backend.base.model.employee.Employee;
-import ru.vit4liy.backend.base.model.intersections.EmployeeLocation;
-import ru.vit4liy.backend.base.model.location.Location;
+import ru.vit4liy.base.model.employee.Employee;
+import ru.vit4liy.base.model.intersections.EmployeeLocation;
+import ru.vit4liy.base.model.location.Location;
 import ru.vit4liy.frontend.base.BaseTabController;
 import ru.vit4liy.frontend.util.AlertUtil;
-import ru.vit4liy.frontend.util.Backend;
+import ru.vit4liy.frontend.util.BackendConnection;
 import ru.vit4liy.frontend.util.DateUtil;
 import ru.vit4liy.frontend.util.EmployeeStatusUtil;
 import ru.vit4liy.frontend.util.LocationPathUtil;
@@ -97,8 +96,8 @@ public class EmployeesTabController extends BaseTabController {
 
         runAsync(() -> {
             try {
-                List<Location> allLocations = Backend.db().getLocationService().getAll();
-                List<EmployeeLocation> mappings = Backend.db().getEmployeeLocationService().getAll();
+                List<Location> allLocations = BackendConnection.db().getLocationService().getAll();
+                List<EmployeeLocation> mappings = BackendConnection.db().getEmployeeLocationService().getAll();
 
                 Map<Long, String> tempPaths = new HashMap<>();
                 for (EmployeeLocation el : mappings) {
@@ -112,13 +111,13 @@ public class EmployeesTabController extends BaseTabController {
 
                 List<Employee> result;
                 if (query == null || query.isBlank()) {
-                    result = Backend.db().getEmployeeService().getAll();
+                    result = BackendConnection.db().getEmployeeService().getAll();
                 } else {
                     String searchQuery = query.trim();
                     result = switch (mode) {
-                        case "По имени" -> Backend.db().getEmployeeService().searchEmployeesByName(searchQuery);
-                        case "По ФИО целиком" -> Backend.db().getEmployeeService().searchEmployeesByFullName(searchQuery);
-                        default -> Backend.db().getEmployeeService().searchEmployeesBySurname(searchQuery);
+                        case "По имени" -> BackendConnection.db().getEmployeeService().searchEmployeesByName(searchQuery);
+                        case "По ФИО целиком" -> BackendConnection.db().getEmployeeService().searchEmployeesByFullName(searchQuery);
+                        default -> BackendConnection.db().getEmployeeService().searchEmployeesBySurname(searchQuery);
                     };
                 }
 
@@ -165,7 +164,7 @@ public class EmployeesTabController extends BaseTabController {
         dialog.showAndWait().ifPresent(employee -> {
             runAsync(() -> {
                 try {
-                    Backend.db().getEmployeeService().create(employee);
+                    BackendConnection.db().getEmployeeService().create(employee);
                     Platform.runLater(() -> {
                         AlertUtil.info("Успех", "Сотрудник создан");
                         reload();
@@ -189,7 +188,7 @@ public class EmployeesTabController extends BaseTabController {
         dialog.showAndWait().ifPresent(updated -> {
             runAsync(() -> {
                 try {
-                    Backend.db().getEmployeeService().update(updated);
+                    BackendConnection.db().getEmployeeService().update(updated);
                     Platform.runLater(() -> {
                         AlertUtil.info("Успех", "Сотрудник обновлён");
                         reload();
@@ -215,7 +214,7 @@ public class EmployeesTabController extends BaseTabController {
 
         runAsync(() -> {
             try {
-                Backend.db().getEmployeeService().delete(emp.getId());
+                BackendConnection.db().getEmployeeService().delete(emp.getId());
                 Platform.runLater(() -> {
                     AlertUtil.info("Успех", "Сотрудник удалён");
                     reload();

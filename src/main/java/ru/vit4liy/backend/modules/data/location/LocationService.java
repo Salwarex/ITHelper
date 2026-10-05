@@ -1,6 +1,6 @@
 package ru.vit4liy.backend.modules.data.location;
 
-import ru.vit4liy.backend.base.model.location.Location;
+import ru.vit4liy.base.model.location.Location;
 import ru.vit4liy.perm.MissingPermissionException;
 import ru.vit4liy.perm.PermissionService;
 import ru.vit4liy.rsc.service.EntityService;

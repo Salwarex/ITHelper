@@ -6,19 +6,19 @@ import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
-import ru.vit4liy.backend.base.model.device.Device;
-import ru.vit4liy.backend.base.model.device.system.OSystem;
-import ru.vit4liy.backend.base.model.employee.Employee;
-import ru.vit4liy.backend.base.model.intersections.DeviceLocation;
-import ru.vit4liy.backend.base.model.intersections.EmployeeLocation;
-import ru.vit4liy.backend.base.model.intersections.LocationPhone;
-import ru.vit4liy.backend.base.model.location.Location;
-import ru.vit4liy.backend.base.model.phone.Phone;
-import ru.vit4liy.backend.base.model.type.Type;
-import ru.vit4liy.backend.base.model.typemark.TypeMark;
+import ru.vit4liy.base.model.device.Device;
+import ru.vit4liy.base.model.device.system.OSystem;
+import ru.vit4liy.base.model.employee.Employee;
+import ru.vit4liy.base.model.intersections.DeviceLocation;
+import ru.vit4liy.base.model.intersections.EmployeeLocation;
+import ru.vit4liy.base.model.intersections.LocationPhone;
+import ru.vit4liy.base.model.location.Location;
+import ru.vit4liy.base.model.phone.Phone;
+import ru.vit4liy.base.model.type.Type;
+import ru.vit4liy.base.model.typemark.TypeMark;
 import ru.vit4liy.frontend.base.BaseTabController;
 import ru.vit4liy.frontend.util.AlertUtil;
-import ru.vit4liy.frontend.util.Backend;
+import ru.vit4liy.frontend.util.BackendConnection;
 import ru.vit4liy.frontend.util.DateUtil;
 import ru.vit4liy.frontend.util.DeviceStatusUtil;
 import ru.vit4liy.frontend.util.EmployeeStatusUtil;
@@ -231,7 +231,7 @@ public class LocationsTabController extends BaseTabController {
                     Location loc = new Location();
                     loc.setDisplayName(name.trim());
                     loc.setKey(generateKey(name.trim()));
-                    Backend.db().getLocationService().create(loc);
+                    BackendConnection.db().getLocationService().create(loc);
                     Platform.runLater(this::reloadTree);
                     Platform.runLater(() -> AlertUtil.info("Успех", "Локация создана"));
                 } catch (Exception e) {
@@ -257,7 +257,7 @@ public class LocationsTabController extends BaseTabController {
                     loc.setDisplayName(name.trim());
                     loc.setKey(generateKey(name.trim()));
                     loc.setParentId(parent.getId());
-                    Backend.db().getLocationService().create(loc);
+                    BackendConnection.db().getLocationService().create(loc);
                     Platform.runLater(this::reloadTree);
                     Platform.runLater(() -> AlertUtil.info("Успех", "Дочерняя локация создана"));
                 } catch (Exception e) {
@@ -280,7 +280,7 @@ public class LocationsTabController extends BaseTabController {
             runAsync(() -> {
                 try {
                     location.setDisplayName(name.trim());
-                    Backend.db().getLocationService().update(location);
+                    BackendConnection.db().getLocationService().update(location);
                     Platform.runLater(this::reloadTree);
                     Platform.runLater(() -> AlertUtil.info("Успех", "Локация обновлена"));
                 } catch (Exception e) {
@@ -297,7 +297,7 @@ public class LocationsTabController extends BaseTabController {
         }
         runAsync(() -> {
             try {
-                Backend.db().getLocationService().delete(location.getId());
+                BackendConnection.db().getLocationService().delete(location.getId());
                 Platform.runLater(this::reloadTree);
                 Platform.runLater(() -> AlertUtil.info("Успех", "Локация удалена"));
             } catch (Exception e) {
@@ -340,7 +340,7 @@ public class LocationsTabController extends BaseTabController {
     public void reloadTree() {
         runAsync(() -> {
             try {
-                allLocations = Backend.db().getLocationService().getAll();
+                allLocations = BackendConnection.db().getLocationService().getAll();
                 Platform.runLater(() -> buildTree(allLocations));
             } catch (Exception e) {
                 handleError(e);
@@ -408,22 +408,22 @@ public class LocationsTabController extends BaseTabController {
     private void loadRelatedEntities(Location loc) {
         runAsync(() -> {
             try {
-                List<DeviceLocation> deviceLocations = Backend.db().getDeviceLocationService().findAllByIdB(loc.getId());
+                List<DeviceLocation> deviceLocations = BackendConnection.db().getDeviceLocationService().findAllByIdB(loc.getId());
                 List<Device> devices = new ArrayList<>();
                 for (DeviceLocation dl : deviceLocations) {
-                    Backend.db().getDeviceService().getById(dl.getAId()).ifPresent(devices::add);
+                    BackendConnection.db().getDeviceService().getById(dl.getAId()).ifPresent(devices::add);
                 }
 
-                List<EmployeeLocation> employeeLocations = Backend.db().getEmployeeLocationService().findAllByIdB(loc.getId());
+                List<EmployeeLocation> employeeLocations = BackendConnection.db().getEmployeeLocationService().findAllByIdB(loc.getId());
                 List<Employee> employees = new ArrayList<>();
                 for (EmployeeLocation el : employeeLocations) {
-                    Backend.db().getEmployeeService().getById(el.getAId()).ifPresent(employees::add);
+                    BackendConnection.db().getEmployeeService().getById(el.getAId()).ifPresent(employees::add);
                 }
 
-                List<LocationPhone> locationPhones = Backend.db().getLocationPhoneService().findAllByIdA(loc.getId());
+                List<LocationPhone> locationPhones = BackendConnection.db().getLocationPhoneService().findAllByIdA(loc.getId());
                 List<Phone> phones = new ArrayList<>();
                 for (LocationPhone lp : locationPhones) {
-                    Backend.db().getPhoneService().getById(lp.getBId()).ifPresent(phones::add);
+                    BackendConnection.db().getPhoneService().getById(lp.getBId()).ifPresent(phones::add);
                 }
 
                 Platform.runLater(() -> {
@@ -460,17 +460,17 @@ public class LocationsTabController extends BaseTabController {
     private void showDeviceDetails(Device device) {
         runAsync(() -> {
             try {
-                String typeName = Backend.db().getTypeService().getById(device.getTypeId())
+                String typeName = BackendConnection.db().getTypeService().getById(device.getTypeId())
                         .map(Type::getDisplayName).orElse("ID: " + device.getTypeId());
 
                 String markName = "—";
                 if (device.getTypeMarkId() != null) {
-                    markName = Backend.db().getTypeMarkService().getById(device.getTypeMarkId())
+                    markName = BackendConnection.db().getTypeMarkService().getById(device.getTypeMarkId())
                             .map(TypeMark::getDisplayName).orElse("ID: " + device.getTypeMarkId());
                 }
                 String osName = "—";
                 if (device.getOsId() != null) {
-                    osName = Backend.db().getOSystemService().getById(device.getOsId())
+                    osName = BackendConnection.db().getOSystemService().getById(device.getOsId())
                             .map(OSystem::getDisplayName).orElse("ID: " + device.getOsId());
                 }
 
@@ -604,8 +604,8 @@ public class LocationsTabController extends BaseTabController {
     private void attachDevice(Location location) {
         runAsync(() -> {
             try {
-                List<Device> allDevices = Backend.db().getDeviceService().getAll();
-                List<DeviceLocation> allDeviceLocations = Backend.db().getDeviceLocationService().getAll();
+                List<Device> allDevices = BackendConnection.db().getDeviceService().getAll();
+                List<DeviceLocation> allDeviceLocations = BackendConnection.db().getDeviceLocationService().getAll();
 
                 Set<Long> attachedDeviceIds = allDeviceLocations.stream()
                         .map(DeviceLocation::getAId)
@@ -630,7 +630,7 @@ public class LocationsTabController extends BaseTabController {
                             dl.setCreatedAt(System.currentTimeMillis());
                             dl.setLastChecked(System.currentTimeMillis());
                             try {
-                                Backend.db().getDeviceLocationService().create(dl);
+                                BackendConnection.db().getDeviceLocationService().create(dl);
                             } catch (SQLException e) {
                                 throw new RuntimeException(e);
                             } catch (MissingPermissionException e) {
@@ -646,8 +646,8 @@ public class LocationsTabController extends BaseTabController {
     private void attachEmployee(Location location) {
         runAsync(() -> {
             try {
-                List<Employee> allEmployees = Backend.db().getEmployeeService().getAll();
-                List<EmployeeLocation> allEmployeeLocations = Backend.db().getEmployeeLocationService().getAll();
+                List<Employee> allEmployees = BackendConnection.db().getEmployeeService().getAll();
+                List<EmployeeLocation> allEmployeeLocations = BackendConnection.db().getEmployeeLocationService().getAll();
 
                 Set<Long> attachedEmployeeIds = allEmployeeLocations.stream()
                         .map(EmployeeLocation::getAId)
@@ -675,7 +675,7 @@ public class LocationsTabController extends BaseTabController {
                             el.setCreatedAt(System.currentTimeMillis());
                             el.setLastChecked(System.currentTimeMillis());
                             try {
-                                Backend.db().getEmployeeLocationService().create(el);
+                                BackendConnection.db().getEmployeeLocationService().create(el);
                             } catch (SQLException e) {
                                 throw new RuntimeException(e);
                             } catch (MissingPermissionException e) {
@@ -691,8 +691,8 @@ public class LocationsTabController extends BaseTabController {
     private void attachPhone(Location location) {
         runAsync(() -> {
             try {
-                List<Phone> allPhones = Backend.db().getPhoneService().getAll();
-                List<LocationPhone> allLocationPhones = Backend.db().getLocationPhoneService().getAll();
+                List<Phone> allPhones = BackendConnection.db().getPhoneService().getAll();
+                List<LocationPhone> allLocationPhones = BackendConnection.db().getLocationPhoneService().getAll();
 
                 Set<Long> attachedPhoneIds = allLocationPhones.stream()
                         .map(LocationPhone::getBId)
@@ -718,7 +718,7 @@ public class LocationsTabController extends BaseTabController {
                             lp.setCreatedAt(System.currentTimeMillis());
                             lp.setLastChecked(System.currentTimeMillis());
                             try {
-                                Backend.db().getLocationPhoneService().create(lp);
+                                BackendConnection.db().getLocationPhoneService().create(lp);
                             } catch (SQLException e) {
                                 throw new RuntimeException(e);
                             } catch (MissingPermissionException e) {
@@ -735,7 +735,7 @@ public class LocationsTabController extends BaseTabController {
         if (currentSelectedLocation == null) return;
         runAsync(() -> {
             try {
-                Backend.db().getDeviceLocationService().delete(
+                BackendConnection.db().getDeviceLocationService().delete(
                         new ru.vit4liy.rsc.misc.MultiId<>(device.getId(), currentSelectedLocation.getId())
                 );
                 Platform.runLater(() -> {
@@ -752,7 +752,7 @@ public class LocationsTabController extends BaseTabController {
         if (currentSelectedLocation == null) return;
         runAsync(() -> {
             try {
-                Backend.db().getEmployeeLocationService().delete(
+                BackendConnection.db().getEmployeeLocationService().delete(
                         new ru.vit4liy.rsc.misc.MultiId<>(employee.getId(), currentSelectedLocation.getId())
                 );
                 Platform.runLater(() -> {
@@ -769,7 +769,7 @@ public class LocationsTabController extends BaseTabController {
         if (currentSelectedLocation == null) return;
         runAsync(() -> {
             try {
-                Backend.db().getLocationPhoneService().delete(
+                BackendConnection.db().getLocationPhoneService().delete(
                         new ru.vit4liy.rsc.misc.MultiId<>(currentSelectedLocation.getId(), phone.getId())
                 );
                 Platform.runLater(() -> {

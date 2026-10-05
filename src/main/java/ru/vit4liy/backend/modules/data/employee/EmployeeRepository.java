@@ -1,6 +1,6 @@
 package ru.vit4liy.backend.modules.data.employee;
 
-import ru.vit4liy.backend.base.model.employee.Employee;
+import ru.vit4liy.base.model.employee.Employee;
 import ru.vit4liy.rsc.DatabaseManager;
 import ru.vit4liy.rsc.repository.EntityRepository;
 

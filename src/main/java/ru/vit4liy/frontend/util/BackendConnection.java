@@ -2,18 +2,18 @@ package ru.vit4liy.frontend.util;
 
 import javafx.application.Platform;
 import ru.vit4liy.App;
-import ru.vit4liy.backend.modules.CommonModuleLoader;
+import ru.vit4liy.backend.modules.BackendModuleLoader;
 import ru.vit4liy.backend.modules.data.DatabaseModule;
 import ru.vit4liy.perm.PermissionModule;
 
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 
-public final class Backend {
-    private Backend() {}
+public final class BackendConnection {
+    private BackendConnection() {}
 
-    public static CommonModuleLoader loader() {
-        return (CommonModuleLoader) App.getInstance().getModuleLoader();
+    public static BackendModuleLoader loader() {
+        return (BackendModuleLoader) App.getInstance().getModuleLoader();
     }
 
     public static DatabaseModule db() {

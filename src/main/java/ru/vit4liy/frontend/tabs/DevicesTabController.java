@@ -7,16 +7,16 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import ru.vit4liy.backend.base.model.device.Device;
-import ru.vit4liy.backend.base.model.device.system.OSystem;
-import ru.vit4liy.backend.base.model.intersections.DeviceLocation;
-import ru.vit4liy.backend.base.model.location.Location;
-import ru.vit4liy.backend.base.model.type.Type;
+import ru.vit4liy.base.model.device.Device;
+import ru.vit4liy.base.model.device.system.OSystem;
+import ru.vit4liy.base.model.intersections.DeviceLocation;
+import ru.vit4liy.base.model.location.Location;
+import ru.vit4liy.base.model.type.Type;
 import ru.vit4liy.frontend.base.BaseTabController;
 import ru.vit4liy.frontend.dialogs.DeviceCreateDialog;
 import ru.vit4liy.frontend.dialogs.DeviceEditDialog;
 import ru.vit4liy.frontend.util.AlertUtil;
-import ru.vit4liy.frontend.util.Backend;
+import ru.vit4liy.frontend.util.BackendConnection;
 import ru.vit4liy.frontend.util.DeviceStatusUtil;
 import ru.vit4liy.frontend.util.LocationPathUtil;
 
@@ -101,7 +101,7 @@ public class DevicesTabController extends BaseTabController {
         dialog.showAndWait().ifPresent(device -> {
             runAsync(() -> {
                 try {
-                    Backend.db().getDeviceService().create(device);
+                    BackendConnection.db().getDeviceService().create(device);
                     Platform.runLater(() -> {
                         AlertUtil.info("Успех", "Устройство создано");
                         reload();
@@ -121,7 +121,7 @@ public class DevicesTabController extends BaseTabController {
         dialog.showAndWait().ifPresent(updated -> {
             runAsync(() -> {
                 try {
-                    Backend.db().getDeviceService().update(updated);
+                    BackendConnection.db().getDeviceService().update(updated);
                     Platform.runLater(() -> {
                         AlertUtil.info("Успех", "Устройство обновлено");
                         reload();
@@ -146,7 +146,7 @@ public class DevicesTabController extends BaseTabController {
         }
         runAsync(() -> {
             try {
-                Backend.db().getDeviceService().delete(d.getId());
+                BackendConnection.db().getDeviceService().delete(d.getId());
                 Platform.runLater(() -> {
                     AlertUtil.info("Успех", "Устройство удалено");
                     reload();
@@ -163,20 +163,20 @@ public class DevicesTabController extends BaseTabController {
     public void reload() {
         runAsync(() -> {
             try {
-                List<Type> types = Backend.db().getTypeService().getAll();
+                List<Type> types = BackendConnection.db().getTypeService().getAll();
                 Map<Long, String> tempTypeNameMap = new HashMap<>();
                 for (Type t : types) {
                     tempTypeNameMap.put(t.getId(), t.getDisplayName());
                 }
 
-                List<OSystem> osSystems = Backend.db().getOSystemService().getAll();
+                List<OSystem> osSystems = BackendConnection.db().getOSystemService().getAll();
                 Map<Long, String> tempOsNameMap = new HashMap<>();
                 for (OSystem os : osSystems) {
                     tempOsNameMap.put(os.getId(), os.getDisplayName());
                 }
 
-                List<Location> allLocations = Backend.db().getLocationService().getAll();
-                List<DeviceLocation> mappings = Backend.db().getDeviceLocationService().getAll();
+                List<Location> allLocations = BackendConnection.db().getLocationService().getAll();
+                List<DeviceLocation> mappings = BackendConnection.db().getDeviceLocationService().getAll();
                 Map<Long, String> tempLocationPaths = new HashMap<>();
 
                 for (DeviceLocation dl : mappings) {
@@ -195,20 +195,20 @@ public class DevicesTabController extends BaseTabController {
 
                 List<Device> result;
                 if (query != null && !query.isBlank()) {
-                    result = Backend.db().getDeviceService().getDeviceBySerial(query.trim())
+                    result = BackendConnection.db().getDeviceService().getDeviceBySerial(query.trim())
                             .map(List::of).orElse(List.of());
                 } else if (ipFilter != null && !ipFilter.isBlank()) {
-                    result = Backend.db().getDeviceService().getDevicesByIp(ipFilter.trim());
+                    result = BackendConnection.db().getDeviceService().getDevicesByIp(ipFilter.trim());
                 } else if (osFilter != null && !osFilter.equals("Все ОС")) {
                     OSystem selectedOs = osSystems.stream()
                             .filter(os -> os.getDisplayName().equals(osFilter))
                             .findFirst().orElse(null);
-                    result = selectedOs != null ? Backend.db().getDeviceService().getDevicesByOsId(selectedOs.getId()) : List.of();
+                    result = selectedOs != null ? BackendConnection.db().getDeviceService().getDevicesByOsId(selectedOs.getId()) : List.of();
                 } else if (statusFilter != null && !statusFilter.equals("Все статусы")) {
                     String dbStatus = DeviceStatusUtil.getDbKey(statusFilter);
-                    result = Backend.db().getDeviceService().getDevicesByStatus(dbStatus);
+                    result = BackendConnection.db().getDeviceService().getDevicesByStatus(dbStatus);
                 } else {
-                    result = Backend.db().getDeviceService().getAll();
+                    result = BackendConnection.db().getDeviceService().getAll();
                 }
 
                 Platform.runLater(() -> {

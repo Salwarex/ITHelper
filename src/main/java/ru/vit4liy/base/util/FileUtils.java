@@ -1,4 +1,4 @@
-package ru.vit4liy.util; // Или твой пакет
+package ru.vit4liy.base.util; // Или твой пакет
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -29,16 +29,16 @@ public class FileUtils {
         try {
             Files.createDirectories(BASE_DIR);
             System.setProperty("user.dir", BASE_DIR.toAbsolutePath().toString());
-            System.out.println("✅ Базовая директория: " + BASE_DIR.toAbsolutePath());
+            System.out.println("Base directory: " + BASE_DIR.toAbsolutePath());
         } catch (IOException e) {
-            System.err.println("❌ Ошибка создания директории: " + e.getMessage());
+            System.err.println("Directory creating error: " + e.getMessage());
         }
 
         isInitialized = true;
     }
 
     public static Path getBaseDir() {
-        if (!isInitialized) throw new IllegalStateException("FileUtils не инициализирован! Вызови initDirectories() первым.");
+        if (!isInitialized) throw new IllegalStateException("FileUtils not initialized!");
         return BASE_DIR;
     }
 

@@ -1,4 +1,4 @@
-package ru.vit4liy.backend.base.model.employee;
+package ru.vit4liy.base.model.employee;
 
 import ru.vit4liy.rsc.entity.DatabaseEntity;
 

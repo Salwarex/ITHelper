@@ -8,15 +8,16 @@ import ru.vit4liy.it72h.lib.logger.output.Output;
 import ru.vit4liy.it72h.lib.logger.output.OutputPreset;
 import ru.vit4liy.modular.ModuleLoader;
 import ru.vit4liy.perm.PermissionModule;
-import ru.vit4liy.util.FileUtils;
+import ru.vit4liy.base.util.FileUtils;
 
 import java.util.concurrent.ExecutorService;
 
-public class CommonModuleLoader extends ModuleLoader {
+public class BackendModuleLoader extends ModuleLoader {
     private static final Config CONFIG = App.getConfig();
     private static final Logger LOGGER = App.getLogger();
+    private boolean done = false;
 
-    public CommonModuleLoader(ExecutorService pool, boolean pluginsIncluded){
+    public BackendModuleLoader(ExecutorService pool, boolean pluginsIncluded){
         super(pool, pluginsIncluded);
     }
 
@@ -32,6 +33,7 @@ public class CommonModuleLoader extends ModuleLoader {
                 CONFIG.getString("database.user", "root"),
                 CONFIG.getString("database.pass", "")
         ));
+        done = true;
     }
 
     public DatabaseModule getDatabaseModule(){
@@ -46,5 +48,9 @@ public class CommonModuleLoader extends ModuleLoader {
             LOGGER.out(Output.of(OutputPreset.ERROR, ""));
         }
         return null;
+    }
+
+    public boolean isDone() {
+        return done;
     }
 }

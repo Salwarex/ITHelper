@@ -1,4 +1,4 @@
-package ru.vit4liy.backend.base.model.device;
+package ru.vit4liy.base.model.device;
 
 import ru.vit4liy.rsc.entity.DatabaseEntity;
 

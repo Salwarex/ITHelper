@@ -1,6 +1,6 @@
 package ru.vit4liy.backend.modules.data.typemark;
 
-import ru.vit4liy.backend.base.model.typemark.TypeMark;
+import ru.vit4liy.base.model.typemark.TypeMark;
 import ru.vit4liy.perm.PermissionService;
 import ru.vit4liy.rsc.service.EntityService;
 

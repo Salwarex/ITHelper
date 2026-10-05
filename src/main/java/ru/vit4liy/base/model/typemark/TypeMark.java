@@ -1,4 +1,4 @@
-package ru.vit4liy.backend.base.model.typemark;
+package ru.vit4liy.base.model.typemark;
 
 import ru.vit4liy.rsc.entity.DatabaseEntity;
 

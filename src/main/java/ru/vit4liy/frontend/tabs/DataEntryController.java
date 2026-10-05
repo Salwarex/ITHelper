@@ -7,21 +7,20 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
 import javafx.util.StringConverter;
-import ru.vit4liy.backend.base.model.device.Device;
-import ru.vit4liy.backend.base.model.device.system.OSystem;
-import ru.vit4liy.backend.base.model.employee.Employee;
-import ru.vit4liy.backend.base.model.intersections.DeviceLocation;
-import ru.vit4liy.backend.base.model.intersections.EmployeeLocation;
-import ru.vit4liy.backend.base.model.intersections.LocationPhone;
-import ru.vit4liy.backend.base.model.location.Location;
-import ru.vit4liy.backend.base.model.phone.Phone;
-import ru.vit4liy.backend.base.model.type.Type;
-import ru.vit4liy.backend.base.model.typemark.TypeMark;
+import ru.vit4liy.base.model.device.Device;
+import ru.vit4liy.base.model.device.system.OSystem;
+import ru.vit4liy.base.model.employee.Employee;
+import ru.vit4liy.base.model.intersections.DeviceLocation;
+import ru.vit4liy.base.model.intersections.EmployeeLocation;
+import ru.vit4liy.base.model.intersections.LocationPhone;
+import ru.vit4liy.base.model.location.Location;
+import ru.vit4liy.base.model.phone.Phone;
+import ru.vit4liy.base.model.type.Type;
+import ru.vit4liy.base.model.typemark.TypeMark;
 import ru.vit4liy.frontend.base.BaseTabController;
 import ru.vit4liy.frontend.util.AlertUtil;
-import ru.vit4liy.frontend.util.Backend;
+import ru.vit4liy.frontend.util.BackendConnection;
 import ru.vit4liy.frontend.util.DeviceStatusUtil;
 import ru.vit4liy.perm.MissingPermissionException;
 
@@ -83,10 +82,10 @@ public class DataEntryController extends BaseTabController {
     public void loadInitialData() {
         runAsync(() -> {
             try {
-                allLocations = Backend.db().getLocationService().getAll();
-                allTypes = Backend.db().getTypeService().getAll();
-                allMarks = Backend.db().getTypeMarkService().getAll();
-                allOsSystems = Backend.db().getOSystemService().getAll();
+                allLocations = BackendConnection.db().getLocationService().getAll();
+                allTypes = BackendConnection.db().getTypeService().getAll();
+                allMarks = BackendConnection.db().getTypeMarkService().getAll();
+                allOsSystems = BackendConnection.db().getOSystemService().getAll();
 
                 Platform.runLater(() -> {
                     buildLocationCascade(deviceLocationCascade, deviceLocationBoxes, null);
@@ -265,7 +264,7 @@ public class DataEntryController extends BaseTabController {
                 resolved.setParentId(currentParent != null ? currentParent.getId() : null);
                 resolved.setKey("LOC-" + typedName.toUpperCase().replaceAll("[^A-ZА-Я0-9]", "_") + "-" + System.currentTimeMillis() % 10000);
 
-                long newId = Backend.db().getLocationService().create(resolved);
+                long newId = BackendConnection.db().getLocationService().create(resolved);
                 resolved.setId(newId);
 
                 allLocations.add(resolved);
@@ -305,7 +304,7 @@ public class DataEntryController extends BaseTabController {
                             type = new Type();
                             type.setDisplayName(typeName);
                             type.setCreatedAt(System.currentTimeMillis());
-                            long typeId = Backend.db().getTypeService().create(type);
+                            long typeId = BackendConnection.db().getTypeService().create(type);
                             type.setId(typeId);
                             allTypes.add(type);
                         }
@@ -332,7 +331,7 @@ public class DataEntryController extends BaseTabController {
                             mark.setDisplayName(markName);
                             mark.setTypeId(type.getId().intValue());
                             mark.setCreatedAt(System.currentTimeMillis());
-                            long markId = Backend.db().getTypeMarkService().create(mark);
+                            long markId = BackendConnection.db().getTypeMarkService().create(mark);
                             mark.setId(markId);
                             allMarks.add(mark);
                         }
@@ -350,7 +349,7 @@ public class DataEntryController extends BaseTabController {
                         if (os == null) {
                             os = new OSystem();
                             os.setDisplayName(osName);
-                            long osId = Backend.db().getOSystemService().create(os);
+                            long osId = BackendConnection.db().getOSystemService().create(os);
                             os.setId(osId);
                             allOsSystems.add(os);
                         }
@@ -367,14 +366,14 @@ public class DataEntryController extends BaseTabController {
                 device.setDescription(tfDeviceDescription.getText().trim());
                 device.setLastChecked(System.currentTimeMillis());
 
-                long deviceId = Backend.db().getDeviceService().create(device);
+                long deviceId = BackendConnection.db().getDeviceService().create(device);
 
                 DeviceLocation dl = new DeviceLocation();
                 dl.setAId(deviceId);
                 dl.setBId(finalLocation.getId());
                 dl.setCreatedAt(System.currentTimeMillis());
                 dl.setLastChecked(System.currentTimeMillis());
-                Backend.db().getDeviceLocationService().create(dl);
+                BackendConnection.db().getDeviceLocationService().create(dl);
 
                 Platform.runLater(() -> {
                     AlertUtil.info("Успех", "Устройство успешно добавлено");
@@ -452,14 +451,14 @@ public class DataEntryController extends BaseTabController {
                 emp.setLastChecked(now);
                 emp.setPhone(tfEmployeePhone.getText().isBlank() ? null : tfEmployeePhone.getText().trim());
 
-                long empId = Backend.db().getEmployeeService().create(emp);
+                long empId = BackendConnection.db().getEmployeeService().create(emp);
 
                 EmployeeLocation el = new EmployeeLocation();
                 el.setAId(empId);
                 el.setBId(finalLocation.getId());
                 el.setCreatedAt(now);
                 el.setLastChecked(now);
-                Backend.db().getEmployeeLocationService().create(el);
+                BackendConnection.db().getEmployeeLocationService().create(el);
 
                 Platform.runLater(() -> {
                     AlertUtil.info("Успех", "Сотрудник успешно добавлен");
@@ -518,14 +517,14 @@ public class DataEntryController extends BaseTabController {
                 phone.setIp(tfPhoneIp.getText().isBlank() ? null : tfPhoneIp.getText().trim());
                 phone.setLastChecked(System.currentTimeMillis());
 
-                long phoneId = Backend.db().getPhoneService().create(phone);
+                long phoneId = BackendConnection.db().getPhoneService().create(phone);
 
                 LocationPhone lp = new LocationPhone();
                 lp.setAId(finalLocation.getId());
                 lp.setBId(phoneId);
                 lp.setCreatedAt(System.currentTimeMillis());
                 lp.setLastChecked(System.currentTimeMillis());
-                Backend.db().getLocationPhoneService().create(lp);
+                BackendConnection.db().getLocationPhoneService().create(lp);
 
                 Platform.runLater(() -> {
                     AlertUtil.info("Успех", "Телефон успешно добавлен");

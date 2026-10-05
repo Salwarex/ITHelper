@@ -3,7 +3,7 @@ package ru.vit4liy.frontend.dialogs;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
-import ru.vit4liy.backend.base.model.employee.Employee;
+import ru.vit4liy.base.model.employee.Employee;
 import ru.vit4liy.frontend.util.AlertUtil;
 
 public class EmployeeEditDialog extends Dialog<Employee> {

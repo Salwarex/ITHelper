@@ -1,6 +1,6 @@
 package ru.vit4liy.backend.modules.data.location;
 
-import ru.vit4liy.backend.base.model.location.Location;
+import ru.vit4liy.base.model.location.Location;
 import ru.vit4liy.rsc.DatabaseManager;
 import ru.vit4liy.rsc.repository.EntityRepository;
 

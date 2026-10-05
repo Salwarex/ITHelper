@@ -1,4 +1,4 @@
-package ru.vit4liy.backend.base.model.intersections;
+package ru.vit4liy.base.model.intersections;
 
 
 import ru.vit4liy.rsc.entity.IntersectionEntity;

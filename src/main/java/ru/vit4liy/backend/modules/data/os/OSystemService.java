@@ -1,6 +1,6 @@
 package ru.vit4liy.backend.modules.data.os;
 
-import ru.vit4liy.backend.base.model.device.system.OSystem;
+import ru.vit4liy.base.model.device.system.OSystem;
 import ru.vit4liy.perm.PermissionService;
 import ru.vit4liy.rsc.service.EntityService;
 
