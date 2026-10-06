@@ -1,5 +1,6 @@
 package ru.vit4liy.backend.modules.data.location;
 
+import ru.vit4liy.base.bus.services.LocationBusService;
 import ru.vit4liy.base.model.location.Location;
 import ru.vit4liy.perm.MissingPermissionException;
 import ru.vit4liy.perm.PermissionService;
@@ -9,7 +10,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
-public class LocationService extends EntityService<Location> {
+public class LocationService extends EntityService<Location> implements LocationBusService {
     private final LocationRepository locationRepository;
 
     public LocationService(LocationRepository locationRepository, PermissionService permissionService) {

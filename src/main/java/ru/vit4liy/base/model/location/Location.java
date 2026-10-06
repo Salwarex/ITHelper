@@ -1,15 +1,19 @@
 package ru.vit4liy.base.model.location;
 
+import ru.vit4liy.base.distribution.ForeignId;
+import ru.vit4liy.base.distribution.PrimaryId;
 import ru.vit4liy.rsc.entity.DatabaseEntity;
 
+import java.util.Objects;
+
 public class Location implements DatabaseEntity {
-    private long id;
+    @PrimaryId private long locationId;
     private String key;
-    private Long parentId;
+    @ForeignId(foreignClass = Location.class) private Long parentId;
     private String displayName;
 
-    public Location(long id, String key, Long parentId, String displayName) {
-        this.id = id;
+    public Location(long locationId, String key, Long parentId, String displayName) {
+        this.locationId = locationId;
         this.key = key;
         this.parentId = parentId;
         this.displayName = displayName;
@@ -19,16 +23,16 @@ public class Location implements DatabaseEntity {
     }
 
     public Long getId() {
-        return id;
+        return locationId;
     }
 
     @Override
     public void setId(Long aLong) {
-        this.id = aLong;
+        this.locationId = aLong;
     }
 
     public void setId(long id) {
-        this.id = id;
+        this.locationId = id;
     }
 
     public String getKey() {
@@ -53,5 +57,18 @@ public class Location implements DatabaseEntity {
 
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) return true;
+        if (object == null || getClass() != object.getClass()) return false;
+        Location location = (Location) object;
+        return Objects.equals(key, location.key) && Objects.equals(displayName, location.displayName);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(key, displayName);
     }
 }

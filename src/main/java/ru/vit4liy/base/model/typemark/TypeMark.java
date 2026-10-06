@@ -1,15 +1,19 @@
 package ru.vit4liy.base.model.typemark;
 
+import ru.vit4liy.base.distribution.ForeignId;
+import ru.vit4liy.base.distribution.PrimaryId;
 import ru.vit4liy.rsc.entity.DatabaseEntity;
 
+import java.util.Objects;
+
 public class TypeMark implements DatabaseEntity {
-    private long id;
-    private long typeId;
+    @PrimaryId private long typeMarkId;
+    @ForeignId(foreignClass = TypeMark.class) private long typeId;
     private String displayName;
     private long createdAt;
 
-    public TypeMark(long id, long typeId, String displayName, long createdAt) {
-        this.id = id;
+    public TypeMark(long typeMarkId, long typeId, String displayName, long createdAt) {
+        this.typeMarkId = typeMarkId;
         this.typeId = typeId;
         this.displayName = displayName;
         this.createdAt = createdAt;
@@ -19,16 +23,16 @@ public class TypeMark implements DatabaseEntity {
     }
 
     public Long getId() {
-        return id;
+        return typeMarkId;
     }
 
     @Override
     public void setId(Long aLong) {
-        this.id = aLong;
+        this.typeMarkId = aLong;
     }
 
     public void setId(long id) {
-        this.id = id;
+        this.typeMarkId = id;
     }
 
     public long getTypeId() {
@@ -53,5 +57,18 @@ public class TypeMark implements DatabaseEntity {
 
     public void setCreatedAt(long createdAt) {
         this.createdAt = createdAt;
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) return true;
+        if (object == null || getClass() != object.getClass()) return false;
+        TypeMark typeMark = (TypeMark) object;
+        return Objects.equals(displayName, typeMark.displayName);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(displayName);
     }
 }

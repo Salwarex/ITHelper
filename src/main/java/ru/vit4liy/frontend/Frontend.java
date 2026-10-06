@@ -10,7 +10,7 @@ import ru.vit4liy.App;
 import ru.vit4liy.base.util.Log;
 import ru.vit4liy.frontend.dialogs.ImportFileDialog;
 import ru.vit4liy.frontend.util.AlertUtil;
-import ru.vit4liy.frontend.util.BackendConnection;
+import ru.vit4liy.frontend.util.ApplicationFeatures;
 import ru.vit4liy.frontend.util.ExportImportService;
 import ru.vit4liy.modular.Module;
 import ru.vit4liy.modular.ModuleLoader;
@@ -25,7 +25,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
 public class Frontend extends Module {
-    private final static String TITLE = "ItHelper Beta, версия 0.15.2 — Инструмент сисадмина";
+    private final static String TITLE = "ItHelper Beta, версия 0.16 — Инструмент сисадмина";
 
     private final ExecutorService pool;
     private MainController mainController;
@@ -171,7 +171,7 @@ public class Frontend extends Module {
             dialog.initOwner(primaryStage);
         }
         dialog.showAndWait().ifPresent(action -> {
-            BackendConnection.runAsync(() -> {
+            ApplicationFeatures.runAsync(() -> {
                 try {
                     File file = new File(filePath);
                     if (!file.exists()) {

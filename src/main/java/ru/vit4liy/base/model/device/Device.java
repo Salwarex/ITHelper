@@ -1,20 +1,27 @@
 package ru.vit4liy.base.model.device;
 
+import ru.vit4liy.base.distribution.ForeignId;
+import ru.vit4liy.base.distribution.PrimaryId;
+import ru.vit4liy.base.model.device.system.OSystem;
+import ru.vit4liy.base.model.type.Type;
+import ru.vit4liy.base.model.typemark.TypeMark;
 import ru.vit4liy.rsc.entity.DatabaseEntity;
 
+import java.util.Objects;
+
 public class Device implements DatabaseEntity {
-    private long id;
-    private int typeId;
-    private Integer typeMarkId;
-    private Long osId;
+    @PrimaryId private long deviceId;
+    @ForeignId(foreignClass = Type.class) private int typeId;
+    @ForeignId(foreignClass = TypeMark.class) private Integer typeMarkId;
+    @ForeignId(foreignClass = OSystem.class) private Long osId;
     private String deviceSerial;
     private String description;
     private String status;
     private String ip;
     private long lastChecked;
 
-    public Device(long id, int typeId, Integer typeMarkId, Long osId, String deviceSerial, String description, String status, String ip, long lastChecked) {
-        this.id = id;
+    public Device(long deviceId, int typeId, Integer typeMarkId, Long osId, String deviceSerial, String description, String status, String ip, long lastChecked) {
+        this.deviceId = deviceId;
         this.typeId = typeId;
         this.typeMarkId = typeMarkId;
         this.deviceSerial = deviceSerial;
@@ -29,16 +36,16 @@ public class Device implements DatabaseEntity {
     }
 
     public Long getId() {
-        return id;
+        return deviceId;
     }
 
     @Override
     public void setId(Long aLong) {
-        this.id = aLong;
+        this.deviceId = aLong;
     }
 
     public void setId(long id) {
-        this.id = id;
+        this.deviceId = id;
     }
 
     public int getTypeId() {
@@ -103,5 +110,18 @@ public class Device implements DatabaseEntity {
 
     public void setIp(String ip) {
         this.ip = ip;
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) return true;
+        if (object == null || getClass() != object.getClass()) return false;
+        Device device = (Device) object;
+        return deviceId == device.deviceId && typeId == device.typeId && lastChecked == device.lastChecked && Objects.equals(typeMarkId, device.typeMarkId) && Objects.equals(osId, device.osId) && Objects.equals(deviceSerial, device.deviceSerial) && Objects.equals(description, device.description) && Objects.equals(status, device.status) && Objects.equals(ip, device.ip);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(deviceId, typeId, typeMarkId, osId, deviceSerial, description, status, ip, lastChecked);
     }
 }

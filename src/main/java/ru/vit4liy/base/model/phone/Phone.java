@@ -1,16 +1,19 @@
 package ru.vit4liy.base.model.phone;
 
+import ru.vit4liy.base.distribution.PrimaryId;
 import ru.vit4liy.rsc.entity.DatabaseEntity;
 
+import java.util.Objects;
+
 public class Phone implements DatabaseEntity {
-    private long id;
+    @PrimaryId private long phoneId;
     private String corpPhoneNumber;
     private String publicPhoneNumber;
     private String ip;
     private long lastChecked;
 
-    public Phone(long id, String corpPhoneNumber, String publicPhoneNumber, String ip, long lastChecked) {
-        this.id = id;
+    public Phone(long phoneId, String corpPhoneNumber, String publicPhoneNumber, String ip, long lastChecked) {
+        this.phoneId = phoneId;
         this.corpPhoneNumber = corpPhoneNumber;
         this.publicPhoneNumber = publicPhoneNumber;
         this.lastChecked = lastChecked;
@@ -20,16 +23,16 @@ public class Phone implements DatabaseEntity {
     }
 
     public Long getId() {
-        return id;
+        return phoneId;
     }
 
     @Override
     public void setId(Long aLong) {
-        this.id = aLong;
+        this.phoneId = aLong;
     }
 
     public void setId(long id) {
-        this.id = id;
+        this.phoneId = id;
     }
 
     public String getCorpPhoneNumber() {
@@ -62,5 +65,18 @@ public class Phone implements DatabaseEntity {
 
     public void setIp(String ip) {
         this.ip = ip;
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) return true;
+        if (object == null || getClass() != object.getClass()) return false;
+        Phone phone = (Phone) object;
+        return Objects.equals(corpPhoneNumber, phone.corpPhoneNumber);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(corpPhoneNumber);
     }
 }

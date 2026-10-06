@@ -6,6 +6,7 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
+import ru.vit4liy.base.util.Log;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -21,6 +22,7 @@ public final class AlertUtil {
             alert.setHeaderText(null);
             alert.setContentText(message);
             alert.showAndWait();
+            Log.out("Sending info: %s : %s".formatted(title, message));
         });
     }
 
@@ -31,6 +33,7 @@ public final class AlertUtil {
             alert.setHeaderText("Произошла ошибка");
             alert.setContentText(message);
             alert.showAndWait();
+            Log.err("%s: %s".formatted(title, message));
         });
     }
 
@@ -56,6 +59,8 @@ public final class AlertUtil {
             content.add(area, 0, 0);
             alert.getDialogPane().setExpandableContent(content);
             alert.showAndWait();
+
+            Log.err("%s: %s, %s".formatted(title, t.getMessage(), t.getStackTrace()));
         });
     }
 

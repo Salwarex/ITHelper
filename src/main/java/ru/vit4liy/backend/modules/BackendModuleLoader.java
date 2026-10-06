@@ -2,6 +2,7 @@ package ru.vit4liy.backend.modules;
 
 import ru.vit4liy.App;
 import ru.vit4liy.backend.modules.data.DatabaseModule;
+import ru.vit4liy.base.util.Log;
 import ru.vit4liy.it72h.lib.config.Config;
 import ru.vit4liy.it72h.lib.logger.log.Logger;
 import ru.vit4liy.it72h.lib.logger.output.Output;
@@ -23,7 +24,9 @@ public class BackendModuleLoader extends ModuleLoader {
 
     @Override
     protected void loadStandardModules(){
+        Log.out("Loading backend modules...");
         modules.put(PermissionModule.class, new PermissionModule(this, FileUtils.getBaseDir()));
+        Log.out("Permission module loaded successfully!");
         modules.put(DatabaseModule.class, new DatabaseModule(
                 this,
                 CONFIG.getString("database.type", "SQLite").equalsIgnoreCase("MySQL"),
@@ -33,6 +36,7 @@ public class BackendModuleLoader extends ModuleLoader {
                 CONFIG.getString("database.user", "root"),
                 CONFIG.getString("database.pass", "")
         ));
+        Log.out("Database module loaded successfully!");
         done = true;
     }
 

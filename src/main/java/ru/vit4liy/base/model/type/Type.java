@@ -1,14 +1,17 @@
 package ru.vit4liy.base.model.type;
 
+import ru.vit4liy.base.distribution.PrimaryId;
 import ru.vit4liy.rsc.entity.DatabaseEntity;
 
+import java.util.Objects;
+
 public class Type implements DatabaseEntity {
-    private long id;
+    @PrimaryId private long typeId;
     private String displayName;
     private long createdAt;
 
     public Type(long id, String displayName, long createdAt) {
-        this.id = id;
+        this.typeId = id;
         this.displayName = displayName;
         this.createdAt = createdAt;
     }
@@ -17,16 +20,16 @@ public class Type implements DatabaseEntity {
     }
 
     public Long getId() {
-        return id;
+        return typeId;
     }
 
     @Override
     public void setId(Long aLong) {
-        this.id = aLong;
+        this.typeId = aLong;
     }
 
     public void setId(long id) {
-        this.id = id;
+        this.typeId = id;
     }
 
     public String getDisplayName() {
@@ -43,5 +46,18 @@ public class Type implements DatabaseEntity {
 
     public void setCreatedAt(long createdAt) {
         this.createdAt = createdAt;
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) return true;
+        if (object == null || getClass() != object.getClass()) return false;
+        Type type = (Type) object;
+        return Objects.equals(displayName, type.displayName);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(displayName);
     }
 }

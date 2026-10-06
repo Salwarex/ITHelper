@@ -6,5 +6,8 @@ database:
   user: root
   pass: 12345
 
+web:
+  port: 2701
+debug: true
 
-version: 1
+version: 2

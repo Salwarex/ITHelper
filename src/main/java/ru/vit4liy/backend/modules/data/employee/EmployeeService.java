@@ -1,5 +1,6 @@
 package ru.vit4liy.backend.modules.data.employee;
 
+import ru.vit4liy.base.bus.services.EmployeeBusService;
 import ru.vit4liy.base.model.employee.Employee;
 import ru.vit4liy.perm.MissingPermissionException;
 import ru.vit4liy.perm.PermissionService;
@@ -9,7 +10,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class EmployeeService extends EntityService<Employee> {
+public class EmployeeService extends EntityService<Employee> implements EmployeeBusService {
     private final EmployeeRepository employeeRepository;
 
     public EmployeeService(EmployeeRepository employeeRepository, PermissionService permissionService) {

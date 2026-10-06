@@ -19,7 +19,7 @@ public class Backend extends Module {
         super(loader);
         this.pool = pool;
         this.backendModuleLoader = new BackendModuleLoader(pool, false);
-        this.backendModuleLoader.initModules();
+        this.backendModuleLoader.load();
     }
 
     @Override
@@ -42,5 +42,9 @@ public class Backend extends Module {
     @Override
     protected Set<Class<? extends Module>> dependencies() {
         return Set.of();
+    }
+
+    public BackendModuleLoader getBackendModuleLoader() {
+        return backendModuleLoader;
     }
 }

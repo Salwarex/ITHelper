@@ -12,7 +12,7 @@ import ru.vit4liy.base.model.intersections.EmployeeLocation;
 import ru.vit4liy.base.model.location.Location;
 import ru.vit4liy.frontend.base.BaseTabController;
 import ru.vit4liy.frontend.util.AlertUtil;
-import ru.vit4liy.frontend.util.BackendConnection;
+import ru.vit4liy.frontend.util.ApplicationFeatures;
 import ru.vit4liy.frontend.util.DateUtil;
 import ru.vit4liy.frontend.util.EmployeeStatusUtil;
 import ru.vit4liy.frontend.util.LocationPathUtil;
@@ -96,8 +96,8 @@ public class EmployeesTabController extends BaseTabController {
 
         runAsync(() -> {
             try {
-                List<Location> allLocations = BackendConnection.db().getLocationService().getAll();
-                List<EmployeeLocation> mappings = BackendConnection.db().getEmployeeLocationService().getAll();
+                List<Location> allLocations = ApplicationFeatures.bus().getLocationService().getAll();
+                List<EmployeeLocation> mappings = ApplicationFeatures.bus().getEmployeeLocationService().getAll();
 
                 Map<Long, String> tempPaths = new HashMap<>();
                 for (EmployeeLocation el : mappings) {
@@ -111,13 +111,13 @@ public class EmployeesTabController extends BaseTabController {
 
                 List<Employee> result;
                 if (query == null || query.isBlank()) {
-                    result = BackendConnection.db().getEmployeeService().getAll();
+                    result = ApplicationFeatures.bus().getEmployeeService().getAll();
                 } else {
                     String searchQuery = query.trim();
                     result = switch (mode) {
-                        case "По имени" -> BackendConnection.db().getEmployeeService().searchEmployeesByName(searchQuery);
-                        case "По ФИО целиком" -> BackendConnection.db().getEmployeeService().searchEmployeesByFullName(searchQuery);
-                        default -> BackendConnection.db().getEmployeeService().searchEmployeesBySurname(searchQuery);
+                        case "По имени" -> ApplicationFeatures.bus().getEmployeeService().searchEmployeesByName(searchQuery);
+                        case "По ФИО целиком" -> ApplicationFeatures.bus().getEmployeeService().searchEmployeesByFullName(searchQuery);
+                        default -> ApplicationFeatures.bus().getEmployeeService().searchEmployeesBySurname(searchQuery);
                     };
                 }
 
@@ -164,7 +164,7 @@ public class EmployeesTabController extends BaseTabController {
         dialog.showAndWait().ifPresent(employee -> {
             runAsync(() -> {
                 try {
-                    BackendConnection.db().getEmployeeService().create(employee);
+                    ApplicationFeatures.bus().getEmployeeService().create(employee);
                     Platform.runLater(() -> {
                         AlertUtil.info("Успех", "Сотрудник создан");
                         reload();
@@ -188,7 +188,7 @@ public class EmployeesTabController extends BaseTabController {
         dialog.showAndWait().ifPresent(updated -> {
             runAsync(() -> {
                 try {
-                    BackendConnection.db().getEmployeeService().update(updated);
+                    ApplicationFeatures.bus().getEmployeeService().update(updated);
                     Platform.runLater(() -> {
                         AlertUtil.info("Успех", "Сотрудник обновлён");
                         reload();
@@ -214,7 +214,7 @@ public class EmployeesTabController extends BaseTabController {
 
         runAsync(() -> {
             try {
-                BackendConnection.db().getEmployeeService().delete(emp.getId());
+                ApplicationFeatures.bus().getEmployeeService().delete(emp.getId());
                 Platform.runLater(() -> {
                     AlertUtil.info("Успех", "Сотрудник удалён");
                     reload();

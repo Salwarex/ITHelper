@@ -1,12 +1,16 @@
 package ru.vit4liy.base.model.intersections;
 
 
+import ru.vit4liy.base.distribution.PrimaryForeignKey;
+import ru.vit4liy.base.model.device.Device;
+import ru.vit4liy.base.model.employee.Employee;
+import ru.vit4liy.base.model.location.Location;
 import ru.vit4liy.rsc.entity.IntersectionEntity;
 
 public class EmployeeLocation implements IntersectionEntity {
 
-    private long employeeId;
-    private long locationId;
+    @PrimaryForeignKey(foreignClass = Employee.class) private long employeeId;
+    @PrimaryForeignKey(foreignClass = Location.class) private long locationId;
 
     private long createdAt;
     private long lastChecked;

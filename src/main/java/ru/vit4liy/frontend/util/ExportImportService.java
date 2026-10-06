@@ -12,15 +12,22 @@ import ru.vit4liy.base.model.location.Location;
 import ru.vit4liy.base.model.phone.Phone;
 import ru.vit4liy.base.model.type.Type;
 import ru.vit4liy.base.model.typemark.TypeMark;
+import ru.vit4liy.base.util.Log;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
+@Deprecated
 public final class ExportImportService {
     private static final ObjectMapper MAPPER = new ObjectMapper()
             .enable(SerializationFeature.INDENT_OUTPUT);
@@ -44,20 +51,23 @@ public final class ExportImportService {
     }
 
     public static void exportToFile(File file) throws IOException {
+        if(true){ AlertUtil.error("Более не поддерживается!", "Система экспорта/импорта в ith-файлы из версии 0.15 более не поддерживается в версиях ITHelper 0.16+.");
+            return; }
+
         ExportData data = new ExportData();
         data.exportDate = LocalDateTime.now().format(FORMATTER);
 
         try {
-            data.locations = BackendConnection.db().getLocationService().getAll();
-            data.types = BackendConnection.db().getTypeService().getAll();
-            data.typeMarks = BackendConnection.db().getTypeMarkService().getAll();
-            data.osSystems = BackendConnection.db().getOSystemService().getAll();
-            data.devices = BackendConnection.db().getDeviceService().getAll();
-            data.employees = BackendConnection.db().getEmployeeService().getAll();
-            data.phones = BackendConnection.db().getPhoneService().getAll();
-            data.deviceLocations = BackendConnection.db().getDeviceLocationService().getAll();
-            data.employeeLocations = BackendConnection.db().getEmployeeLocationService().getAll();
-            data.locationPhones = BackendConnection.db().getLocationPhoneService().getAll();
+            data.locations = ApplicationFeatures.bus().getLocationService().getAll();
+            data.types = ApplicationFeatures.bus().getTypeService().getAll();
+            data.typeMarks = ApplicationFeatures.bus().getTypeMarkService().getAll();
+            data.osSystems = ApplicationFeatures.bus().getOSystemService().getAll();
+            data.devices = ApplicationFeatures.bus().getDeviceService().getAll();
+            data.employees = ApplicationFeatures.bus().getEmployeeService().getAll();
+            data.phones = ApplicationFeatures.bus().getPhoneService().getAll();
+            data.deviceLocations = ApplicationFeatures.bus().getDeviceLocationService().getAll();
+            data.employeeLocations = ApplicationFeatures.bus().getEmployeeLocationService().getAll();
+            data.locationPhones = ApplicationFeatures.bus().getLocationPhoneService().getAll();
         } catch (Exception e) {
             throw new IOException("Ошибка чтения данных из БД: " + e.getMessage(), e);
         }
@@ -66,10 +76,13 @@ public final class ExportImportService {
     }
 
     public static void importOverwrite(File file) throws IOException {
+        if(true){ AlertUtil.error("Более не поддерживается!", "Система экспорта/импорта в ith-файлы из версии 0.15 более не поддерживается в версиях ITHelper 0.16+.");
+            return; }
+
         ExportData data = MAPPER.readValue(file, ExportData.class);
 
         try {
-            java.sql.Connection conn = BackendConnection.db().getConnection();
+            java.sql.Connection conn = null; // ApplicationFeatures.bus().getConnection();
 
             conn.createStatement().execute("PRAGMA foreign_keys = OFF;");
 
@@ -97,6 +110,9 @@ public final class ExportImportService {
     }
 
     public static void importAppend(File file) throws IOException {
+        if(true){ AlertUtil.error("Более не поддерживается!", "Система экспорта/импорта в ith-файлы из версии 0.15 более не поддерживается в версиях ITHelper 0.16+.");
+            return; }
+
         ExportData data = MAPPER.readValue(file, ExportData.class);
 
         try {
@@ -137,7 +153,7 @@ public final class ExportImportService {
                     } else {
                         loc.setParentId(0L);
                     }
-                    Long newId = BackendConnection.db().getLocationService().create(loc);
+                    Long newId = ApplicationFeatures.bus().getLocationService().create(loc);
                     locationIdMap.put(oldId, newId);
                 }
             }
@@ -149,7 +165,7 @@ public final class ExportImportService {
                     typeIdMap.put(oldId, existingId);
                 } else {
                     type.setId(0L);
-                    Long newId = BackendConnection.db().getTypeService().create(type);
+                    Long newId = ApplicationFeatures.bus().getTypeService().create(type);
                     typeIdMap.put(oldId, newId);
                 }
             }
@@ -163,7 +179,7 @@ public final class ExportImportService {
                     tm.setId(0L);
                     Long mappedTypeId = typeIdMap.get((long) tm.getTypeId());
                     tm.setTypeId(mappedTypeId != null ? mappedTypeId.intValue() : 1);
-                    Long newId = BackendConnection.db().getTypeMarkService().create(tm);
+                    Long newId = ApplicationFeatures.bus().getTypeMarkService().create(tm);
                     typeMarkIdMap.put(oldId, newId);
                 }
             }
@@ -175,7 +191,7 @@ public final class ExportImportService {
                     osIdMap.put(oldId, existingId);
                 } else {
                     os.setId(0L);
-                    Long newId = BackendConnection.db().getOSystemService().create(os);
+                    Long newId = ApplicationFeatures.bus().getOSystemService().create(os);
                     osIdMap.put(oldId, newId);
                 }
             }
@@ -197,7 +213,7 @@ public final class ExportImportService {
                     if (dev.getOsId() != null) {
                         dev.setOsId(osIdMap.get(dev.getOsId()));
                     }
-                    Long newId = BackendConnection.db().getDeviceService().create(dev);
+                    Long newId = ApplicationFeatures.bus().getDeviceService().create(dev);
                     deviceIdMap.put(oldId, newId);
                 }
             }
@@ -209,7 +225,7 @@ public final class ExportImportService {
                     employeeIdMap.put(oldId, existingId);
                 } else {
                     emp.setId(0L);
-                    Long newId = BackendConnection.db().getEmployeeService().create(emp);
+                    Long newId = ApplicationFeatures.bus().getEmployeeService().create(emp);
                     employeeIdMap.put(oldId, newId);
                 }
             }
@@ -221,7 +237,7 @@ public final class ExportImportService {
                     phoneIdMap.put(oldId, existingId);
                 } else {
                     phone.setId(0L);
-                    Long newId = BackendConnection.db().getPhoneService().create(phone);
+                    Long newId = ApplicationFeatures.bus().getPhoneService().create(phone);
                     phoneIdMap.put(oldId, newId);
                 }
             }
@@ -236,7 +252,7 @@ public final class ExportImportService {
                         newDl.setBId(newLocationId);
                         newDl.setCreatedAt(dl.getCreatedAt());
                         newDl.setLastChecked(dl.getLastChecked());
-                        BackendConnection.db().getDeviceLocationService().create(newDl);
+                        ApplicationFeatures.bus().getDeviceLocationService().create(newDl);
                     }
                 }
             }
@@ -251,7 +267,7 @@ public final class ExportImportService {
                         newEl.setBId(newLocationId);
                         newEl.setCreatedAt(el.getCreatedAt());
                         newEl.setLastChecked(el.getLastChecked());
-                        BackendConnection.db().getEmployeeLocationService().create(newEl);
+                        ApplicationFeatures.bus().getEmployeeLocationService().create(newEl);
                     }
                 }
             }
@@ -266,7 +282,7 @@ public final class ExportImportService {
                         newLp.setBId(newPhoneId);
                         newLp.setCreatedAt(lp.getCreatedAt());
                         newLp.setLastChecked(lp.getLastChecked());
-                        BackendConnection.db().getLocationPhoneService().create(newLp);
+                        ApplicationFeatures.bus().getLocationPhoneService().create(newLp);
                     }
                 }
             }
@@ -275,100 +291,89 @@ public final class ExportImportService {
         }
     }
 
+    public static Long findExistingEmployee(String surname, String name, String thirdname) {
+        return -1L;
+    }
+
     private static Long findExistingId(String tableName, String columnName, Object value) {
-        if (value == null) return null;
-        try (java.sql.Connection conn = BackendConnection.db().getConnection();
-             java.sql.PreparedStatement stmt = conn.prepareStatement("SELECT id FROM " + tableName + " WHERE " + columnName + " = ?")) {
-            stmt.setObject(1, value);
-            try (java.sql.ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getLong("id");
-                }
-            }
-        } catch (Exception e) {
-        }
-        return null;
+//        if (value == null) return null;
+//        try (java.sql.Connection conn = ApplicationFeatures.bus().getConnection();
+//             java.sql.PreparedStatement stmt = conn.prepareStatement("SELECT id FROM " + tableName + " WHERE " + columnName + " = ?")) {
+//            stmt.setObject(1, value);
+//            try (java.sql.ResultSet rs = stmt.executeQuery()) {
+//                if (rs.next()) {
+//                    return rs.getLong("id");
+//                }
+//            }
+//        } catch (Exception e) {
+//        }
+//        return null;
+        return -1L;
     }
 
     private static Long findExistingLocationByNameAndParent(String displayName, Long parentId) {
-        try (java.sql.Connection conn = BackendConnection.db().getConnection();
-             java.sql.PreparedStatement stmt = conn.prepareStatement(
-                     "SELECT id FROM Location WHERE display_name = ? AND parent_id = ?")) {
-            stmt.setString(1, displayName);
-            stmt.setLong(2, parentId);
-            try (java.sql.ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getLong("id");
-                }
-            }
-        } catch (Exception e) {
-        }
-        return null;
-    }
-
-    private static Long findExistingEmployee(String surname, String name, String thirdname) {
-        try (java.sql.Connection conn = BackendConnection.db().getConnection();
-             java.sql.PreparedStatement stmt = conn.prepareStatement(
-                     "SELECT id FROM Employee WHERE surname = ? AND name = ? AND (thirdname = ? OR (thirdname IS NULL AND ? IS NULL))")) {
-            stmt.setString(1, surname != null ? surname : "");
-            stmt.setString(2, name != null ? name : "");
-            stmt.setString(3, thirdname);
-            stmt.setString(4, thirdname);
-            try (java.sql.ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getLong("id");
-                }
-            }
-        } catch (Exception e) {
-        }
-        return null;
+//        try (java.sql.Connection conn = ApplicationFeatures.bus().getConnection();
+//             java.sql.PreparedStatement stmt = conn.prepareStatement(
+//                     "SELECT id FROM Location WHERE display_name = ? AND parent_id = ?")) {
+//            stmt.setString(1, displayName);
+//            stmt.setLong(2, parentId);
+//            try (java.sql.ResultSet rs = stmt.executeQuery()) {
+//                if (rs.next()) {
+//                    return rs.getLong("id");
+//                }
+//            }
+//        } catch (Exception e) {
+//        }
+//        return null;
+        return -1L;
     }
 
     private static boolean isLinkExists(String tableName, String col1Name, Long val1, String col2Name, Long val2) {
-        try (java.sql.Connection conn = BackendConnection.db().getConnection();
-             java.sql.PreparedStatement stmt = conn.prepareStatement(
-                     "SELECT 1 FROM " + tableName + " WHERE " + col1Name + " = ? AND " + col2Name + " = ? LIMIT 1")) {
-            stmt.setLong(1, val1);
-            stmt.setLong(2, val2);
-            try (java.sql.ResultSet rs = stmt.executeQuery()) {
-                return rs.next();
-            }
-        } catch (Exception e) {
-            return false;
-        }
+//        try (java.sql.Connection conn = ApplicationFeatures.bus().getConnection();
+//             java.sql.PreparedStatement stmt = conn.prepareStatement(
+//                     "SELECT 1 FROM " + tableName + " WHERE " + col1Name + " = ? AND " + col2Name + " = ? LIMIT 1")) {
+//            stmt.setLong(1, val1);
+//            stmt.setLong(2, val2);
+//            try (java.sql.ResultSet rs = stmt.executeQuery()) {
+//                return rs.next();
+//            }
+//        } catch (Exception e) {
+//            return false;
+//        }
+        return false;
     }
 
     private static void importData(ExportData data) throws Exception {
         // Вставляем в правильном порядке (сначала справочники, потом сущности, потом связи)
         for (Location loc : data.locations) {
-            BackendConnection.db().getLocationService().create(loc);
+            ApplicationFeatures.bus().getLocationService().create(loc);
         }
         for (Type type : data.types) {
-            BackendConnection.db().getTypeService().create(type);
+            ApplicationFeatures.bus().getTypeService().create(type);
         }
         for (TypeMark tm : data.typeMarks) {
-            BackendConnection.db().getTypeMarkService().create(tm);
+            ApplicationFeatures.bus().getTypeMarkService().create(tm);
         }
         for (OSystem os : data.osSystems) {
-            BackendConnection.db().getOSystemService().create(os);
+            ApplicationFeatures.bus().getOSystemService().create(os);
         }
         for (Device dev : data.devices) {
-            BackendConnection.db().getDeviceService().create(dev);
+            ApplicationFeatures.bus().getDeviceService().create(dev);
         }
         for (Employee emp : data.employees) {
-            BackendConnection.db().getEmployeeService().create(emp);
+            ApplicationFeatures.bus().getEmployeeService().create(emp);
         }
         for (Phone phone : data.phones) {
-            BackendConnection.db().getPhoneService().create(phone);
+            ApplicationFeatures.bus().getPhoneService().create(phone);
         }
         for (DeviceLocation dl : data.deviceLocations) {
-            BackendConnection.db().getDeviceLocationService().create(dl);
+            ApplicationFeatures.bus().getDeviceLocationService().create(dl);
         }
         for (EmployeeLocation el : data.employeeLocations) {
-            BackendConnection.db().getEmployeeLocationService().create(el);
+            ApplicationFeatures.bus().getEmployeeLocationService().create(el);
         }
         for (LocationPhone lp : data.locationPhones) {
-            BackendConnection.db().getLocationPhoneService().create(lp);
+            ApplicationFeatures.bus().getLocationPhoneService().create(lp);
         }
     }
 }

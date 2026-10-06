@@ -8,7 +8,7 @@ import javafx.stage.FileChooser;
 import ru.vit4liy.frontend.base.BaseTabController;
 import ru.vit4liy.frontend.tabs.*;
 import ru.vit4liy.frontend.util.AlertUtil;
-import ru.vit4liy.frontend.util.BackendConnection;
+import ru.vit4liy.frontend.util.ApplicationFeatures;
 import ru.vit4liy.frontend.util.ExportImportService;
 
 import java.io.File;
@@ -59,7 +59,7 @@ public class MainController {
         if (file != null) {
             if (AlertUtil.confirm("Импорт (затирание)",
                     "Все текущие данные будут удалены и заменены данными из файла. Продолжить?")) {
-                BackendConnection.runAsync(() -> {
+                ApplicationFeatures.runAsync(() -> {
                     try {
                         ExportImportService.importOverwrite(file);
                         Platform.runLater(() -> {
@@ -84,7 +84,7 @@ public class MainController {
         if (file != null) {
             if (AlertUtil.confirm("Импорт (добавочный)",
                     "Данные из файла будут добавлены к существующим. Продолжить?")) {
-                BackendConnection.runAsync(() -> {
+                ApplicationFeatures.runAsync(() -> {
                     try {
                         ExportImportService.importAppend(file);
                         Platform.runLater(() -> {
@@ -116,7 +116,7 @@ public class MainController {
         File file = fileChooser.showSaveDialog(null);
 
         if (file != null) {
-            BackendConnection.runAsync(() -> {
+            ApplicationFeatures.runAsync(() -> {
                 try {
                     ExportImportService.exportToFile(file);
                     Platform.runLater(() -> AlertUtil.info("Успех", "Данные успешно экспортированы в " + file.getName()));

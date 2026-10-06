@@ -11,7 +11,7 @@ import ru.vit4liy.base.model.typemark.TypeMark;
 import ru.vit4liy.frontend.base.BaseTabController;
 import ru.vit4liy.frontend.dialogs.TypeMarkCreateDialog;
 import ru.vit4liy.frontend.util.AlertUtil;
-import ru.vit4liy.frontend.util.BackendConnection;
+import ru.vit4liy.frontend.util.ApplicationFeatures;
 import ru.vit4liy.perm.MissingPermissionException;
 
 import java.net.URL;
@@ -36,7 +36,7 @@ public class DictionariesTabController extends BaseTabController {
         colMarkName.setCellValueFactory(cd -> new javafx.beans.property.SimpleStringProperty(cd.getValue().getDisplayName()));
         colMarkType.setCellValueFactory(cd -> {
             try {
-                Type t = BackendConnection.db().getTypeService().getById(cd.getValue().getTypeId()).orElse(null);
+                Type t = ApplicationFeatures.bus().getTypeService().getById(cd.getValue().getTypeId()).orElse(null);
                 return new javafx.beans.property.SimpleStringProperty(t != null ? t.getDisplayName() : "ID: " + cd.getValue().getTypeId());
             } catch (Exception e) { return new javafx.beans.property.SimpleStringProperty("Ошибка"); }
         });
@@ -55,37 +55,35 @@ public class DictionariesTabController extends BaseTabController {
             try {
                 Platform.runLater(() -> {
                     try {
-                        typesTable.setItems(FXCollections.observableArrayList(BackendConnection.db().getTypeService().getAll()));
+                        typesTable.setItems(FXCollections.observableArrayList(ApplicationFeatures.bus().getTypeService().getAll()));
                     } catch (SQLException e) {
                         throw new RuntimeException(e);
-                    } catch (MissingPermissionException e) {
+                    } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
                 });
                 Platform.runLater(() -> {
                     try {
-                        marksTable.setItems(FXCollections.observableArrayList(BackendConnection.db().getTypeMarkService().getAll()));
+                        marksTable.setItems(FXCollections.observableArrayList(ApplicationFeatures.bus().getTypeMarkService().getAll()));
                     } catch (SQLException e) {
                         throw new RuntimeException(e);
-                    } catch (MissingPermissionException e) {
+                    } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
                 });
                 Platform.runLater(() -> {
                     try {
-                        phonesTable.setItems(FXCollections.observableArrayList(BackendConnection.db().getPhoneService().getAll()));
-                    } catch (SQLException e) {
-                        throw new RuntimeException(e);
-                    } catch (MissingPermissionException e) {
+                        phonesTable.setItems(FXCollections.observableArrayList(ApplicationFeatures.bus().getPhoneService().getAll()));
+                    } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
                 });
                 Platform.runLater(() -> {
                     try {
-                        osTable.setItems(FXCollections.observableArrayList(BackendConnection.db().getOSystemService().getAll()));
+                        osTable.setItems(FXCollections.observableArrayList(ApplicationFeatures.bus().getOSystemService().getAll()));
                     } catch (SQLException e) {
                         throw new RuntimeException(e);
-                    } catch (MissingPermissionException e) {
+                    } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
                 });
@@ -98,7 +96,7 @@ public class DictionariesTabController extends BaseTabController {
         d.showAndWait().ifPresent(name -> runAsync(() -> {
             try {
                 Type t = new Type(); t.setDisplayName(name.trim()); t.setCreatedAt(System.currentTimeMillis());
-                BackendConnection.db().getTypeService().create(t);
+                ApplicationFeatures.bus().getTypeService().create(t);
                 Platform.runLater(this::reloadAll);
             } catch (Exception e) { handleError(e); }
         }));
@@ -110,7 +108,7 @@ public class DictionariesTabController extends BaseTabController {
         d.showAndWait().ifPresent(name -> runAsync(() -> {
             try {
                 t.setDisplayName(name.trim());
-                BackendConnection.db().getTypeService().update(t);
+                ApplicationFeatures.bus().getTypeService().update(t);
                 Platform.runLater(this::reloadAll);
             } catch (Exception e) { handleError(e); }
         }));
@@ -120,7 +118,7 @@ public class DictionariesTabController extends BaseTabController {
         if (t == null) { showError("Выберите тип"); return; }
         if (!AlertUtil.confirm("Удаление", "Удалить тип \"" + t.getDisplayName() + "\"?")) return;
         runAsync(() -> {
-            try { BackendConnection.db().getTypeService().delete(t.getId()); Platform.runLater(this::reloadAll); }
+            try { ApplicationFeatures.bus().getTypeService().delete(t.getId()); Platform.runLater(this::reloadAll); }
             catch (Exception e) { handleError(e); }
         });
     }
@@ -129,7 +127,7 @@ public class DictionariesTabController extends BaseTabController {
         TypeMarkCreateDialog dialog = new TypeMarkCreateDialog();
         dialog.showAndWait().ifPresent(mark -> runAsync(() -> {
             try {
-                BackendConnection.db().getTypeMarkService().create(mark);
+                ApplicationFeatures.bus().getTypeMarkService().create(mark);
                 Platform.runLater(this::reloadAll);
             } catch (Exception e) { handleError(e); }
         }));
@@ -141,7 +139,7 @@ public class DictionariesTabController extends BaseTabController {
         d.showAndWait().ifPresent(name -> runAsync(() -> {
             try {
                 m.setDisplayName(name.trim());
-                BackendConnection.db().getTypeMarkService().update(m);
+                ApplicationFeatures.bus().getTypeMarkService().update(m);
                 Platform.runLater(this::reloadAll);
             } catch (Exception e) { handleError(e); }
         }));
@@ -151,7 +149,7 @@ public class DictionariesTabController extends BaseTabController {
         if (m == null) { showError("Выберите марку"); return; }
         if (!AlertUtil.confirm("Удаление", "Удалить марку \"" + m.getDisplayName() + "\"?")) return;
         runAsync(() -> {
-            try { BackendConnection.db().getTypeMarkService().delete(m.getId()); Platform.runLater(this::reloadAll); }
+            try { ApplicationFeatures.bus().getTypeMarkService().delete(m.getId()); Platform.runLater(this::reloadAll); }
             catch (Exception e) { handleError(e); }
         });
     }
@@ -171,7 +169,7 @@ public class DictionariesTabController extends BaseTabController {
         d.getDialogPane().setContent(grid);
         d.setResultConverter(b -> b == ok ? createPhone(corp.getText(), pub.getText()) : null);
         d.showAndWait().ifPresent(phone -> runAsync(() -> {
-            try { BackendConnection.db().getPhoneService().create(phone); Platform.runLater(this::reloadAll); }
+            try { ApplicationFeatures.bus().getPhoneService().create(phone); Platform.runLater(this::reloadAll); }
             catch (Exception e) { handleError(e); }
         }));
     }
@@ -193,7 +191,7 @@ public class DictionariesTabController extends BaseTabController {
         d.showAndWait().ifPresent(phone -> runAsync(() -> {
             try {
                 phone.setId(p.getId());
-                BackendConnection.db().getPhoneService().update(phone);
+                ApplicationFeatures.bus().getPhoneService().update(phone);
                 Platform.runLater(this::reloadAll);
             } catch (Exception e) { handleError(e); }
         }));
@@ -203,7 +201,7 @@ public class DictionariesTabController extends BaseTabController {
         if (p == null) { showError("Выберите телефон"); return; }
         if (!AlertUtil.confirm("Удаление", "Удалить телефон " + p.getCorpPhoneNumber() + "?")) return;
         runAsync(() -> {
-            try { BackendConnection.db().getPhoneService().delete(p.getId()); Platform.runLater(this::reloadAll); }
+            try { ApplicationFeatures.bus().getPhoneService().delete(p.getId()); Platform.runLater(this::reloadAll); }
             catch (Exception e) { handleError(e); }
         });
     }
@@ -237,7 +235,7 @@ public class DictionariesTabController extends BaseTabController {
             try {
                 OSystem os = new OSystem();
                 os.setDisplayName(name.trim());
-                BackendConnection.db().getOSystemService().create(os);
+                ApplicationFeatures.bus().getOSystemService().create(os);
                 Platform.runLater(this::reloadAll);
             } catch (Exception e) { handleError(e); }
         }));
@@ -252,7 +250,7 @@ public class DictionariesTabController extends BaseTabController {
         d.showAndWait().ifPresent(name -> runAsync(() -> {
             try {
                 os.setDisplayName(name.trim());
-                BackendConnection.db().getOSystemService().update(os);
+                ApplicationFeatures.bus().getOSystemService().update(os);
                 Platform.runLater(this::reloadAll);
             } catch (Exception e) { handleError(e); }
         }));
@@ -264,7 +262,7 @@ public class DictionariesTabController extends BaseTabController {
         if (!AlertUtil.confirm("Удаление", "Удалить ОС \"" + os.getDisplayName() + "\"?")) return;
         runAsync(() -> {
             try {
-                BackendConnection.db().getOSystemService().delete(os.getId());
+                ApplicationFeatures.bus().getOSystemService().delete(os.getId());
                 Platform.runLater(this::reloadAll);
             } catch (Exception e) { handleError(e); }
         });

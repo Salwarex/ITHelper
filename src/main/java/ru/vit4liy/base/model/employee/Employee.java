@@ -1,9 +1,12 @@
 package ru.vit4liy.base.model.employee;
 
+import ru.vit4liy.base.distribution.PrimaryId;
 import ru.vit4liy.rsc.entity.DatabaseEntity;
 
+import java.util.Objects;
+
 public class Employee implements DatabaseEntity  {
-    private long id;
+    @PrimaryId private long employeeId;
     private String surname;
     private String name;
     private String thirdname;
@@ -13,8 +16,8 @@ public class Employee implements DatabaseEntity  {
     private int status;
     private String phone;
 
-    public Employee(long id, String surname, String name, String thirdname, long createdAt, long lastStatusChange, long lastChecked, int status, String phone) {
-        this.id = id;
+    public Employee(long employeeId, String surname, String name, String thirdname, long createdAt, long lastStatusChange, long lastChecked, int status, String phone) {
+        this.employeeId = employeeId;
         this.surname = surname;
         this.name = name;
         this.thirdname = thirdname;
@@ -29,16 +32,16 @@ public class Employee implements DatabaseEntity  {
     }
 
     public Long getId() {
-        return id;
+        return employeeId;
     }
 
     @Override
     public void setId(Long aLong) {
-        this.id = aLong;
+        this.employeeId = aLong;
     }
 
     public void setId(long id) {
-        this.id = id;
+        this.employeeId = id;
     }
 
     public String getSurname() {
@@ -103,5 +106,18 @@ public class Employee implements DatabaseEntity  {
 
     public void setPhone(String phone) {
         this.phone = phone;
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) return true;
+        if (object == null || getClass() != object.getClass()) return false;
+        Employee employee = (Employee) object;
+        return employeeId == employee.employeeId && createdAt == employee.createdAt && lastStatusChange == employee.lastStatusChange && lastChecked == employee.lastChecked && status == employee.status && Objects.equals(surname, employee.surname) && Objects.equals(name, employee.name) && Objects.equals(thirdname, employee.thirdname) && Objects.equals(phone, employee.phone);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(employeeId, surname, name, thirdname, createdAt, lastStatusChange, lastChecked, status, phone);
     }
 }

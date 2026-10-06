@@ -1,12 +1,15 @@
 package ru.vit4liy.backend.modules.data.employee;
 
 import ru.vit4liy.base.model.employee.Employee;
+import ru.vit4liy.base.model.phone.Phone;
+import ru.vit4liy.frontend.util.ApplicationFeatures;
 import ru.vit4liy.rsc.DatabaseManager;
 import ru.vit4liy.rsc.repository.EntityRepository;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class EmployeeRepository extends EntityRepository<Employee> {
     public EmployeeRepository(DatabaseManager db) { super(Employee.class, db); }
@@ -112,5 +115,14 @@ public class EmployeeRepository extends EntityRepository<Employee> {
         };
     }
 
-
+    public Optional<Employee> findExistingEmployee(String surname, String name, String thirdname) throws SQLException {
+        try (Connection conn = db.getConnection(); PreparedStatement stmt = conn.prepareStatement("SELECT id FROM Employee WHERE surname = ? AND name = ? AND (thirdname = ? OR (thirdname IS NULL AND ? IS NULL))")) {
+            stmt.setString(1, surname != null ? surname : "");
+            stmt.setString(2, name != null ? name : "");
+            stmt.setString(3, thirdname);
+            stmt.setString(4, thirdname);
+            try (ResultSet rs = stmt.executeQuery()) { if (rs.next()) return Optional.of(map(rs)); }
+        }
+        return Optional.empty();
+    }
 }

@@ -2,22 +2,29 @@ package ru.vit4liy.frontend.util;
 
 import javafx.application.Platform;
 import ru.vit4liy.App;
+import ru.vit4liy.backend.Backend;
 import ru.vit4liy.backend.modules.BackendModuleLoader;
-import ru.vit4liy.backend.modules.data.DatabaseModule;
+import ru.vit4liy.base.bus.BackendDataBus;
+import ru.vit4liy.base.util.Log;
 import ru.vit4liy.perm.PermissionModule;
 
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 
-public final class BackendConnection {
-    private BackendConnection() {}
+public final class ApplicationFeatures {
+    private ApplicationFeatures() {}
 
     public static BackendModuleLoader loader() {
-        return (BackendModuleLoader) App.getInstance().getModuleLoader();
+        try{
+            return App.getInstance().getModuleLoader().getModule(Backend.class).getBackendModuleLoader();
+        }catch (Exception e){
+            Log.err("Frontend connection exception: " + e.getMessage());
+            throw new RuntimeException(e);
+        }
     }
 
-    public static DatabaseModule db() {
-        return loader().getDatabaseModule();
+    public static BackendDataBus bus() {
+        return loader().getDatabaseModule().getLocalDataBus();
     }
 
     public static PermissionModule perm() {
