@@ -5,6 +5,7 @@ import ru.vit4liy.App;
 import ru.vit4liy.backend.Backend;
 import ru.vit4liy.backend.modules.BackendModuleLoader;
 import ru.vit4liy.base.bus.BackendDataBus;
+import ru.vit4liy.base.distribution.DistributionModule;
 import ru.vit4liy.base.util.Log;
 import ru.vit4liy.perm.PermissionModule;
 

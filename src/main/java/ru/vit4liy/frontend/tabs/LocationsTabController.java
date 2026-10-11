@@ -721,6 +721,8 @@ public class LocationsTabController extends BaseTabController {
                                 throw new RuntimeException(e);
                             } catch (MissingPermissionException e) {
                                 throw new RuntimeException(e);
+                            } catch (Exception e) {
+                                throw new RuntimeException(e);
                             }
                         }));
             } catch (Exception e) {

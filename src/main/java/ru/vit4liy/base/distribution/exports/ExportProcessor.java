@@ -13,66 +13,62 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
 
-public class ExportSerializer {
+public class ExportProcessor {
     private final ObjectMapper mapper;
 
-    public ExportSerializer(ObjectMapper mapper) {
+    public ExportProcessor(ObjectMapper mapper) {
         this.mapper = mapper;
     }
 
-    public<T extends Entity> String serialize(Class<T> clazz, List<T> elements){
+    public <T extends Entity> String serialize(Class<T> clazz, List<T> elements) {
         ArrayNode arrayNode = mapper.createArrayNode();
 
-        for(T element : elements) {
+        for (T element : elements) {
             ObjectNode objectNode = (ObjectNode) mapper.valueToTree(element);
-
             processAnnotations(element, objectNode);
-
             arrayNode.add(objectNode);
         }
         return arrayNode.toString();
     }
 
-    private void processAnnotations(Object element, ObjectNode jsonNode){
+    private void processAnnotations(Object element, ObjectNode jsonNode) {
         Class<?> currentClass = element.getClass();
-        while (currentClass != null && currentClass != Object.class){
-            for(Field field : currentClass.getDeclaredFields()){
+        while (currentClass != null && currentClass != Object.class) {
+            for (Field field : currentClass.getDeclaredFields()) {
                 field.setAccessible(true);
                 String fieldName = field.getName();
 
-                try{
+                try {
                     Object idValue = field.get(element);
 
                     if (field.isAnnotationPresent(PrimaryId.class)) {
-                        replaceWithUuid(jsonNode, fieldName, idValue, "_unique_pk");
-                    }
-                    else if (field.isAnnotationPresent(ForeignId.class)) {
-                        replaceWithUuid(jsonNode, fieldName, idValue, "_unique_fk");
-                    }
-                    else if (field.isAnnotationPresent(PrimaryForeignKey.class)) {
-                        replaceWithUuid(jsonNode, fieldName, idValue, "_unique_pk_fk");
+                        replaceWithUuid(jsonNode, fieldName, idValue, "pk", currentClass.getName());
+                    } else if (field.isAnnotationPresent(ForeignId.class)) {
+                        replaceWithUuid(jsonNode, fieldName, idValue, "fk", currentClass.getName());
+                    } else if (field.isAnnotationPresent(PrimaryForeignKey.class)) {
+                        replaceWithUuid(jsonNode, fieldName, idValue, "pfk", currentClass.getName());
                     }
                 } catch (IllegalAccessException e) {
                     throw new RuntimeException("Can't get field value: " + fieldName, e);
                 }
-                currentClass = currentClass.getSuperclass();
             }
+            currentClass = currentClass.getSuperclass();
         }
     }
 
-    private void replaceWithUuid(ObjectNode jsonNode, String originalFieldName, Object idValue, String suffix) {
+    private void replaceWithUuid(ObjectNode jsonNode, String originalFieldName, Object idValue, String prefix, String originalClassName) {
         jsonNode.remove(originalFieldName);
 
         if (idValue == null) {
-            jsonNode.putNull(originalFieldName + suffix);
+            jsonNode.putNull(originalFieldName + prefix);
         } else {
-            String uniqueUuid = generateDeterministicUuid(originalFieldName, idValue).toString();
-            jsonNode.put(originalFieldName + suffix, uniqueUuid);
+            String uniqueUuid = generateDeterministicUuid(originalClassName, idValue).toString();
+            jsonNode.put(originalFieldName + prefix, uniqueUuid);
         }
     }
 
-    private UUID generateDeterministicUuid(String fieldName, Object idValue) {
-        String seed = fieldName + ":" + idValue.toString();
+    private UUID generateDeterministicUuid(String className, Object idValue) {
+        String seed = className + ":" + idValue.toString();
         return UUID.nameUUIDFromBytes(seed.getBytes(StandardCharsets.UTF_8));
     }
 }

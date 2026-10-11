@@ -6,7 +6,6 @@ import ru.vit4liy.backend.Backend;
 import ru.vit4liy.base.util.Log;
 import ru.vit4liy.frontend.Frontend;
 import ru.vit4liy.modular.ModuleLoader;
-import ru.vit4liy.modular.exception.ModuleInitializeException;
 
 import java.util.concurrent.ExecutorService;
 

@@ -1,6 +1,7 @@
 package ru.vit4liy.base.distribution.exports;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import ru.vit4liy.base.bus.BackendDataBus;
 import ru.vit4liy.base.model.device.Device;
 import ru.vit4liy.base.model.device.system.OSystem;
@@ -18,53 +19,40 @@ import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 
 public class ExportService {
     private final ObjectMapper mapper;
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private final BackendDataBus bus;
-    
+    private final ExportProcessor serializer;
+
     public ExportService(ObjectMapper mapper, BackendDataBus bus) {
         this.mapper = mapper;
         this.bus = bus;
+        this.serializer = new ExportProcessor(mapper);
     }
 
-    public void exportAll(File file) throws IOException{
-        ExportData data = new ExportData();
-        data.exportDate = LocalDateTime.now().format(FORMATTER);
+    public void exportAll(File file) throws IOException {
+        ObjectNode rootNode = mapper.createObjectNode();
+        rootNode.put("version", "1.0");
+        rootNode.put("exportDate", LocalDateTime.now().format(FORMATTER));
 
         try {
-            data.locations = bus.getLocationService().getAll();
-            data.types = bus.getTypeService().getAll();
-            data.typeMarks = bus.getTypeMarkService().getAll();
-            data.osSystems = bus.getOSystemService().getAll();
-            data.devices = bus.getDeviceService().getAll();
-            data.employees = bus.getEmployeeService().getAll();
-            data.phones = bus.getPhoneService().getAll();
-            data.deviceLocations = bus.getDeviceLocationService().getAll();
-            data.employeeLocations = bus.getEmployeeLocationService().getAll();
-            data.locationPhones = bus.getLocationPhoneService().getAll();
+            rootNode.set("locations", mapper.readTree(serializer.serialize(Location.class, bus.getLocationService().getAll())));
+            rootNode.set("types", mapper.readTree(serializer.serialize(Type.class, bus.getTypeService().getAll())));
+            rootNode.set("typeMarks", mapper.readTree(serializer.serialize(TypeMark.class, bus.getTypeMarkService().getAll())));
+            rootNode.set("osSystems", mapper.readTree(serializer.serialize(OSystem.class, bus.getOSystemService().getAll())));
+            rootNode.set("employees", mapper.readTree(serializer.serialize(Employee.class, bus.getEmployeeService().getAll())));
+            rootNode.set("phones", mapper.readTree(serializer.serialize(Phone.class, bus.getPhoneService().getAll())));
+            rootNode.set("devices", mapper.readTree(serializer.serialize(Device.class, bus.getDeviceService().getAll())));
+            rootNode.set("deviceLocations", mapper.readTree(serializer.serialize(DeviceLocation.class, bus.getDeviceLocationService().getAll())));
+            rootNode.set("employeeLocations", mapper.readTree(serializer.serialize(EmployeeLocation.class, bus.getEmployeeLocationService().getAll())));
+            rootNode.set("locationPhones", mapper.readTree(serializer.serialize(LocationPhone.class, bus.getLocationPhoneService().getAll())));
         } catch (Exception e) {
             Log.err("File export error: " + e.getMessage());
             throw new IOException("Error: " + e.getMessage(), e);
         }
 
-        mapper.writeValue(file, data);
-    }
-
-    public static class ExportData {
-        public String version = "1.0";
-        public String exportDate;
-        public List<Location> locations;
-        public List<Type> types;
-        public List<TypeMark> typeMarks;
-        public List<OSystem> osSystems;
-        public List<Device> devices;
-        public List<Employee> employees;
-        public List<Phone> phones;
-        public List<DeviceLocation> deviceLocations;
-        public List<EmployeeLocation> employeeLocations;
-        public List<LocationPhone> locationPhones;
+        mapper.writeValue(file, rootNode);
     }
 }

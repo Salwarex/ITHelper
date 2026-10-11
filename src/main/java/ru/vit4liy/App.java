@@ -1,5 +1,6 @@
 package ru.vit4liy;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import javafx.application.Application;
 import javafx.stage.Stage;
@@ -23,7 +24,7 @@ public class App extends Application {
     private static Logger LOGGER;
     private static final ExecutorService POOL = Executors.newVirtualThreadPerTaskExecutor();
 
-    private static final ObjectMapper objectMapper = new ObjectMapper();
+    private static final ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
     private static App instance;
     private ModuleLoader moduleLoader;
