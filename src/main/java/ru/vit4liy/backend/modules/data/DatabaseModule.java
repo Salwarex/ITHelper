@@ -92,7 +92,7 @@ public class DatabaseModule extends Module {
         databaseManager.startUp();
 
         this.localDataBus = new LocalDataBus(
-                permissionModule.getPermissionService(),
+                permissionModule.getPermissionService(), databaseManager,
                 deviceRepository, employeeRepository,
                 locationRepository, phoneRepository, typeRepository,
                 typeMarkRepository, deviceLocationRepository, employeeLocationRepository,

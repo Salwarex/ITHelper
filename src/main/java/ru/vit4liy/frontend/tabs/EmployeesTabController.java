@@ -11,11 +11,7 @@ import ru.vit4liy.base.model.employee.Employee;
 import ru.vit4liy.base.model.intersections.EmployeeLocation;
 import ru.vit4liy.base.model.location.Location;
 import ru.vit4liy.frontend.base.BaseTabController;
-import ru.vit4liy.frontend.util.AlertUtil;
-import ru.vit4liy.frontend.util.ApplicationFeatures;
-import ru.vit4liy.frontend.util.DateUtil;
-import ru.vit4liy.frontend.util.EmployeeStatusUtil;
-import ru.vit4liy.frontend.util.LocationPathUtil;
+import ru.vit4liy.frontend.util.*;
 
 import java.net.URL;
 import java.util.HashMap;
@@ -96,8 +92,8 @@ public class EmployeesTabController extends BaseTabController {
 
         runAsync(() -> {
             try {
-                List<Location> allLocations = ApplicationFeatures.bus().getLocationService().getAll();
-                List<EmployeeLocation> mappings = ApplicationFeatures.bus().getEmployeeLocationService().getAll();
+                List<Location> allLocations = ApplicationFeatures.bus().getLocationService().getAll(ClientUser.get());
+                List<EmployeeLocation> mappings = ApplicationFeatures.bus().getEmployeeLocationService().getAll(ClientUser.get());
 
                 Map<Long, String> tempPaths = new HashMap<>();
                 for (EmployeeLocation el : mappings) {
@@ -111,13 +107,13 @@ public class EmployeesTabController extends BaseTabController {
 
                 List<Employee> result;
                 if (query == null || query.isBlank()) {
-                    result = ApplicationFeatures.bus().getEmployeeService().getAll();
+                    result = ApplicationFeatures.bus().getEmployeeService().getAll(ClientUser.get());
                 } else {
                     String searchQuery = query.trim();
                     result = switch (mode) {
-                        case "По имени" -> ApplicationFeatures.bus().getEmployeeService().searchEmployeesByName(searchQuery);
-                        case "По ФИО целиком" -> ApplicationFeatures.bus().getEmployeeService().searchEmployeesByFullName(searchQuery);
-                        default -> ApplicationFeatures.bus().getEmployeeService().searchEmployeesBySurname(searchQuery);
+                        case "По имени" -> ApplicationFeatures.bus().getEmployeeService().searchEmployeesByName(ClientUser.get(), searchQuery);
+                        case "По ФИО целиком" -> ApplicationFeatures.bus().getEmployeeService().searchEmployeesByFullName(ClientUser.get(), searchQuery);
+                        default -> ApplicationFeatures.bus().getEmployeeService().searchEmployeesBySurname(ClientUser.get(), searchQuery);
                     };
                 }
 
@@ -164,7 +160,7 @@ public class EmployeesTabController extends BaseTabController {
         dialog.showAndWait().ifPresent(employee -> {
             runAsync(() -> {
                 try {
-                    ApplicationFeatures.bus().getEmployeeService().create(employee);
+                    ApplicationFeatures.bus().getEmployeeService().create(ClientUser.get(), employee);
                     Platform.runLater(() -> {
                         AlertUtil.info("Успех", "Сотрудник создан");
                         reload();
@@ -188,7 +184,7 @@ public class EmployeesTabController extends BaseTabController {
         dialog.showAndWait().ifPresent(updated -> {
             runAsync(() -> {
                 try {
-                    ApplicationFeatures.bus().getEmployeeService().update(updated);
+                    ApplicationFeatures.bus().getEmployeeService().update(ClientUser.get(), updated);
                     Platform.runLater(() -> {
                         AlertUtil.info("Успех", "Сотрудник обновлён");
                         reload();
@@ -214,7 +210,7 @@ public class EmployeesTabController extends BaseTabController {
 
         runAsync(() -> {
             try {
-                ApplicationFeatures.bus().getEmployeeService().delete(emp.getId());
+                ApplicationFeatures.bus().getEmployeeService().delete(ClientUser.get(), emp.getId());
                 Platform.runLater(() -> {
                     AlertUtil.info("Успех", "Сотрудник удалён");
                     reload();

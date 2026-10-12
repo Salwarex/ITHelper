@@ -21,6 +21,7 @@ import ru.vit4liy.base.model.typemark.TypeMark;
 import ru.vit4liy.frontend.base.BaseTabController;
 import ru.vit4liy.frontend.util.AlertUtil;
 import ru.vit4liy.frontend.util.ApplicationFeatures;
+import ru.vit4liy.frontend.util.ClientUser;
 import ru.vit4liy.frontend.util.DeviceStatusUtil;
 import ru.vit4liy.perm.MissingPermissionException;
 
@@ -82,10 +83,10 @@ public class DataEntryController extends BaseTabController {
     public void loadInitialData() {
         runAsync(() -> {
             try {
-                allLocations = ApplicationFeatures.bus().getLocationService().getAll();
-                allTypes = ApplicationFeatures.bus().getTypeService().getAll();
-                allMarks = ApplicationFeatures.bus().getTypeMarkService().getAll();
-                allOsSystems = ApplicationFeatures.bus().getOSystemService().getAll();
+                allLocations = ApplicationFeatures.bus().getLocationService().getAll(ClientUser.get());
+                allTypes = ApplicationFeatures.bus().getTypeService().getAll(ClientUser.get());
+                allMarks = ApplicationFeatures.bus().getTypeMarkService().getAll(ClientUser.get());
+                allOsSystems = ApplicationFeatures.bus().getOSystemService().getAll(ClientUser.get());
 
                 Platform.runLater(() -> {
                     buildLocationCascade(deviceLocationCascade, deviceLocationBoxes, null);
@@ -264,7 +265,7 @@ public class DataEntryController extends BaseTabController {
                 resolved.setParentId(currentParent != null ? currentParent.getId() : null);
                 resolved.setKey("LOC-" + typedName.toUpperCase().replaceAll("[^A-ZА-Я0-9]", "_") + "-" + System.currentTimeMillis() % 10000);
 
-                long newId = ApplicationFeatures.bus().getLocationService().create(resolved);
+                long newId = ApplicationFeatures.bus().getLocationService().create(ClientUser.get(), resolved);
                 resolved.setId(newId);
 
                 allLocations.add(resolved);
@@ -304,7 +305,7 @@ public class DataEntryController extends BaseTabController {
                             type = new Type();
                             type.setDisplayName(typeName);
                             type.setCreatedAt(System.currentTimeMillis());
-                            long typeId = ApplicationFeatures.bus().getTypeService().create(type);
+                            long typeId = ApplicationFeatures.bus().getTypeService().create(ClientUser.get(), type);
                             type.setId(typeId);
                             allTypes.add(type);
                         }
@@ -331,7 +332,7 @@ public class DataEntryController extends BaseTabController {
                             mark.setDisplayName(markName);
                             mark.setTypeId(type.getId().intValue());
                             mark.setCreatedAt(System.currentTimeMillis());
-                            long markId = ApplicationFeatures.bus().getTypeMarkService().create(mark);
+                            long markId = ApplicationFeatures.bus().getTypeMarkService().create(ClientUser.get(), mark);
                             mark.setId(markId);
                             allMarks.add(mark);
                         }
@@ -349,7 +350,7 @@ public class DataEntryController extends BaseTabController {
                         if (os == null) {
                             os = new OSystem();
                             os.setDisplayName(osName);
-                            long osId = ApplicationFeatures.bus().getOSystemService().create(os);
+                            long osId = ApplicationFeatures.bus().getOSystemService().create(ClientUser.get(), os);
                             os.setId(osId);
                             allOsSystems.add(os);
                         }
@@ -366,14 +367,14 @@ public class DataEntryController extends BaseTabController {
                 device.setDescription(tfDeviceDescription.getText().trim());
                 device.setLastChecked(System.currentTimeMillis());
 
-                long deviceId = ApplicationFeatures.bus().getDeviceService().create(device);
+                long deviceId = ApplicationFeatures.bus().getDeviceService().create(ClientUser.get(), device);
 
                 DeviceLocation dl = new DeviceLocation();
                 dl.setAId(deviceId);
                 dl.setBId(finalLocation.getId());
                 dl.setCreatedAt(System.currentTimeMillis());
                 dl.setLastChecked(System.currentTimeMillis());
-                ApplicationFeatures.bus().getDeviceLocationService().create(dl);
+                ApplicationFeatures.bus().getDeviceLocationService().create(ClientUser.get(), dl);
 
                 Platform.runLater(() -> {
                     AlertUtil.info("Успех", "Устройство успешно добавлено");
@@ -451,14 +452,14 @@ public class DataEntryController extends BaseTabController {
                 emp.setLastChecked(now);
                 emp.setPhone(tfEmployeePhone.getText().isBlank() ? null : tfEmployeePhone.getText().trim());
 
-                long empId = ApplicationFeatures.bus().getEmployeeService().create(emp);
+                long empId = ApplicationFeatures.bus().getEmployeeService().create(ClientUser.get(), emp);
 
                 EmployeeLocation el = new EmployeeLocation();
                 el.setAId(empId);
                 el.setBId(finalLocation.getId());
                 el.setCreatedAt(now);
                 el.setLastChecked(now);
-                ApplicationFeatures.bus().getEmployeeLocationService().create(el);
+                ApplicationFeatures.bus().getEmployeeLocationService().create(ClientUser.get(), el);
 
                 Platform.runLater(() -> {
                     AlertUtil.info("Успех", "Сотрудник успешно добавлен");
@@ -517,14 +518,14 @@ public class DataEntryController extends BaseTabController {
                 phone.setIp(tfPhoneIp.getText().isBlank() ? null : tfPhoneIp.getText().trim());
                 phone.setLastChecked(System.currentTimeMillis());
 
-                long phoneId = ApplicationFeatures.bus().getPhoneService().create(phone);
+                long phoneId = ApplicationFeatures.bus().getPhoneService().create(ClientUser.get(), phone);
 
                 LocationPhone lp = new LocationPhone();
                 lp.setAId(finalLocation.getId());
                 lp.setBId(phoneId);
                 lp.setCreatedAt(System.currentTimeMillis());
                 lp.setLastChecked(System.currentTimeMillis());
-                ApplicationFeatures.bus().getLocationPhoneService().create(lp);
+                ApplicationFeatures.bus().getLocationPhoneService().create(ClientUser.get(), lp);
 
                 Platform.runLater(() -> {
                     AlertUtil.info("Успех", "Телефон успешно добавлен");

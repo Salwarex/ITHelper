@@ -8,6 +8,7 @@ import ru.vit4liy.base.distribution.DistributionModule;
 import ru.vit4liy.base.util.Log;
 import ru.vit4liy.frontend.Frontend;
 import ru.vit4liy.frontend.data.web.WebBackendDataBus;
+import ru.vit4liy.frontend.util.ApplicationFeatures;
 import ru.vit4liy.modular.ModuleLoader;
 
 import java.util.concurrent.ExecutorService;
@@ -15,6 +16,7 @@ import java.util.concurrent.ExecutorService;
 public class ApplicationModuleLoader extends ModuleLoader {
     private Backend backend;
     private Frontend frontend;
+    private BackendDataBus bus;
     private DistributionModule distributionModule;
     private final Stage primaryStage;
     private final Application.Parameters parameters;
@@ -35,17 +37,39 @@ public class ApplicationModuleLoader extends ModuleLoader {
                 Log.err("Backend initialize exception! " + e.getMessage());
                 throw new RuntimeException(e);
             }
+            bus = backend.getBackendModuleLoader().getDatabaseModule().getLocalDataBus();
         }
         else{
-            Log.wrn("Application started by client-only mode");
+            bus = new WebBackendDataBus(App.getConfig().getString("server.remote.ip", "localhost"),
+                    App.getConfig().getInt("server.remote.port", 2701));
+            Log.wrn("Application started by client-only mode. Initialized by web-client data bus.");
         }
+        ApplicationFeatures.setBus(bus); //херня
+        this.distributionModule = new DistributionModule(this, bus);
         this.frontend = new Frontend(this, pool, primaryStage, parameters);
     }
 
     @Override
     protected void loadStandardModules() {
         declaration(pool, primaryStage, parameters);
-        modules.put(Backend.class, backend);
+        if(serverMode) modules.put(Backend.class, backend);
         modules.put(Frontend.class, frontend);
+        modules.put(DistributionModule.class, distributionModule);
+    }
+
+    public Backend getBackend() {
+        return backend;
+    }
+
+    public Frontend getFrontend() {
+        return frontend;
+    }
+
+    public BackendDataBus getBus() {
+        return bus;
+    }
+
+    public DistributionModule getDistributionModule() {
+        return distributionModule;
     }
 }

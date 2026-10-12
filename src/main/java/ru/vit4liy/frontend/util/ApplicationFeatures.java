@@ -5,7 +5,6 @@ import ru.vit4liy.App;
 import ru.vit4liy.backend.Backend;
 import ru.vit4liy.backend.modules.BackendModuleLoader;
 import ru.vit4liy.base.bus.BackendDataBus;
-import ru.vit4liy.base.distribution.DistributionModule;
 import ru.vit4liy.base.util.Log;
 import ru.vit4liy.perm.PermissionModule;
 
@@ -24,8 +23,12 @@ public final class ApplicationFeatures {
         }
     }
 
+    private static BackendDataBus bus = App.getInstance().getModuleLoader().getBus();
+    public static void setBus(BackendDataBus providedBus){
+        bus = providedBus;
+    }
     public static BackendDataBus bus() {
-        return loader().getDatabaseModule().getLocalDataBus();
+        return bus;
     }
 
     public static PermissionModule perm() {

@@ -27,7 +27,7 @@ public class App extends Application {
     private static final ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
     private static App instance;
-    private ModuleLoader moduleLoader;
+    private ApplicationModuleLoader moduleLoader;
 
     public static Config getConfig() {
         return CONFIG;
@@ -41,7 +41,7 @@ public class App extends Application {
         return instance;
     }
 
-    public ModuleLoader getModuleLoader() {
+    public ApplicationModuleLoader getModuleLoader() {
         return moduleLoader;
     }
 
@@ -53,7 +53,7 @@ public class App extends Application {
     public void start(Stage stage) throws Exception {
         instance = this;
 
-        moduleLoader = new ApplicationModuleLoader(POOL, false, stage, getParameters());
+        moduleLoader = new ApplicationModuleLoader(POOL, false, stage, getParameters(), CONFIG.getBoolean("server.localserver", true));
         moduleLoader.load();
 
         Log.out("Module initializing...");

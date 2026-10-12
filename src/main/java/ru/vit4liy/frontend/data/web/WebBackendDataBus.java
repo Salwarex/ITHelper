@@ -5,6 +5,9 @@ import ru.vit4liy.base.bus.services.*;
 import ru.vit4liy.frontend.data.web.services.*;
 
 public class WebBackendDataBus implements BackendDataBus {
+    private final String address;
+    private final int port;
+
     private final DeviceBusService deviceBusService;
     private final DeviceLocationBusService deviceLocationBusService;
     private final EmployeeBusService employeeBusService;
@@ -15,8 +18,12 @@ public class WebBackendDataBus implements BackendDataBus {
     private final PhoneBusService phoneBusService;
     private final TypeBusService typeBusService;
     private final TypeMarkBusService typeMarkBusService;
+    private final DatabaseService databaseService;
 
-    public WebBackendDataBus() {
+    public WebBackendDataBus(String address, int port) {
+        this.address = address;
+        this.port = port;
+
         this.deviceBusService = new DeviceClientService();
         this.deviceLocationBusService = new DeviceLocationClientService();
         this.employeeBusService = new EmployeeClientService();
@@ -27,6 +34,7 @@ public class WebBackendDataBus implements BackendDataBus {
         this.phoneBusService = new PhoneClientService();
         this.typeBusService = new TypeClientService();
         this.typeMarkBusService = new TypeMarkClientService();
+        this.databaseService = new DatabaseClientService();
     }
 
     @Override
@@ -77,5 +85,10 @@ public class WebBackendDataBus implements BackendDataBus {
     @Override
     public TypeMarkBusService getTypeMarkService() {
         return typeMarkBusService;
+    }
+
+    @Override
+    public DatabaseService getDatabaseService() {
+        return databaseService;
     }
 }

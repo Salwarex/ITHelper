@@ -1,3 +1,9 @@
+server:
+  localserver: true
+  remote: #works only when *localserver* turn false
+    host: "localhost"
+    port: 1551
+
 database:
   type: SQLite #MySQL
   host: localhost

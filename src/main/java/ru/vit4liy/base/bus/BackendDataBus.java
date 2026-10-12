@@ -13,4 +13,5 @@ public interface BackendDataBus {
     PhoneBusService getPhoneService();
     TypeBusService getTypeService();
     TypeMarkBusService getTypeMarkService();
+    DatabaseService getDatabaseService();
 }

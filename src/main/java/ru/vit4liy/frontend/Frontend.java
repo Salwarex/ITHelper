@@ -11,7 +11,7 @@ import ru.vit4liy.base.util.Log;
 import ru.vit4liy.frontend.dialogs.ImportFileDialog;
 import ru.vit4liy.frontend.util.AlertUtil;
 import ru.vit4liy.frontend.util.ApplicationFeatures;
-import ru.vit4liy.frontend.util.ExportImportService;
+import ru.vit4liy.frontend.util.ClientUser;
 import ru.vit4liy.modular.Module;
 import ru.vit4liy.modular.ModuleLoader;
 import ru.vit4liy.modular.exception.ModuleInitializeException;
@@ -180,8 +180,16 @@ public class Frontend extends Module {
                     }
 
                     switch (action) {
-                        case OVERWRITE -> ExportImportService.importOverwrite(file);
-                        case APPEND -> ExportImportService.importAppend(file);
+                        case OVERWRITE -> App.getInstance()
+                                .getModuleLoader()
+                                .getDistributionModule()
+                                .getImportService()
+                                .importAll(ClientUser.get(), file, true);
+                        case APPEND -> App.getInstance()
+                                .getModuleLoader()
+                                .getDistributionModule()
+                                .getImportService()
+                                .importAll(ClientUser.get(), file, false);
                     }
 
                     Platform.runLater(() -> {

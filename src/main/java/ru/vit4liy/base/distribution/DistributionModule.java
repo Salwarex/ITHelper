@@ -6,6 +6,7 @@ import ru.vit4liy.base.bus.BackendDataBus;
 import ru.vit4liy.base.distribution.exports.ExportService;
 import ru.vit4liy.base.distribution.imports.ImportService;
 import ru.vit4liy.base.util.Log;
+import ru.vit4liy.frontend.util.ClientUser;
 import ru.vit4liy.modular.Module;
 import ru.vit4liy.modular.ModuleLoader;
 import ru.vit4liy.modular.exception.ModuleInitializeException;

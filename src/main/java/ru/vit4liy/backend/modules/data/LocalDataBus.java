@@ -23,6 +23,7 @@ import ru.vit4liy.backend.modules.data.typemark.TypeMarkService;
 import ru.vit4liy.base.bus.BackendDataBus;
 import ru.vit4liy.base.bus.services.*;
 import ru.vit4liy.perm.PermissionService;
+import ru.vit4liy.rsc.DatabaseManager;
 
 public class LocalDataBus implements BackendDataBus {
     private final DeviceBusService deviceService;
@@ -35,9 +36,11 @@ public class LocalDataBus implements BackendDataBus {
     private final PhoneBusService phoneService;
     private final TypeBusService typeService;
     private final TypeMarkBusService typeMarkService;
+    private final DatabaseService databaseService;
 
     public LocalDataBus(
             PermissionService permissionService,
+            DatabaseManager databaseManager,
             DeviceRepository deviceRepository,
             EmployeeRepository employeeRepository,
             LocationRepository locationRepository,
@@ -59,6 +62,7 @@ public class LocalDataBus implements BackendDataBus {
         this.employeeLocationService = new EmployeeLocationService(employeeLocationRepository, permissionService);
         this.locationPhoneService = new LocationPhoneService(locationPhoneRepository, permissionService);
         this.oSystemService = new OSystemService(oSystemRepository, permissionService);
+        this.databaseService = new DatabaseBackendService(databaseManager, permissionService);
     }
 
     @Override
@@ -109,5 +113,10 @@ public class LocalDataBus implements BackendDataBus {
     @Override
     public TypeMarkBusService getTypeMarkService() {
         return typeMarkService;
+    }
+
+    @Override
+    public DatabaseService getDatabaseService() {
+        return databaseService;
     }
 }

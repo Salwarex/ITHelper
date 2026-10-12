@@ -5,11 +5,12 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.stage.FileChooser;
+import ru.vit4liy.App;
 import ru.vit4liy.frontend.base.BaseTabController;
 import ru.vit4liy.frontend.tabs.*;
 import ru.vit4liy.frontend.util.AlertUtil;
 import ru.vit4liy.frontend.util.ApplicationFeatures;
-import ru.vit4liy.frontend.util.ExportImportService;
+import ru.vit4liy.frontend.util.ClientUser;
 
 import java.io.File;
 
@@ -61,7 +62,11 @@ public class MainController {
                     "Все текущие данные будут удалены и заменены данными из файла. Продолжить?")) {
                 ApplicationFeatures.runAsync(() -> {
                     try {
-                        ExportImportService.importOverwrite(file);
+                        App.getInstance()
+                                .getModuleLoader()
+                                .getDistributionModule()
+                                .getImportService()
+                                .importAll(ClientUser.get(), file, true);
                         Platform.runLater(() -> {
                             AlertUtil.info("Успех", "Данные успешно импортированы");
                             refreshAllTabs(); // <-- Обновляем все вкладки
@@ -86,7 +91,11 @@ public class MainController {
                     "Данные из файла будут добавлены к существующим. Продолжить?")) {
                 ApplicationFeatures.runAsync(() -> {
                     try {
-                        ExportImportService.importAppend(file);
+                        App.getInstance()
+                                .getModuleLoader()
+                                .getDistributionModule()
+                                .getImportService()
+                                .importAll(ClientUser.get(), file, false);
                         Platform.runLater(() -> {
                             AlertUtil.info("Успех", "Данные успешно добавлены");
                             refreshAllTabs(); // <-- Обновляем все вкладки
@@ -118,7 +127,11 @@ public class MainController {
         if (file != null) {
             ApplicationFeatures.runAsync(() -> {
                 try {
-                    ExportImportService.exportToFile(file);
+                    App.getInstance()
+                            .getModuleLoader()
+                            .getDistributionModule()
+                            .getExportService()
+                            .exportAll(ClientUser.get(), file);
                     Platform.runLater(() -> AlertUtil.info("Успех", "Данные успешно экспортированы в " + file.getName()));
                 } catch (Exception e) {
                     Platform.runLater(() -> AlertUtil.errorWithStack("Ошибка экспорта", e));

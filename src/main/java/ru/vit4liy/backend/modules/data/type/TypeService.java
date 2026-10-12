@@ -2,6 +2,7 @@ package ru.vit4liy.backend.modules.data.type;
 
 import ru.vit4liy.base.bus.services.TypeBusService;
 import ru.vit4liy.base.model.type.Type;
+import ru.vit4liy.perm.Permissible;
 import ru.vit4liy.perm.PermissionService;
 import ru.vit4liy.rsc.service.EntityService;
 
@@ -16,7 +17,7 @@ public class TypeService extends EntityService<Type> implements TypeBusService {
         this.typeRepository = typeRepository;
     }
 
-    public Optional<Type> getTypeByDisplayName(String displayName) throws SQLException {
+    public Optional<Type> getTypeByDisplayName(Permissible executor, String displayName) throws SQLException {
         return typeRepository.findByDisplayName(displayName);
     }
 }

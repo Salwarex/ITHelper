@@ -38,7 +38,7 @@ dependencies {
     implementation files('libs/config-lib-1.3.1.jar')
     implementation files('libs/logger-lib-1.3.2.jar')
     implementation files('libs/module-lib-1.2.9.jar')
-    implementation files('libs/rsc-lib-1.3.7.jar')
+    implementation files('libs/rsc-lib-1.4.1.jar')
     implementation files('libs/web-lib-1.0.jar')
     implementation files('libs/perm-lib-1.3.1.jar')
     implementation files('libs/events-lib-1.1.jar')

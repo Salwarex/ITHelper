@@ -2,6 +2,7 @@ package ru.vit4liy.backend.modules.data.phone;
 
 import ru.vit4liy.base.bus.services.PhoneBusService;
 import ru.vit4liy.base.model.phone.Phone;
+import ru.vit4liy.perm.Permissible;
 import ru.vit4liy.perm.PermissionService;
 import ru.vit4liy.rsc.service.EntityService;
 
@@ -17,15 +18,15 @@ public class PhoneService extends EntityService<Phone> implements PhoneBusServic
         this.phoneRepository = phoneRepository;
     }
 
-    public Optional<Phone> getPhoneByCorpNumber(String corpNumber) throws SQLException {
+    public Optional<Phone> getPhoneByCorpNumber(Permissible executor, String corpNumber) throws SQLException {
         return phoneRepository.findByCorpPhoneNumber(corpNumber);
     }
 
-    public Optional<Phone> getPhoneByPublicNumber(String publicNumber) throws SQLException {
+    public Optional<Phone> getPhoneByPublicNumber(Permissible executor, String publicNumber) throws SQLException {
         return phoneRepository.findByPublicPhoneNumber(publicNumber);
     }
 
-    public List<Phone> getPhonesByIp(String ip) throws SQLException {
+    public List<Phone> getPhonesByIp(Permissible executor, String ip) throws SQLException {
         return phoneRepository.findByIp(ip);
     }
 }

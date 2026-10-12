@@ -10,6 +10,7 @@ import ru.vit4liy.base.model.type.Type;
 import ru.vit4liy.base.model.typemark.TypeMark;
 import ru.vit4liy.frontend.util.AlertUtil;
 import ru.vit4liy.frontend.util.ApplicationFeatures;
+import ru.vit4liy.frontend.util.ClientUser;
 import ru.vit4liy.frontend.util.DeviceStatusUtil;
 
 import java.util.List;
@@ -72,9 +73,9 @@ public class DeviceCreateDialog extends Dialog<Device> {
 
         ApplicationFeatures.runAsync(() -> {
             try {
-                List<Type> types = ApplicationFeatures.bus().getTypeService().getAll();
-                List<TypeMark> marks = ApplicationFeatures.bus().getTypeMarkService().getAll();
-                List<OSystem> osSystems = ApplicationFeatures.bus().getOSystemService().getAll();
+                List<Type> types = ApplicationFeatures.bus().getTypeService().getAll(ClientUser.get());
+                List<TypeMark> marks = ApplicationFeatures.bus().getTypeMarkService().getAll(ClientUser.get());
+                List<OSystem> osSystems = ApplicationFeatures.bus().getOSystemService().getAll(ClientUser.get());
 
                 Platform.runLater(() -> {
                     cbType.getItems().setAll(types);
