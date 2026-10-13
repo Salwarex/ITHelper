@@ -16,7 +16,7 @@ public final class AlertUtil {
     private AlertUtil() {}
 
     public static void info(String title, String message) {
-        Log.out("Sending info: %s : %s".formatted(title, message));
+        Log.out("info: %s: %s".formatted(title, message));
         Platform.runLater(() -> {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle(title);
@@ -27,7 +27,7 @@ public final class AlertUtil {
     }
 
     public static void error(String title, String message) {
-        Log.err("%s: %s".formatted(title, message));
+        Log.err("error: %s: %s".formatted(title, message));
         Platform.runLater(() -> {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle(title);
@@ -38,7 +38,7 @@ public final class AlertUtil {
     }
 
     public static void errorWithStack(String title, Throwable t) {
-        Log.err("%s: %s".formatted(title, t.getMessage()));
+        Log.err("error: %s: %s".formatted(title, t.getMessage()));
         for(StackTraceElement stackTraceElement : t.getStackTrace()){
             Log.err(stackTraceElement.toString());
         }

@@ -15,6 +15,7 @@
           <MenuItem text="Импорт (затирание)" onAction="#onImportOverwrite"/>
           <MenuItem text="Импорт (добавочный)" onAction="#onImportAppend"/>
           <MenuItem text="Экспорт" onAction="#onExport"/>
+          <MenuItem text="Очистить все данные" onAction="#onFullDelete"/>
         </items>
       </Menu>
     </menus>
@@ -22,19 +23,19 @@
 
   <TabPane fx:id="tabPane" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
     <tabs>
-      <Tab fx:id="locationsTab" text="📍 Локации">
+      <Tab fx:id="locationsTab" text="Расположения">
         <fx:include fx:id="locations" source="tabs/locations-tab.fxml"/>
       </Tab>
-      <Tab fx:id="devicesTab" text="🖨 Устройства">
+      <Tab fx:id="devicesTab" text="Устройства">
         <fx:include fx:id="devices" source="tabs/devices-tab.fxml"/>
       </Tab>
-      <Tab fx:id="employeesTab" text="👥 Сотрудники">
+      <Tab fx:id="employeesTab" text="Сотрудники">
         <fx:include fx:id="employees" source="tabs/employees-tab.fxml"/>
       </Tab>
-      <Tab fx:id="dictionariesTab" text="📚 Справочники">
+      <Tab fx:id="dictionariesTab" text="Справочники">
         <fx:include fx:id="dictionaries" source="tabs/dictionaries-tab.fxml"/>
       </Tab>
-      <Tab fx:id="dataEntryTab" text="➕ Ввод данных">
+      <Tab fx:id="dataEntryTab" text="Ввод данных">
         <fx:include fx:id="dataEntry" source="tabs/data-entry-view.fxml"/>
       </Tab>
     </tabs>

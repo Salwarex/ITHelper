@@ -1,10 +1,13 @@
 package ru.vit4liy.base.model.employee;
 
+import ru.vit4liy.base.bus.ObjectEntity;
+import ru.vit4liy.base.bus.services.EmployeeBusService;
 import ru.vit4liy.base.distribution.PrimaryId;
 import ru.vit4liy.rsc.entity.DatabaseEntity;
 
 import java.util.Objects;
 
+@ObjectEntity(serviceInterface=EmployeeBusService.class)
 public class Employee implements DatabaseEntity  {
     @PrimaryId private long employeeId;
     private String surname;

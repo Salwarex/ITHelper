@@ -1,7 +1,10 @@
 package ru.vit4liy.base.model.device;
 
+import ru.vit4liy.base.bus.ObjectEntity;
+import ru.vit4liy.base.bus.services.DeviceBusService;
 import ru.vit4liy.base.distribution.ForeignId;
 import ru.vit4liy.base.distribution.PrimaryId;
+import ru.vit4liy.base.distribution.UniqueValueIdentifier;
 import ru.vit4liy.base.model.device.system.OSystem;
 import ru.vit4liy.base.model.type.Type;
 import ru.vit4liy.base.model.typemark.TypeMark;
@@ -9,12 +12,13 @@ import ru.vit4liy.rsc.entity.DatabaseEntity;
 
 import java.util.Objects;
 
+@ObjectEntity(serviceInterface= DeviceBusService.class)
 public class Device implements DatabaseEntity {
     @PrimaryId private long deviceId;
     @ForeignId(foreignClass = Type.class) private int typeId;
     @ForeignId(foreignClass = TypeMark.class) private Integer typeMarkId;
     @ForeignId(foreignClass = OSystem.class) private Long osId;
-    private String deviceSerial;
+    @UniqueValueIdentifier private String deviceSerial;
     private String description;
     private String status;
     private String ip;

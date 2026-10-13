@@ -139,4 +139,23 @@ public class MainController {
             });
         }
     }
+
+    @FXML
+    private void onFullDelete(){
+        ApplicationFeatures.runAsync(() -> {
+            try {
+                App.getInstance()
+                        .getModuleLoader()
+                        .getBus()
+                        .getDatabaseService()
+                        .removeAll(ClientUser.get());
+                Platform.runLater(() -> {
+                    AlertUtil.info("Успех", "Данные успешно удалены!");
+                    refreshAllTabs();
+                });
+            } catch (Exception e) {
+                Platform.runLater(() -> AlertUtil.errorWithStack("Ошибка удаления данных", e));
+            }
+        });
+    }
 }

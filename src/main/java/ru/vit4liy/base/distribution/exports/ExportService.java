@@ -32,7 +32,7 @@ public class ExportService{
     public ExportService(ObjectMapper mapper, BackendDataBus bus) {
         this.mapper = mapper;
         this.bus = bus;
-        this.serializer = new ExportProcessor(mapper);
+        this.serializer = new ExportProcessor(mapper, bus);
     }
 
     public void exportAll(Permissible permissible, File file) throws IOException {

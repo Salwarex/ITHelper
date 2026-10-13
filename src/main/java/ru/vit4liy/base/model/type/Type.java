@@ -1,13 +1,17 @@
 package ru.vit4liy.base.model.type;
 
+import ru.vit4liy.base.bus.ObjectEntity;
+import ru.vit4liy.base.bus.services.TypeBusService;
 import ru.vit4liy.base.distribution.PrimaryId;
+import ru.vit4liy.base.distribution.UniqueValueIdentifier;
 import ru.vit4liy.rsc.entity.DatabaseEntity;
 
 import java.util.Objects;
 
+@ObjectEntity(serviceInterface= TypeBusService.class)
 public class Type implements DatabaseEntity {
     @PrimaryId private long typeId;
-    private String displayName;
+    @UniqueValueIdentifier private String displayName;
     private long createdAt;
 
     public Type(long id, String displayName, long createdAt) {

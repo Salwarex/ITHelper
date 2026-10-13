@@ -3,6 +3,8 @@ package ru.vit4liy.frontend.data.web;
 import ru.vit4liy.base.bus.BackendDataBus;
 import ru.vit4liy.base.bus.services.*;
 import ru.vit4liy.frontend.data.web.services.*;
+import ru.vit4liy.rsc.entity.Entity;
+import ru.vit4liy.rsc.service.GenericDatabaseBusService;
 
 public class WebBackendDataBus implements BackendDataBus {
     private final String address;
@@ -90,5 +92,10 @@ public class WebBackendDataBus implements BackendDataBus {
     @Override
     public DatabaseService getDatabaseService() {
         return databaseService;
+    }
+
+    @Override
+    public <T extends Entity> GenericDatabaseBusService<T> getService(Class<T> clazz) {
+        return null;
     }
 }

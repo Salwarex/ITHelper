@@ -1,16 +1,20 @@
 package ru.vit4liy.base.model.location;
 
+import ru.vit4liy.base.bus.ObjectEntity;
+import ru.vit4liy.base.bus.services.LocationBusService;
 import ru.vit4liy.base.distribution.ForeignId;
 import ru.vit4liy.base.distribution.PrimaryId;
+import ru.vit4liy.base.distribution.UniqueValueIdentifier;
 import ru.vit4liy.rsc.entity.DatabaseEntity;
 
 import java.util.Objects;
 
+@ObjectEntity(serviceInterface= LocationBusService.class)
 public class Location implements DatabaseEntity {
     @PrimaryId private long locationId;
     private String key;
     @ForeignId(foreignClass = Location.class) private Long parentId;
-    private String displayName;
+    @UniqueValueIdentifier private String displayName;
 
     public Location(long locationId, String key, Long parentId, String displayName) {
         this.locationId = locationId;

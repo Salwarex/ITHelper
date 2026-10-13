@@ -2,11 +2,11 @@ package ru.vit4liy.base.bus.services;
 
 import ru.vit4liy.base.model.employee.Employee;
 import ru.vit4liy.perm.Permissible;
-import ru.vit4liy.rsc.service.GenericDatabaseBusService;
+import ru.vit4liy.rsc.service.GenericEntityBusService;
 
 import java.util.List;
 
-public interface EmployeeBusService extends GenericDatabaseBusService<Employee> {
+public interface EmployeeBusService extends GenericEntityBusService<Employee> {
     List<Employee> getEmployeesByStatus(Permissible executor, int status) throws Exception;
     List<Employee> searchEmployeesBySurname(Permissible executor, String surnamePart) throws Exception;
     List<Employee> searchEmployeesByName(Permissible executor, String namePart) throws Exception;

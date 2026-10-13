@@ -1,13 +1,17 @@
 package ru.vit4liy.base.model.device.system;
 
+import ru.vit4liy.base.bus.ObjectEntity;
+import ru.vit4liy.base.bus.services.OSystemBusService;
 import ru.vit4liy.base.distribution.PrimaryId;
+import ru.vit4liy.base.distribution.UniqueValueIdentifier;
 import ru.vit4liy.rsc.entity.DatabaseEntity;
 
 import java.util.Objects;
 
+@ObjectEntity(serviceInterface=OSystemBusService.class)
 public class OSystem implements DatabaseEntity {
     @PrimaryId private long id;
-    private String displayName;
+    @UniqueValueIdentifier private String displayName;
 
     @Override
     public Long getId() {

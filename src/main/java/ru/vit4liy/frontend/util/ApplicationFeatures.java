@@ -4,7 +4,6 @@ import javafx.application.Platform;
 import ru.vit4liy.App;
 import ru.vit4liy.backend.Backend;
 import ru.vit4liy.backend.modules.BackendModuleLoader;
-import ru.vit4liy.base.bus.BackendDataBus;
 import ru.vit4liy.base.util.Log;
 import ru.vit4liy.perm.PermissionModule;
 
@@ -22,14 +21,6 @@ public final class ApplicationFeatures {
             throw new RuntimeException(e);
         }
     }
-
-    private static BackendDataBus bus = App.getInstance().getModuleLoader().getBus();
-    public static void setBus(BackendDataBus providedBus){
-        bus = providedBus;
-    }
-//    public static BackendDataBus bus() {
-//        return bus;
-//    }
 
     public static PermissionModule perm() {
         return loader().getPermissionModule();

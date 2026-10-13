@@ -1,13 +1,17 @@
 package ru.vit4liy.base.model.phone;
 
+import ru.vit4liy.base.bus.ObjectEntity;
+import ru.vit4liy.base.bus.services.PhoneBusService;
 import ru.vit4liy.base.distribution.PrimaryId;
+import ru.vit4liy.base.distribution.UniqueValueIdentifier;
 import ru.vit4liy.rsc.entity.DatabaseEntity;
 
 import java.util.Objects;
 
+@ObjectEntity(serviceInterface= PhoneBusService.class)
 public class Phone implements DatabaseEntity {
     @PrimaryId private long phoneId;
-    private String corpPhoneNumber;
+    @UniqueValueIdentifier private String corpPhoneNumber;
     private String publicPhoneNumber;
     private String ip;
     private long lastChecked;

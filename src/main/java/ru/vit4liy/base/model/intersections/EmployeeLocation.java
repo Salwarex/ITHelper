@@ -1,12 +1,14 @@
 package ru.vit4liy.base.model.intersections;
 
 
+import ru.vit4liy.base.bus.ObjectEntity;
+import ru.vit4liy.base.bus.services.EmployeeLocationBusService;
 import ru.vit4liy.base.distribution.PrimaryForeignKey;
-import ru.vit4liy.base.model.device.Device;
 import ru.vit4liy.base.model.employee.Employee;
 import ru.vit4liy.base.model.location.Location;
 import ru.vit4liy.rsc.entity.IntersectionEntity;
 
+@ObjectEntity(serviceInterface= EmployeeLocationBusService.class)
 public class EmployeeLocation implements IntersectionEntity {
 
     @PrimaryForeignKey(foreignClass = Employee.class) private long employeeId;

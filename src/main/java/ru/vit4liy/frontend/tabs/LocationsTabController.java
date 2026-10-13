@@ -7,6 +7,7 @@ import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import ru.vit4liy.App;
+import ru.vit4liy.base.bus.BackendDataBus;
 import ru.vit4liy.base.model.device.Device;
 import ru.vit4liy.base.model.device.system.OSystem;
 import ru.vit4liy.base.model.employee.Employee;
@@ -93,8 +94,27 @@ public class LocationsTabController extends BaseTabController {
             }
         });
 
+        BackendDataBus bus = App.getInstance().bus();
+
         setupListView(lvDevices,
-                device -> device.getDeviceSerial() != null ? device.getDeviceSerial() : "ID: " + device.getId(),
+                    device -> {
+                        try {
+                            return String.format("%s %s%s (ID: %d, S/N: %s, INV: %d)"
+                                    .formatted(
+                                            bus.getTypeService().getById(ClientUser.get(), device.getTypeId()).get().getDisplayName(),
+                                            bus.getTypeMarkService().getById(ClientUser.get(), device.getTypeMarkId()).get().getDisplayName(),
+                                            (device.getOsId() != null ? " / %s".formatted(
+                                                 bus.getOSystemService().getById(ClientUser.get(), device.getOsId()).get().getDisplayName()
+                                            ) : ""),
+                                            device.getId(),
+                                            device.getDeviceSerial(),
+                                            0L
+                                    )
+                            );
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                    },
                 this::detachDevice,
                 this::showDeviceDetails);
 

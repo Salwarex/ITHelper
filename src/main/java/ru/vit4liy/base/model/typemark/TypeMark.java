@@ -1,16 +1,20 @@
 package ru.vit4liy.base.model.typemark;
 
+import ru.vit4liy.base.bus.ObjectEntity;
+import ru.vit4liy.base.bus.services.TypeMarkBusService;
 import ru.vit4liy.base.distribution.ForeignId;
 import ru.vit4liy.base.distribution.PrimaryId;
+import ru.vit4liy.base.distribution.UniqueValueIdentifier;
 import ru.vit4liy.base.model.type.Type;
 import ru.vit4liy.rsc.entity.DatabaseEntity;
 
 import java.util.Objects;
 
+@ObjectEntity(serviceInterface=TypeMarkBusService.class)
 public class TypeMark implements DatabaseEntity {
     @PrimaryId private long typeMarkId;
     @ForeignId(foreignClass = Type.class) private long typeId;
-    private String displayName;
+    @UniqueValueIdentifier private String displayName;
     private long createdAt;
 
     public TypeMark(long typeMarkId, long typeId, String displayName, long createdAt) {

@@ -22,8 +22,20 @@ import ru.vit4liy.backend.modules.data.typemark.TypeMarkRepository;
 import ru.vit4liy.backend.modules.data.typemark.TypeMarkService;
 import ru.vit4liy.base.bus.BackendDataBus;
 import ru.vit4liy.base.bus.services.*;
+import ru.vit4liy.base.model.device.Device;
+import ru.vit4liy.base.model.device.system.OSystem;
+import ru.vit4liy.base.model.employee.Employee;
+import ru.vit4liy.base.model.intersections.DeviceLocation;
+import ru.vit4liy.base.model.intersections.EmployeeLocation;
+import ru.vit4liy.base.model.intersections.LocationPhone;
+import ru.vit4liy.base.model.location.Location;
+import ru.vit4liy.base.model.phone.Phone;
+import ru.vit4liy.base.model.type.Type;
+import ru.vit4liy.base.model.typemark.TypeMark;
 import ru.vit4liy.perm.PermissionService;
 import ru.vit4liy.rsc.DatabaseManager;
+import ru.vit4liy.rsc.entity.Entity;
+import ru.vit4liy.rsc.service.GenericDatabaseBusService;
 
 public class LocalDataBus implements BackendDataBus {
     private final DeviceBusService deviceService;
@@ -118,5 +130,33 @@ public class LocalDataBus implements BackendDataBus {
     @Override
     public DatabaseService getDatabaseService() {
         return databaseService;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T extends Entity> GenericDatabaseBusService<T> getService(Class<T> clazz) {
+        if (clazz == Device.class) {
+            return (GenericDatabaseBusService<T>) getDeviceService();
+        } else if (clazz == Location.class) {
+            return (GenericDatabaseBusService<T>) getLocationService();
+        } else if (clazz == Type.class) {
+            return (GenericDatabaseBusService<T>) getTypeService();
+        } else if (clazz == TypeMark.class) {
+            return (GenericDatabaseBusService<T>) getTypeMarkService();
+        } else if (clazz == OSystem.class) {
+            return (GenericDatabaseBusService<T>) getOSystemService();
+        } else if (clazz == Employee.class) {
+            return (GenericDatabaseBusService<T>) getEmployeeService();
+        } else if (clazz == Phone.class) {
+            return (GenericDatabaseBusService<T>) getPhoneService();
+        } else if (clazz == DeviceLocation.class) {
+            return (GenericDatabaseBusService<T>) getDeviceLocationService();
+        } else if (clazz == EmployeeLocation.class) {
+            return (GenericDatabaseBusService<T>) getEmployeeLocationService();
+        } else if (clazz == LocationPhone.class) {
+            return (GenericDatabaseBusService<T>) getLocationPhoneService();
+        }
+
+        throw new IllegalArgumentException("Unknown or unsupported class: " + clazz.getName());
     }
 }

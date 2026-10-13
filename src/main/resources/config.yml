@@ -14,6 +14,6 @@ database:
 
 web:
   port: 2701
-debug: true
+debug: false
 
 version: 2
