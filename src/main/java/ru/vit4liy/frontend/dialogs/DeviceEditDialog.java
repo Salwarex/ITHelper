@@ -4,6 +4,7 @@ import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
+import ru.vit4liy.App;
 import ru.vit4liy.base.model.device.Device;
 import ru.vit4liy.base.model.device.system.OSystem;
 import ru.vit4liy.base.model.type.Type;
@@ -73,9 +74,9 @@ public class DeviceEditDialog extends Dialog<Device> {
 
         ApplicationFeatures.runAsync(() -> {
             try {
-                List<Type> types = ApplicationFeatures.bus().getTypeService().getAll(ClientUser.get());
-                List<TypeMark> marks = ApplicationFeatures.bus().getTypeMarkService().getAll(ClientUser.get());
-                List<OSystem> osSystems = ApplicationFeatures.bus().getOSystemService().getAll(ClientUser.get());
+                List<Type> types = App.getInstance().bus().getTypeService().getAll(ClientUser.get());
+                List<TypeMark> marks = App.getInstance().bus().getTypeMarkService().getAll(ClientUser.get());
+                List<OSystem> osSystems = App.getInstance().bus().getOSystemService().getAll(ClientUser.get());
 
                 Platform.runLater(() -> {
                     // Типы

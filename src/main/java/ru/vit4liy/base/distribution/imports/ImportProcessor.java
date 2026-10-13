@@ -36,7 +36,21 @@ public class ImportProcessor {
                 Map.Entry<String, JsonNode> field = fields.next();
                 String key = field.getKey();
 
-                if (key.startsWith("pk_") || key.startsWith("fk_") || key.startsWith("pfk_")) {
+                String realFieldName = null;
+                String suffixType = null;
+
+                if (key.endsWith("pk")) {
+                    realFieldName = key.substring(0, key.length() - 2);
+                    suffixType = "pk";
+                } else if (key.endsWith("fk")) {
+                    realFieldName = key.substring(0, key.length() - 2);
+                    suffixType = "fk";
+                } else if (key.endsWith("pfk")) {
+                    realFieldName = key.substring(0, key.length() - 3);
+                    suffixType = "pfk";
+                }
+
+                if (realFieldName != null) {
                     if (field.getValue().isNull()) continue;
 
                     if (!field.getValue().isTextual()) {
@@ -45,12 +59,10 @@ public class ImportProcessor {
 
                     UUID value = UUID.fromString(field.getValue().asText());
 
-                    if (key.startsWith("pk_")) {
+                    if (suffixType.equals("pk") || suffixType.equals("pfk")) {
                         pks.put(key, value);
-                    } else if (key.startsWith("fk_")) {
-                        fks.put(key, value);
-                    } else if (key.startsWith("pfk_")) {
-                        pks.put(key, value);
+                    }
+                    if (suffixType.equals("fk") || suffixType.equals("pfk")) {
                         fks.put(key, value);
                     }
                 }
@@ -70,7 +82,12 @@ public class ImportProcessor {
                 String jsonKey = fkEntry.getKey();
                 UUID originalUuid = fkEntry.getValue();
 
-                String realFieldName = jsonKey.substring(3);
+                String realFieldName;
+                if (jsonKey.endsWith("pfk")) {
+                    realFieldName = jsonKey.substring(0, jsonKey.length() - 3);
+                } else {
+                    realFieldName = jsonKey.substring(0, jsonKey.length() - 2);
+                }
 
                 Class<?> foreignClass = getForeignClass(clazz, realFieldName);
                 MappingKey key = new MappingKey(foreignClass, originalUuid);

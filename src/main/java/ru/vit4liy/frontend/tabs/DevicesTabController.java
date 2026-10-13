@@ -7,6 +7,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import ru.vit4liy.App;
 import ru.vit4liy.base.model.device.Device;
 import ru.vit4liy.base.model.device.system.OSystem;
 import ru.vit4liy.base.model.intersections.DeviceLocation;
@@ -98,7 +99,7 @@ public class DevicesTabController extends BaseTabController {
         dialog.showAndWait().ifPresent(device -> {
             runAsync(() -> {
                 try {
-                    ApplicationFeatures.bus().getDeviceService().create(ClientUser.get(), device);
+                    App.getInstance().bus().getDeviceService().create(ClientUser.get(), device);
                     Platform.runLater(() -> {
                         AlertUtil.info("Успех", "Устройство создано");
                         reload();
@@ -118,7 +119,7 @@ public class DevicesTabController extends BaseTabController {
         dialog.showAndWait().ifPresent(updated -> {
             runAsync(() -> {
                 try {
-                    ApplicationFeatures.bus().getDeviceService().update(ClientUser.get(), updated);
+                    App.getInstance().bus().getDeviceService().update(ClientUser.get(), updated);
                     Platform.runLater(() -> {
                         AlertUtil.info("Успех", "Устройство обновлено");
                         reload();
@@ -143,7 +144,7 @@ public class DevicesTabController extends BaseTabController {
         }
         runAsync(() -> {
             try {
-                ApplicationFeatures.bus().getDeviceService().delete(ClientUser.get(), d.getId());
+                App.getInstance().bus().getDeviceService().delete(ClientUser.get(), d.getId());
                 Platform.runLater(() -> {
                     AlertUtil.info("Успех", "Устройство удалено");
                     reload();
@@ -160,20 +161,20 @@ public class DevicesTabController extends BaseTabController {
     public void reload() {
         runAsync(() -> {
             try {
-                List<Type> types = ApplicationFeatures.bus().getTypeService().getAll(ClientUser.get());
+                List<Type> types = App.getInstance().bus().getTypeService().getAll(ClientUser.get());
                 Map<Long, String> tempTypeNameMap = new HashMap<>();
                 for (Type t : types) {
                     tempTypeNameMap.put(t.getId(), t.getDisplayName());
                 }
 
-                List<OSystem> osSystems = ApplicationFeatures.bus().getOSystemService().getAll(ClientUser.get());
+                List<OSystem> osSystems = App.getInstance().bus().getOSystemService().getAll(ClientUser.get());
                 Map<Long, String> tempOsNameMap = new HashMap<>();
                 for (OSystem os : osSystems) {
                     tempOsNameMap.put(os.getId(), os.getDisplayName());
                 }
 
-                List<Location> allLocations = ApplicationFeatures.bus().getLocationService().getAll(ClientUser.get());
-                List<DeviceLocation> mappings = ApplicationFeatures.bus().getDeviceLocationService().getAll(ClientUser.get());
+                List<Location> allLocations = App.getInstance().bus().getLocationService().getAll(ClientUser.get());
+                List<DeviceLocation> mappings = App.getInstance().bus().getDeviceLocationService().getAll(ClientUser.get());
                 Map<Long, String> tempLocationPaths = new HashMap<>();
 
                 for (DeviceLocation dl : mappings) {
@@ -192,20 +193,20 @@ public class DevicesTabController extends BaseTabController {
 
                 List<Device> result;
                 if (query != null && !query.isBlank()) {
-                    result = ApplicationFeatures.bus().getDeviceService().getDeviceBySerial(ClientUser.get(), query.trim())
+                    result = App.getInstance().bus().getDeviceService().getDeviceBySerial(ClientUser.get(), query.trim())
                             .map(List::of).orElse(List.of());
                 } else if (ipFilter != null && !ipFilter.isBlank()) {
-                    result = ApplicationFeatures.bus().getDeviceService().getDevicesByIp(ClientUser.get(), ipFilter.trim());
+                    result = App.getInstance().bus().getDeviceService().getDevicesByIp(ClientUser.get(), ipFilter.trim());
                 } else if (osFilter != null && !osFilter.equals("Все ОС")) {
                     OSystem selectedOs = osSystems.stream()
                             .filter(os -> os.getDisplayName().equals(osFilter))
                             .findFirst().orElse(null);
-                    result = selectedOs != null ? ApplicationFeatures.bus().getDeviceService().getDevicesByOsId(ClientUser.get(), selectedOs.getId()) : List.of();
+                    result = selectedOs != null ? App.getInstance().bus().getDeviceService().getDevicesByOsId(ClientUser.get(), selectedOs.getId()) : List.of();
                 } else if (statusFilter != null && !statusFilter.equals("Все статусы")) {
                     String dbStatus = DeviceStatusUtil.getDbKey(statusFilter);
-                    result = ApplicationFeatures.bus().getDeviceService().getDevicesByStatus(ClientUser.get(), dbStatus);
+                    result = App.getInstance().bus().getDeviceService().getDevicesByStatus(ClientUser.get(), dbStatus);
                 } else {
-                    result = ApplicationFeatures.bus().getDeviceService().getAll(ClientUser.get());
+                    result = App.getInstance().bus().getDeviceService().getAll(ClientUser.get());
                 }
 
                 Platform.runLater(() -> {

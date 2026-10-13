@@ -7,6 +7,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import ru.vit4liy.App;
 import ru.vit4liy.base.model.employee.Employee;
 import ru.vit4liy.base.model.intersections.EmployeeLocation;
 import ru.vit4liy.base.model.location.Location;
@@ -92,8 +93,8 @@ public class EmployeesTabController extends BaseTabController {
 
         runAsync(() -> {
             try {
-                List<Location> allLocations = ApplicationFeatures.bus().getLocationService().getAll(ClientUser.get());
-                List<EmployeeLocation> mappings = ApplicationFeatures.bus().getEmployeeLocationService().getAll(ClientUser.get());
+                List<Location> allLocations = App.getInstance().bus().getLocationService().getAll(ClientUser.get());
+                List<EmployeeLocation> mappings = App.getInstance().bus().getEmployeeLocationService().getAll(ClientUser.get());
 
                 Map<Long, String> tempPaths = new HashMap<>();
                 for (EmployeeLocation el : mappings) {
@@ -107,13 +108,13 @@ public class EmployeesTabController extends BaseTabController {
 
                 List<Employee> result;
                 if (query == null || query.isBlank()) {
-                    result = ApplicationFeatures.bus().getEmployeeService().getAll(ClientUser.get());
+                    result = App.getInstance().bus().getEmployeeService().getAll(ClientUser.get());
                 } else {
                     String searchQuery = query.trim();
                     result = switch (mode) {
-                        case "По имени" -> ApplicationFeatures.bus().getEmployeeService().searchEmployeesByName(ClientUser.get(), searchQuery);
-                        case "По ФИО целиком" -> ApplicationFeatures.bus().getEmployeeService().searchEmployeesByFullName(ClientUser.get(), searchQuery);
-                        default -> ApplicationFeatures.bus().getEmployeeService().searchEmployeesBySurname(ClientUser.get(), searchQuery);
+                        case "По имени" -> App.getInstance().bus().getEmployeeService().searchEmployeesByName(ClientUser.get(), searchQuery);
+                        case "По ФИО целиком" -> App.getInstance().bus().getEmployeeService().searchEmployeesByFullName(ClientUser.get(), searchQuery);
+                        default -> App.getInstance().bus().getEmployeeService().searchEmployeesBySurname(ClientUser.get(), searchQuery);
                     };
                 }
 
@@ -160,7 +161,7 @@ public class EmployeesTabController extends BaseTabController {
         dialog.showAndWait().ifPresent(employee -> {
             runAsync(() -> {
                 try {
-                    ApplicationFeatures.bus().getEmployeeService().create(ClientUser.get(), employee);
+                    App.getInstance().bus().getEmployeeService().create(ClientUser.get(), employee);
                     Platform.runLater(() -> {
                         AlertUtil.info("Успех", "Сотрудник создан");
                         reload();
@@ -184,7 +185,7 @@ public class EmployeesTabController extends BaseTabController {
         dialog.showAndWait().ifPresent(updated -> {
             runAsync(() -> {
                 try {
-                    ApplicationFeatures.bus().getEmployeeService().update(ClientUser.get(), updated);
+                    App.getInstance().bus().getEmployeeService().update(ClientUser.get(), updated);
                     Platform.runLater(() -> {
                         AlertUtil.info("Успех", "Сотрудник обновлён");
                         reload();
@@ -210,7 +211,7 @@ public class EmployeesTabController extends BaseTabController {
 
         runAsync(() -> {
             try {
-                ApplicationFeatures.bus().getEmployeeService().delete(ClientUser.get(), emp.getId());
+                App.getInstance().bus().getEmployeeService().delete(ClientUser.get(), emp.getId());
                 Platform.runLater(() -> {
                     AlertUtil.info("Успех", "Сотрудник удалён");
                     reload();

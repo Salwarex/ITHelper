@@ -87,7 +87,7 @@ def isMac = osName.contains("mac")
 jpackage {
     dependsOn copyDeps
 
-    appName = "ItHelper"
+    appName = "ITУчёт"
     appVersion = project.version.toString()
     vendor = "ru.vit4liy"
     destination = "$buildDir/distributions"
@@ -112,13 +112,13 @@ jpackage {
     } else if (isLinux) {
         type = ImageType.RPM
         icon = "package/linux/invc.png"
-        linuxPackageName = "ithelper"
+        linuxPackageName = "itучёт"
         linuxShortcut = true
         linuxMenuGroup = "Utility"
     } else if (isMac) {
         type = ImageType.DMG
         icon = "package/macos/invc.icns"
-        macPackageName = "ItHelper"
+        macPackageName = "ITУчёт"
     } else {
         throw new GradleException("Неподдерживаемая ОС для сборки jpackage: ${osName}")
     }

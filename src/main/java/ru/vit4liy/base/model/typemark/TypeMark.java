@@ -2,13 +2,14 @@ package ru.vit4liy.base.model.typemark;
 
 import ru.vit4liy.base.distribution.ForeignId;
 import ru.vit4liy.base.distribution.PrimaryId;
+import ru.vit4liy.base.model.type.Type;
 import ru.vit4liy.rsc.entity.DatabaseEntity;
 
 import java.util.Objects;
 
 public class TypeMark implements DatabaseEntity {
     @PrimaryId private long typeMarkId;
-    @ForeignId(foreignClass = TypeMark.class) private long typeId;
+    @ForeignId(foreignClass = Type.class) private long typeId;
     private String displayName;
     private long createdAt;
 

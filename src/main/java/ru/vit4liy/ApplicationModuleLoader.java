@@ -8,7 +8,7 @@ import ru.vit4liy.base.distribution.DistributionModule;
 import ru.vit4liy.base.util.Log;
 import ru.vit4liy.frontend.Frontend;
 import ru.vit4liy.frontend.data.web.WebBackendDataBus;
-import ru.vit4liy.frontend.util.ApplicationFeatures;
+import ru.vit4liy.it72h.lib.logger.output.Color;
 import ru.vit4liy.modular.ModuleLoader;
 
 import java.util.concurrent.ExecutorService;
@@ -37,15 +37,10 @@ public class ApplicationModuleLoader extends ModuleLoader {
                 Log.err("Backend initialize exception! " + e.getMessage());
                 throw new RuntimeException(e);
             }
-            bus = backend.getBackendModuleLoader().getDatabaseModule().getLocalDataBus();
         }
         else{
-            bus = new WebBackendDataBus(App.getConfig().getString("server.remote.ip", "localhost"),
-                    App.getConfig().getInt("server.remote.port", 2701));
             Log.wrn("Application started by client-only mode. Initialized by web-client data bus.");
         }
-        ApplicationFeatures.setBus(bus); //херня
-        this.distributionModule = new DistributionModule(this, bus);
         this.frontend = new Frontend(this, pool, primaryStage, parameters);
     }
 
@@ -54,7 +49,6 @@ public class ApplicationModuleLoader extends ModuleLoader {
         declaration(pool, primaryStage, parameters);
         if(serverMode) modules.put(Backend.class, backend);
         modules.put(Frontend.class, frontend);
-        modules.put(DistributionModule.class, distributionModule);
     }
 
     public Backend getBackend() {
@@ -63,6 +57,19 @@ public class ApplicationModuleLoader extends ModuleLoader {
 
     public Frontend getFrontend() {
         return frontend;
+    }
+
+    public void initBusAndDeclarations(){
+        Log.out("Initializing data bus...");
+        if(serverMode){
+            bus = backend.getBackendModuleLoader().getDatabaseModule().getLocalDataBus();
+        }else{
+            bus = new WebBackendDataBus(App.getConfig().getString("server.remote.ip", "localhost"),
+                    App.getConfig().getInt("server.remote.port", 2701));
+        }
+        this.distributionModule = new DistributionModule(this, bus);
+        modules.put(DistributionModule.class, distributionModule);
+        Log.out("Data bus initialized: " + (serverMode ? (Color.YELLOW + "Localserver") : (Color.PURPLE + "Remote")));
     }
 
     public BackendDataBus getBus() {

@@ -27,9 +27,9 @@ public final class ApplicationFeatures {
     public static void setBus(BackendDataBus providedBus){
         bus = providedBus;
     }
-    public static BackendDataBus bus() {
-        return bus;
-    }
+//    public static BackendDataBus bus() {
+//        return bus;
+//    }
 
     public static PermissionModule perm() {
         return loader().getPermissionModule();

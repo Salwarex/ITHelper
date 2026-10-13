@@ -44,9 +44,11 @@ public class ExportProcessor {
                     if (field.isAnnotationPresent(PrimaryId.class)) {
                         replaceWithUuid(jsonNode, fieldName, idValue, "pk", currentClass.getName());
                     } else if (field.isAnnotationPresent(ForeignId.class)) {
-                        replaceWithUuid(jsonNode, fieldName, idValue, "fk", currentClass.getName());
+                        ForeignId foreignId = field.getAnnotation(ForeignId.class);
+                        replaceWithUuid(jsonNode, fieldName, idValue, "fk", foreignId.foreignClass().getName());
                     } else if (field.isAnnotationPresent(PrimaryForeignKey.class)) {
-                        replaceWithUuid(jsonNode, fieldName, idValue, "pfk", currentClass.getName());
+                        PrimaryForeignKey pfk = field.getAnnotation(PrimaryForeignKey.class);
+                        replaceWithUuid(jsonNode, fieldName, idValue, "pfk", pfk.foreignClass().getName());
                     }
                 } catch (IllegalAccessException e) {
                     throw new RuntimeException("Can't get field value: " + fieldName, e);

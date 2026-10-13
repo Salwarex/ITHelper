@@ -5,12 +5,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import javafx.application.Application;
 import javafx.stage.Stage;
 import ru.vit4liy.backend.Backend;
+import ru.vit4liy.base.bus.BackendDataBus;
+import ru.vit4liy.base.distribution.DistributionModule;
 import ru.vit4liy.base.util.Log;
 import ru.vit4liy.frontend.Frontend;
 import ru.vit4liy.it72h.lib.config.Config;
 import ru.vit4liy.it72h.lib.logger.log.FileTerminalLogger;
 import ru.vit4liy.it72h.lib.logger.log.Logger;
-import ru.vit4liy.modular.ModuleLoader;
 import ru.vit4liy.base.util.FileUtils;
 
 import java.io.*;
@@ -49,6 +50,14 @@ public class App extends Application {
         return POOL;
     }
 
+    public BackendDataBus bus(){
+        if(moduleLoader == null) {
+            Log.wrn("Module loader not loaded! Can't provide data bus.");
+            return null;
+        }
+        return moduleLoader.getBus();
+    }
+
     @Override
     public void start(Stage stage) throws Exception {
         instance = this;
@@ -56,11 +65,15 @@ public class App extends Application {
         moduleLoader = new ApplicationModuleLoader(POOL, false, stage, getParameters(), CONFIG.getBoolean("server.localserver", true));
         moduleLoader.load();
 
-        Log.out("Module initializing...");
+        Log.out("Modules initializing...");
 
         try {
             moduleLoader.getModule(Backend.class).run();
-            Thread.sleep(5000L);
+            Thread.sleep(4000L);
+            moduleLoader.initBusAndDeclarations();
+            Thread.sleep(1000L);
+            moduleLoader.getModule(DistributionModule.class).run();
+            Thread.sleep(3000L);
             moduleLoader.getModule(Frontend.class).run();
         } catch (Exception e) {
             Log.err("Can't initialize modules! " + e.getMessage());

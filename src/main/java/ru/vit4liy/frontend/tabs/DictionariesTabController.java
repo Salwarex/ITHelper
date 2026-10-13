@@ -4,6 +4,7 @@ import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import ru.vit4liy.App;
 import ru.vit4liy.base.model.device.system.OSystem;
 import ru.vit4liy.base.model.phone.Phone;
 import ru.vit4liy.base.model.type.Type;
@@ -37,7 +38,7 @@ public class DictionariesTabController extends BaseTabController {
         colMarkName.setCellValueFactory(cd -> new javafx.beans.property.SimpleStringProperty(cd.getValue().getDisplayName()));
         colMarkType.setCellValueFactory(cd -> {
             try {
-                Type t = ApplicationFeatures.bus().getTypeService().getById(ClientUser.get(), cd.getValue().getTypeId()).orElse(null);
+                Type t = App.getInstance().bus().getTypeService().getById(ClientUser.get(), cd.getValue().getTypeId()).orElse(null);
                 return new javafx.beans.property.SimpleStringProperty(t != null ? t.getDisplayName() : "ID: " + cd.getValue().getTypeId());
             } catch (Exception e) { return new javafx.beans.property.SimpleStringProperty("Ошибка"); }
         });
@@ -56,7 +57,7 @@ public class DictionariesTabController extends BaseTabController {
             try {
                 Platform.runLater(() -> {
                     try {
-                        typesTable.setItems(FXCollections.observableArrayList(ApplicationFeatures.bus().getTypeService().getAll(ClientUser.get())));
+                        typesTable.setItems(FXCollections.observableArrayList(App.getInstance().bus().getTypeService().getAll(ClientUser.get())));
                     } catch (SQLException e) {
                         throw new RuntimeException(e);
                     } catch (Exception e) {
@@ -65,7 +66,7 @@ public class DictionariesTabController extends BaseTabController {
                 });
                 Platform.runLater(() -> {
                     try {
-                        marksTable.setItems(FXCollections.observableArrayList(ApplicationFeatures.bus().getTypeMarkService().getAll(ClientUser.get())));
+                        marksTable.setItems(FXCollections.observableArrayList(App.getInstance().bus().getTypeMarkService().getAll(ClientUser.get())));
                     } catch (SQLException e) {
                         throw new RuntimeException(e);
                     } catch (Exception e) {
@@ -74,14 +75,14 @@ public class DictionariesTabController extends BaseTabController {
                 });
                 Platform.runLater(() -> {
                     try {
-                        phonesTable.setItems(FXCollections.observableArrayList(ApplicationFeatures.bus().getPhoneService().getAll(ClientUser.get())));
+                        phonesTable.setItems(FXCollections.observableArrayList(App.getInstance().bus().getPhoneService().getAll(ClientUser.get())));
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
                 });
                 Platform.runLater(() -> {
                     try {
-                        osTable.setItems(FXCollections.observableArrayList(ApplicationFeatures.bus().getOSystemService().getAll(ClientUser.get())));
+                        osTable.setItems(FXCollections.observableArrayList(App.getInstance().bus().getOSystemService().getAll(ClientUser.get())));
                     } catch (SQLException e) {
                         throw new RuntimeException(e);
                     } catch (Exception e) {
@@ -97,7 +98,7 @@ public class DictionariesTabController extends BaseTabController {
         d.showAndWait().ifPresent(name -> runAsync(() -> {
             try {
                 Type t = new Type(); t.setDisplayName(name.trim()); t.setCreatedAt(System.currentTimeMillis());
-                ApplicationFeatures.bus().getTypeService().create(ClientUser.get(), t);
+                App.getInstance().bus().getTypeService().create(ClientUser.get(), t);
                 Platform.runLater(this::reloadAll);
             } catch (Exception e) { handleError(e); }
         }));
@@ -109,7 +110,7 @@ public class DictionariesTabController extends BaseTabController {
         d.showAndWait().ifPresent(name -> runAsync(() -> {
             try {
                 t.setDisplayName(name.trim());
-                ApplicationFeatures.bus().getTypeService().update(ClientUser.get(), t);
+                App.getInstance().bus().getTypeService().update(ClientUser.get(), t);
                 Platform.runLater(this::reloadAll);
             } catch (Exception e) { handleError(e); }
         }));
@@ -119,7 +120,7 @@ public class DictionariesTabController extends BaseTabController {
         if (t == null) { showError("Выберите тип"); return; }
         if (!AlertUtil.confirm("Удаление", "Удалить тип \"" + t.getDisplayName() + "\"?")) return;
         runAsync(() -> {
-            try { ApplicationFeatures.bus().getTypeService().delete(ClientUser.get(), t.getId()); Platform.runLater(this::reloadAll); }
+            try { App.getInstance().bus().getTypeService().delete(ClientUser.get(), t.getId()); Platform.runLater(this::reloadAll); }
             catch (Exception e) { handleError(e); }
         });
     }
@@ -128,7 +129,7 @@ public class DictionariesTabController extends BaseTabController {
         TypeMarkCreateDialog dialog = new TypeMarkCreateDialog();
         dialog.showAndWait().ifPresent(mark -> runAsync(() -> {
             try {
-                ApplicationFeatures.bus().getTypeMarkService().create(ClientUser.get(), mark);
+                App.getInstance().bus().getTypeMarkService().create(ClientUser.get(), mark);
                 Platform.runLater(this::reloadAll);
             } catch (Exception e) { handleError(e); }
         }));
@@ -140,7 +141,7 @@ public class DictionariesTabController extends BaseTabController {
         d.showAndWait().ifPresent(name -> runAsync(() -> {
             try {
                 m.setDisplayName(name.trim());
-                ApplicationFeatures.bus().getTypeMarkService().update(ClientUser.get(), m);
+                App.getInstance().bus().getTypeMarkService().update(ClientUser.get(), m);
                 Platform.runLater(this::reloadAll);
             } catch (Exception e) { handleError(e); }
         }));
@@ -150,7 +151,7 @@ public class DictionariesTabController extends BaseTabController {
         if (m == null) { showError("Выберите марку"); return; }
         if (!AlertUtil.confirm("Удаление", "Удалить марку \"" + m.getDisplayName() + "\"?")) return;
         runAsync(() -> {
-            try { ApplicationFeatures.bus().getTypeMarkService().delete(ClientUser.get(), m.getId()); Platform.runLater(this::reloadAll); }
+            try { App.getInstance().bus().getTypeMarkService().delete(ClientUser.get(), m.getId()); Platform.runLater(this::reloadAll); }
             catch (Exception e) { handleError(e); }
         });
     }
@@ -170,7 +171,7 @@ public class DictionariesTabController extends BaseTabController {
         d.getDialogPane().setContent(grid);
         d.setResultConverter(b -> b == ok ? createPhone(corp.getText(), pub.getText()) : null);
         d.showAndWait().ifPresent(phone -> runAsync(() -> {
-            try { ApplicationFeatures.bus().getPhoneService().create(ClientUser.get(), phone); Platform.runLater(this::reloadAll); }
+            try { App.getInstance().bus().getPhoneService().create(ClientUser.get(), phone); Platform.runLater(this::reloadAll); }
             catch (Exception e) { handleError(e); }
         }));
     }
@@ -192,7 +193,7 @@ public class DictionariesTabController extends BaseTabController {
         d.showAndWait().ifPresent(phone -> runAsync(() -> {
             try {
                 phone.setId(p.getId());
-                ApplicationFeatures.bus().getPhoneService().update(ClientUser.get(), phone);
+                App.getInstance().bus().getPhoneService().update(ClientUser.get(), phone);
                 Platform.runLater(this::reloadAll);
             } catch (Exception e) { handleError(e); }
         }));
@@ -202,7 +203,7 @@ public class DictionariesTabController extends BaseTabController {
         if (p == null) { showError("Выберите телефон"); return; }
         if (!AlertUtil.confirm("Удаление", "Удалить телефон " + p.getCorpPhoneNumber() + "?")) return;
         runAsync(() -> {
-            try { ApplicationFeatures.bus().getPhoneService().delete(ClientUser.get(), p.getId()); Platform.runLater(this::reloadAll); }
+            try { App.getInstance().bus().getPhoneService().delete(ClientUser.get(), p.getId()); Platform.runLater(this::reloadAll); }
             catch (Exception e) { handleError(e); }
         });
     }
@@ -236,7 +237,7 @@ public class DictionariesTabController extends BaseTabController {
             try {
                 OSystem os = new OSystem();
                 os.setDisplayName(name.trim());
-                ApplicationFeatures.bus().getOSystemService().create(ClientUser.get(), os);
+                App.getInstance().bus().getOSystemService().create(ClientUser.get(), os);
                 Platform.runLater(this::reloadAll);
             } catch (Exception e) { handleError(e); }
         }));
@@ -251,7 +252,7 @@ public class DictionariesTabController extends BaseTabController {
         d.showAndWait().ifPresent(name -> runAsync(() -> {
             try {
                 os.setDisplayName(name.trim());
-                ApplicationFeatures.bus().getOSystemService().update(ClientUser.get(), os);
+                App.getInstance().bus().getOSystemService().update(ClientUser.get(), os);
                 Platform.runLater(this::reloadAll);
             } catch (Exception e) { handleError(e); }
         }));
@@ -263,7 +264,7 @@ public class DictionariesTabController extends BaseTabController {
         if (!AlertUtil.confirm("Удаление", "Удалить ОС \"" + os.getDisplayName() + "\"?")) return;
         runAsync(() -> {
             try {
-                ApplicationFeatures.bus().getOSystemService().delete(ClientUser.get(), os.getId());
+                App.getInstance().bus().getOSystemService().delete(ClientUser.get(), os.getId());
                 Platform.runLater(this::reloadAll);
             } catch (Exception e) { handleError(e); }
         });

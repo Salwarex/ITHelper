@@ -16,28 +16,33 @@ public final class AlertUtil {
     private AlertUtil() {}
 
     public static void info(String title, String message) {
+        Log.out("Sending info: %s : %s".formatted(title, message));
         Platform.runLater(() -> {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle(title);
             alert.setHeaderText(null);
             alert.setContentText(message);
             alert.showAndWait();
-            Log.out("Sending info: %s : %s".formatted(title, message));
         });
     }
 
     public static void error(String title, String message) {
+        Log.err("%s: %s".formatted(title, message));
         Platform.runLater(() -> {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle(title);
             alert.setHeaderText("Произошла ошибка");
             alert.setContentText(message);
             alert.showAndWait();
-            Log.err("%s: %s".formatted(title, message));
         });
     }
 
     public static void errorWithStack(String title, Throwable t) {
+        Log.err("%s: %s".formatted(title, t.getMessage()));
+        for(StackTraceElement stackTraceElement : t.getStackTrace()){
+            Log.err(stackTraceElement.toString());
+        }
+
         Platform.runLater(() -> {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle(title);
@@ -59,8 +64,6 @@ public final class AlertUtil {
             content.add(area, 0, 0);
             alert.getDialogPane().setExpandableContent(content);
             alert.showAndWait();
-
-            Log.err("%s: %s, %s".formatted(title, t.getMessage(), t.getStackTrace()));
         });
     }
 
