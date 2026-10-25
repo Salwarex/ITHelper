@@ -37,7 +37,7 @@ public class LocationsTabController extends BaseTabController {
     @FXML private TreeView<Location> locationsTree;
     @FXML private Label lblKey;
     @FXML private Label lblDisplayName;
-    @FXML private Label lblNickname; // <-- Добавлено
+    @FXML private Label lblNickname;
     @FXML private Label lblParent;
     @FXML private Label lblId;
     @FXML private Button btnAdd;
@@ -69,7 +69,6 @@ public class LocationsTabController extends BaseTabController {
                         setDisable(false);
                         setStyle("");
 
-                        // <-- ИЗМЕНЕНИЕ: Форматирование текста ячейки с учетом nickname
                         String displayText = item.getDisplayName();
                         if (item.getNickname() != null && !item.getNickname().isBlank()) {
                             displayText += " - " + item.getNickname();
@@ -87,7 +86,8 @@ public class LocationsTabController extends BaseTabController {
             if (event.getClickCount() == 1) {
                 Node target = (Node) event.getTarget();
                 TreeCell<?> cell = findTreeCell(target);
-                if (cell != null && cell.getItem() == null) {
+
+                if (cell == null || cell.getItem() == null) {
                     locationsTree.getSelectionModel().clearSelection();
                 }
             }
@@ -105,23 +105,37 @@ public class LocationsTabController extends BaseTabController {
 
         BackendDataBus bus = App.getInstance().bus();
 
+        // === ИСПРАВЛЕНИЕ: Безопасное извлечение данных с защитой от null и пустых Optional ===
         setupListView(lvDevices,
                 device -> {
                     try {
-                        return String.format("%s %s%s (ID: %d, S/N: %s, INV: %s)"
-                                .formatted(
-                                        bus.getTypeService().getById(ClientUser.get(), device.getTypeId()).get().getDisplayName(),
-                                        bus.getTypeMarkService().getById(ClientUser.get(), device.getTypeMarkId()).get().getDisplayName(),
-                                        (device.getOsId() != null ? " / %s".formatted(
-                                                bus.getOSystemService().getById(ClientUser.get(), device.getOsId()).get().getDisplayName()
-                                        ) : ""),
-                                        device.getId(),
-                                        device.getDeviceSerial(),
-                                        device.getDeviceInventoryNumber()
-                                )
+                        String typeName = bus.getTypeService().getById(ClientUser.get(), device.getTypeId())
+                                .map(Type::getDisplayName).orElse("Неизвестный тип");
+
+                        String markName = "—";
+                        if (device.getTypeMarkId() != null) {
+                            markName = bus.getTypeMarkService().getById(ClientUser.get(), device.getTypeMarkId())
+                                    .map(TypeMark::getDisplayName).orElse("Неизвестная марка");
+                        }
+
+                        String osName = "";
+                        if (device.getOsId() != null) {
+                            osName = " / " + bus.getOSystemService().getById(ClientUser.get(), device.getOsId())
+                                    .map(OSystem::getDisplayName).orElse("Неизвестная ОС");
+                        }
+
+                        return String.format("%s %s%s (ID: %d, S/N: %s, INV: %s)",
+                                typeName,
+                                markName,
+                                osName,
+                                device.getId(),
+                                device.getDeviceSerial() != null ? device.getDeviceSerial() : "—",
+                                device.getDeviceInventoryNumber() != null ? device.getDeviceInventoryNumber() : "—"
                         );
                     } catch (Exception e) {
-                        throw new RuntimeException(e);
+                        System.err.println("Ошибка форматирования устройства ID=" + device.getId());
+                        e.printStackTrace();
+                        return "Ошибка отображения (ID: " + device.getId() + ")";
                     }
                 },
                 this::detachDevice,
@@ -226,30 +240,36 @@ public class LocationsTabController extends BaseTabController {
         }
     }
 
-    // <-- ИЗМЕНЕНИЕ: Универсальный диалог создания локации (заменяет createRootLocation и createChildLocation)
     private void showLocationCreationDialog(Location parent) {
         Dialog<Location> dialog = new Dialog<>();
-        dialog.setTitle(parent == null ? "Новая корневая локация" : "Новая дочерняя локация");
-        dialog.setHeaderText(parent == null ? "Создание корневой локации" : "Родитель: " + parent.getDisplayName());
+        dialog.setTitle("Создать расположение");
+        dialog.setHeaderText(parent == null ? "Корневое расположение" : "Родитель: " + parent.getDisplayName());
 
         ButtonType createButtonType = new ButtonType("Создать", ButtonBar.ButtonData.OK_DONE);
-        dialog.getDialogPane().getButtonTypes().addAll(createButtonType, ButtonType.CANCEL);
+        ButtonType cancelButtonType = new ButtonType("Отмена", ButtonBar.ButtonData.CANCEL_CLOSE);
+        dialog.getDialogPane().getButtonTypes().addAll(createButtonType, cancelButtonType);
 
         GridPane grid = new GridPane();
+        int textFieldWidth = 300;
         grid.setHgap(10);
         grid.setVgap(10);
-        grid.setPadding(new Insets(20, 150, 10, 10));
+        grid.setPadding(new Insets(20, textFieldWidth, 10, 10));
 
         TextField nameField = new TextField();
-        nameField.setPromptText("Название локации (обязательно)");
+        nameField.setPromptText(parent == null ? "Например, \"Филиал #3\"" : "Например, \"Кабинет 120\"...");
+        nameField.setMinWidth(textFieldWidth);
 
         TextField nicknameField = new TextField();
-        nicknameField.setPromptText("Никнейм / краткое имя (необязательно)");
+        nicknameField.setPromptText(parent == null ? "Например, \"Московское отделение\"" : "Например, \"Кабинет руководителя\"");
+        nicknameField.setMinWidth(textFieldWidth);
 
-        grid.add(new Label("Название:"), 0, 0);
+        grid.add(new Label("Наименование"), 0, 0);
         grid.add(nameField, 1, 0);
-        grid.add(new Label("Никнейм:"), 0, 1);
+        grid.add(new Label("Псевдоним"), 0, 1);
         grid.add(nicknameField, 1, 1);
+
+        GridPane.setHgrow(nameField, javafx.scene.layout.Priority.ALWAYS);
+        GridPane.setHgrow(nicknameField, javafx.scene.layout.Priority.ALWAYS);
 
         dialog.getDialogPane().setContent(grid);
 
@@ -299,22 +319,30 @@ public class LocationsTabController extends BaseTabController {
 
     private void editLocation(Location location) {
         Dialog<Location> dialog = new Dialog<>();
-        dialog.setTitle("Редактировать локацию");
+        dialog.setTitle("Редактировать расположение");
         dialog.setHeaderText("Изменение данных: " + location.getDisplayName());
 
         ButtonType saveButtonType = new ButtonType("Сохранить", ButtonBar.ButtonData.OK_DONE);
-        dialog.getDialogPane().getButtonTypes().addAll(saveButtonType, ButtonType.CANCEL);
+        ButtonType cancelButtonType = new ButtonType("Отмена", ButtonBar.ButtonData.CANCEL_CLOSE);
+        dialog.getDialogPane().getButtonTypes().addAll(saveButtonType, cancelButtonType);
+
+        int textFieldWidth = 300;
 
         GridPane grid = new GridPane();
         grid.setHgap(10);
         grid.setVgap(10);
-        grid.setPadding(new javafx.geometry.Insets(20, 150, 10, 10));
+        grid.setPadding(new javafx.geometry.Insets(20, textFieldWidth, 10, 10));
 
         TextField nameField = new TextField(location.getDisplayName());
-        nameField.setPromptText("Название локации");
+        nameField.setPromptText("Например, \"Кабинет 120\"...");
+        nameField.setMinWidth(textFieldWidth);
 
         TextField nicknameField = new TextField(location.getNickname() != null ? location.getNickname() : "");
-        nicknameField.setPromptText("Никнейм / краткое имя (необязательно)");
+        nicknameField.setPromptText("Например, \"Кабинет руководителя\"");
+        nicknameField.setMinWidth(textFieldWidth);
+
+        GridPane.setHgrow(nameField, javafx.scene.layout.Priority.ALWAYS);
+        GridPane.setHgrow(nicknameField, javafx.scene.layout.Priority.ALWAYS);
 
         ComboBox<Location> parentCombo = new ComboBox<>();
 
@@ -376,9 +404,9 @@ public class LocationsTabController extends BaseTabController {
 
         grid.add(new Label("Название:"), 0, 0);
         grid.add(nameField, 1, 0);
-        grid.add(new Label("Никнейм:"), 0, 1);
+        grid.add(new Label("Псевдоним:"), 0, 1);
         grid.add(nicknameField, 1, 1);
-        grid.add(new Label("Родительская локация:"), 0, 2);
+        grid.add(new Label("Родитель:"), 0, 2);
         grid.add(parentCombo, 1, 2);
 
         dialog.getDialogPane().setContent(grid);
@@ -475,7 +503,7 @@ public class LocationsTabController extends BaseTabController {
         attachPhone.setOnAction(e -> attachPhone(location));
 
         MenuItem addChild = new MenuItem("➕ Создать дочернюю локацию");
-        addChild.setOnAction(e -> showLocationCreationDialog(location)); // <-- Обновлено
+        addChild.setOnAction(e -> showLocationCreationDialog(location));
 
         MenuItem edit = new MenuItem("✏ Редактировать");
         edit.setOnAction(e -> editLocation(location));
@@ -538,7 +566,6 @@ public class LocationsTabController extends BaseTabController {
         if (loc == null) return;
         lblId.setText(String.valueOf(loc.getId()));
         lblDisplayName.setText(loc.getDisplayName());
-        // <-- ИЗМЕНЕНИЕ: Отображение никнейма
         lblNickname.setText(loc.getNickname() != null && !loc.getNickname().isBlank() ? loc.getNickname() : "—");
         lblKey.setText(loc.getKey() == null ? "—" : loc.getKey());
         lblParent.setText(buildLocationPath(loc, allLocations));
@@ -590,6 +617,8 @@ public class LocationsTabController extends BaseTabController {
                     lvPhones.setItems(FXCollections.observableArrayList(phones));
                 });
             } catch (Exception e) {
+                System.err.println("Ошибка загрузки связанных сущностей для локации ID=" + loc.getId());
+                e.printStackTrace();
                 handleError(e);
             }
         });
@@ -598,7 +627,7 @@ public class LocationsTabController extends BaseTabController {
     private void clearDetails() {
         lblId.setText("—");
         lblDisplayName.setText("—");
-        lblNickname.setText("—"); // <-- ИЗМЕНЕНИЕ
+        lblNickname.setText("—");
         lblKey.setText("—");
         lblParent.setText("—");
         lvDevices.setItems(FXCollections.observableArrayList());
@@ -642,9 +671,10 @@ public class LocationsTabController extends BaseTabController {
                     grid.setHgap(15);
                     grid.setVgap(10);
 
+                    // === ИСПРАВЛЕНИЕ: Уникальные индексы строк (было два раза row=1) ===
                     addDetailRow(grid, 0, "ID:", String.valueOf(device.getId()));
                     addDetailRow(grid, 1, "Серийный номер:", device.getDeviceSerial() != null ? device.getDeviceSerial() : "—");
-                    addDetailRow(grid, 1, "Инвентарный номер:", device.getDeviceInventoryNumber() != null ? device.getDeviceInventoryNumber() : "—");
+                    addDetailRow(grid, 2, "Инвентарный номер:", device.getDeviceInventoryNumber() != null ? device.getDeviceInventoryNumber() : "—");
                     addDetailRow(grid, 3, "Тип:", finalTypeName);
                     addDetailRow(grid, 4, "Марка:", finalMarkName);
                     addDetailRow(grid, 5, "ОС:", finalOsName);

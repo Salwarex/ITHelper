@@ -9,6 +9,7 @@ import java.util.Optional;
 
 public interface DeviceBusService extends GenericEntityBusService<Device> {
     Optional<Device> getDeviceBySerial(Permissible executor, String serial) throws Exception;
+    Optional<Device> getDeviceByInventory(Permissible executor, String serial) throws Exception;
     List<Device> getDevicesByTypeId(Permissible executor, long typeId) throws Exception;
     List<Device> getDevicesByStatus(Permissible executor, String status) throws Exception;
     List<Device> getDevicesByIp(Permissible executor, String ip) throws Exception;

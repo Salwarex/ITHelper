@@ -34,7 +34,7 @@
                 <Label text="Название:" GridPane.rowIndex="1" GridPane.columnIndex="0" styleClass="field-label"/>
                 <Label fx:id="lblDisplayName" text="—" GridPane.rowIndex="1" GridPane.columnIndex="1" styleClass="field-value"/>
 
-                <Label text="Никнейм:" GridPane.rowIndex="2" GridPane.columnIndex="0" styleClass="field-label"/>
+                <Label text="Псевдоним:" GridPane.rowIndex="2" GridPane.columnIndex="0" styleClass="field-label"/>
                 <Label fx:id="lblNickname" text="—" GridPane.rowIndex="2" GridPane.columnIndex="1" styleClass="field-value"/>
 
                 <Label text="Ключ:" GridPane.rowIndex="3" GridPane.columnIndex="0" styleClass="field-label"/>

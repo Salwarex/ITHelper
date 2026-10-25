@@ -27,7 +27,6 @@ public class ExportProcessor {
     }
 
     public <T extends Entity> String serialize(Class<T> clazz, List<T> elements) {
-        // 1. ТОПОЛОГИЧЕСКАЯ СОРТИРОВКА: Гарантируем, что родители идут раньше детей
         List<T> sortedElements = topologicalSort(clazz, elements);
 
         ArrayNode arrayNode = mapper.createArrayNode();
@@ -39,14 +38,10 @@ public class ExportProcessor {
         return arrayNode.toString();
     }
 
-    /**
-     * Сортирует элементы так, чтобы родительские записи шли перед дочерними.
-     * Это критически важно для корректного импорта древовидных структур.
-     */
     private <T extends Entity> List<T> topologicalSort(Class<T> clazz, List<T> elements) {
         Field selfRefField = findSelfReferencingForeignId(clazz);
         if (selfRefField == null) {
-            return elements; // Не древовидная структура, сортировка не нужна
+            return elements;
         }
 
         Map<Object, T> idToElement = new HashMap<>();

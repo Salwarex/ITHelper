@@ -22,6 +22,11 @@ public class DeviceService extends EntityService<Device> implements DeviceBusSer
         return deviceRepository.findByDeviceSerial(serial);
     }
 
+    @Override
+    public Optional<Device> getDeviceByInventory(Permissible executor, String inventory) throws Exception {
+        return deviceRepository.findByDeviceInventory(inventory);
+    }
+
     public List<Device> getDevicesByTypeId(Permissible executor, long typeId) throws SQLException {
         return deviceRepository.findByTypeId(typeId);
     }

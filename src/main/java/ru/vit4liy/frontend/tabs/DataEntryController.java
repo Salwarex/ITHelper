@@ -35,6 +35,7 @@ public class DataEntryController extends BaseTabController {
 
     @FXML private HBox deviceLocationCascade;
     @FXML private TextField tfDeviceSerial;
+    @FXML private TextField tfDeviceInv;
     @FXML private ComboBox<Type> cbDeviceType;
     @FXML private ComboBox<TypeMark> cbDeviceMark;
     @FXML private TextField tfDeviceIp;
@@ -79,52 +80,76 @@ public class DataEntryController extends BaseTabController {
         loadInitialData();
     }
 
+    // === ИЗМЕНЕННАЯ ЛОГИКА СЛУШАТЕЛЕЙ ===
     private void setupDeviceTypeListener() {
-        cbDeviceType.valueProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal == null) {
-                Platform.runLater(() -> {
-                    allMarks.clear();
-                    cbDeviceMark.getItems().clear();
-                    cbDeviceMark.getEditor().clear();
-                    cbDeviceMark.setValue(null);
-                    cbDeviceMark.setPromptText("Сначала выберите тип");
-                    cbDeviceMark.setDisable(true);
-                });
-                return;
-            }
+        // Реагируем на выбор существующего типа из списка
+        cbDeviceType.valueProperty().addListener((obs, oldVal, newVal) -> updateMarkFieldState());
+        // Реагируем на ручной ввод текста в поле типа
+        cbDeviceType.getEditor().textProperty().addListener((obs, oldVal, newVal) -> updateMarkFieldState());
+    }
 
-            long typeId = ((Number) newVal.getId()).longValue();
+    private void updateMarkFieldState() {
+        Type selectedType = cbDeviceType.getValue();
+        String typedType = cbDeviceType.getEditor().getText().trim();
 
+        if (selectedType != null) {
+            // Выбран существующий тип -> загружаем его марки
+            long typeId = ((Number) selectedType.getId()).longValue();
+            loadMarksForExistingType(typeId);
+        } else if (!typedType.isBlank()) {
+            // Пользователь вводит новый тип -> разрешаем ввод новой марки, но очищаем старые
             Platform.runLater(() -> {
                 allMarks.clear();
                 cbDeviceMark.getItems().clear();
                 cbDeviceMark.getEditor().clear();
                 cbDeviceMark.setValue(null);
-                cbDeviceMark.setPromptText("Загрузка марок...");
+                cbDeviceMark.setDisable(false); // РАЗРЕШАЕМ ВВОД!
+                cbDeviceMark.setPromptText("Введите новую марку");
+            });
+        } else {
+            // Поле типа полностью пустое -> блокируем марку
+            Platform.runLater(() -> {
+                allMarks.clear();
+                cbDeviceMark.getItems().clear();
+                cbDeviceMark.getEditor().clear();
+                cbDeviceMark.setValue(null);
                 cbDeviceMark.setDisable(true);
+                cbDeviceMark.setPromptText("Сначала укажите тип");
             });
+        }
+    }
 
-            runAsync(() -> {
-                try {
-                    List<TypeMark> marks = App.getInstance().bus().getTypeMarkService()
-                            .getTypeMarksByTypeId(ClientUser.get(), typeId);
-                    Platform.runLater(() -> {
-                        allMarks.clear();
-                        allMarks.addAll(marks);
-                        cbDeviceMark.getItems().setAll(marks);
-                        cbDeviceMark.setDisable(false);
-                        cbDeviceMark.setPromptText(marks.isEmpty() ? "Нет доступных марок" : "Выберите или введите марку");
-                    });
-                } catch (Exception e) {
-                    Platform.runLater(() -> {
-                        cbDeviceMark.setPromptText("Ошибка загрузки марок");
-                        cbDeviceMark.setDisable(true);
-                    });
-                    handleError(e);
-                }
-            });
+    private void loadMarksForExistingType(long typeId) {
+        Platform.runLater(() -> {
+            allMarks.clear();
+            cbDeviceMark.getItems().clear();
+            cbDeviceMark.getEditor().clear();
+            cbDeviceMark.setValue(null);
+            cbDeviceMark.setPromptText("Загрузка марок...");
+            cbDeviceMark.setDisable(true);
+        });
+
+        runAsync(() -> {
+            try {
+                List<TypeMark> marks = App.getInstance().bus().getTypeMarkService()
+                        .getTypeMarksByTypeId(ClientUser.get(), typeId);
+                Platform.runLater(() -> {
+                    allMarks.clear();
+                    allMarks.addAll(marks);
+                    cbDeviceMark.getItems().setAll(marks);
+                    cbDeviceMark.setDisable(false);
+                    cbDeviceMark.setPromptText(marks.isEmpty() ? "Нет марок (введите новую)" : "Выберите или введите марку");
+                });
+            } catch (Exception e) {
+                Platform.runLater(() -> {
+                    cbDeviceMark.setPromptText("Ошибка загрузки");
+                    cbDeviceMark.setDisable(true);
+                });
+                handleError(e);
+            }
         });
     }
+    // =====================================
 
     public void loadInitialData() {
         runAsync(() -> {
@@ -142,7 +167,7 @@ public class DataEntryController extends BaseTabController {
 
                     setupEditableComboBox(cbDeviceMark, allMarks, TypeMark::getDisplayName);
                     cbDeviceMark.setDisable(true);
-                    cbDeviceMark.setPromptText("Сначала выберите тип");
+                    cbDeviceMark.setPromptText("Сначала укажите тип");
 
                     setupEditableComboBox(cbDeviceOs, allOsSystems, OSystem::getDisplayName);
                 });
@@ -342,6 +367,7 @@ public class DataEntryController extends BaseTabController {
                     return;
                 }
 
+                // 1. Сначала гарантируем, что тип существует (выбран или создан)
                 Type type = cbDeviceType.getValue();
                 if (type == null) {
                     String typeName = cbDeviceType.getEditor().getText().trim();
@@ -366,11 +392,12 @@ public class DataEntryController extends BaseTabController {
                     return;
                 }
 
+                // 2. Теперь работаем с маркой. Тип УЖЕ имеет ID (либо был выбран, либо только что создан)
                 TypeMark mark = cbDeviceMark.getValue();
                 if (mark == null) {
                     String markName = cbDeviceMark.getEditor().getText().trim();
                     if (!markName.isBlank()) {
-                        Type finalType = type;
+                        Type finalType = type; // Безопасно, так как type выше гарантированно не null
                         mark = allMarks.stream()
                                 .filter(m -> m.getDisplayName().equalsIgnoreCase(markName) &&
                                         m.getTypeId() == finalType.getId().intValue())
@@ -379,7 +406,7 @@ public class DataEntryController extends BaseTabController {
                         if (mark == null) {
                             mark = new TypeMark();
                             mark.setDisplayName(markName);
-                            mark.setTypeId(type.getId().intValue());
+                            mark.setTypeId(finalType.getId().intValue()); // Привязываем к ID нового или существующего типа
                             mark.setCreatedAt(System.currentTimeMillis());
                             long markId = App.getInstance().bus().getTypeMarkService().create(ClientUser.get(), mark);
                             mark.setId(markId);
@@ -410,7 +437,8 @@ public class DataEntryController extends BaseTabController {
                 }
 
                 Device device = new Device();
-                device.setDeviceSerial(tfDeviceSerial.getText().trim());
+                device.setDeviceSerial(tfDeviceSerial.getText().isBlank() ? null : tfDeviceSerial.getText().trim());
+                device.setDeviceInventoryNumber(tfDeviceInv.getText().isBlank() ? null : tfDeviceInv.getText().trim());
                 device.setTypeId(type.getId().intValue());
                 device.setTypeMarkId(mark != null ? mark.getId().intValue() : null);
                 device.setOsId(os != null ? os.getId() : null);
@@ -447,10 +475,6 @@ public class DataEntryController extends BaseTabController {
             showError("Укажите расположение");
             return false;
         }
-        if (tfDeviceSerial.getText().isBlank()) {
-            showError("Введите инвентарный номер");
-            return false;
-        }
         if (cbDeviceType.getEditor().getText().trim().isBlank() && cbDeviceType.getValue() == null) {
             showError("Укажите тип устройства");
             return false;
@@ -470,10 +494,12 @@ public class DataEntryController extends BaseTabController {
         buildLocationCascade(deviceLocationCascade, deviceLocationBoxes, null);
         cbDeviceType.setValue(null);
         cbDeviceType.getEditor().clear();
-
+        cbDeviceMark.setValue(null);
+        cbDeviceMark.getEditor().clear();
         cbDeviceOs.setValue(null);
         cbDeviceOs.getEditor().clear();
         tfDeviceSerial.clear();
+        tfDeviceInv.clear();
         tfDeviceIp.clear();
         cbDeviceStatus.setValue("Работает хорошо");
         tfDeviceDescription.clear();

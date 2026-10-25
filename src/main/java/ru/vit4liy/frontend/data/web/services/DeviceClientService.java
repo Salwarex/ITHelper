@@ -14,6 +14,11 @@ public class DeviceClientService implements DeviceBusService {
     }
 
     @Override
+    public Optional<Device> getDeviceByInventory(Permissible executor, String inventory) throws Exception {
+        return Optional.empty();
+    }
+
+    @Override
     public List<Device> getDevicesByTypeId(Permissible executor, long typeId) throws Exception {
         return List.of();
     }

@@ -16,7 +16,7 @@
         <Button text="Добавить" onAction="#onAddEmployee" styleClass="btn-primary"/>
         <Button text="Редактировать" onAction="#onEditEmployee"/>
         <Button text="Обновить" onAction="#onReload"/>
-        <Button text="🗑 Удалить" onAction="#onDeleteEmployee" styleClass="btn-danger"/>
+        <Button text="Удалить" onAction="#onDeleteEmployee" styleClass="btn-danger"/>
     </HBox>
 
     <!-- Таблица сотрудников -->

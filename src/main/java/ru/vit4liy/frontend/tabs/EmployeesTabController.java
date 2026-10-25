@@ -121,8 +121,8 @@ public class EmployeesTabController extends BaseTabController {
                 Platform.runLater(() -> {
                     this.employeeLocationPaths = tempPaths;
                     data.setAll(result);
-                    colLocation.setVisible(false);
-                    colLocation.setVisible(true);
+
+                    employeesTable.refresh();
                 });
             } catch (Exception e) {
                 handleError(e);

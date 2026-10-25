@@ -20,6 +20,14 @@ public class DeviceRepository extends EntityRepository<Device> {
         return Optional.empty();
     }
 
+    public Optional<Device> findByDeviceInventory(String inventory) throws SQLException {
+        try (Connection conn = db.getConnection(); PreparedStatement stmt = conn.prepareStatement("SELECT * FROM Device WHERE device_inventory = ?")) {
+            stmt.setString(1, inventory);
+            try (ResultSet rs = stmt.executeQuery()) { if (rs.next()) return Optional.of(map(rs)); }
+        }
+        return Optional.empty();
+    }
+
     public List<Device> findByTypeId(long typeId) throws SQLException {
         List<Device> list = new ArrayList<>();
         try (Connection conn = db.getConnection(); PreparedStatement stmt = conn.prepareStatement("SELECT * FROM Device WHERE type_id = ?")) {
