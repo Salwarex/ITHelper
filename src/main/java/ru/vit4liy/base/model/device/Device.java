@@ -19,16 +19,18 @@ public class Device implements DatabaseEntity {
     @ForeignId(foreignClass = TypeMark.class) private Integer typeMarkId;
     @ForeignId(foreignClass = OSystem.class) private Long osId;
     @UniqueValueIdentifier private String deviceSerial;
+    private String deviceInventoryNumber;
     private String description;
     private String status;
     private String ip;
     private long lastChecked;
 
-    public Device(long deviceId, int typeId, Integer typeMarkId, Long osId, String deviceSerial, String description, String status, String ip, long lastChecked) {
+    public Device(long deviceId, int typeId, Integer typeMarkId, Long osId, String deviceSerial, String deviceInventoryNumber, String description, String status, String ip, long lastChecked) {
         this.deviceId = deviceId;
         this.typeId = typeId;
         this.typeMarkId = typeMarkId;
         this.deviceSerial = deviceSerial;
+        this.deviceInventoryNumber = deviceInventoryNumber;
         this.description = description;
         this.status = status;
         this.lastChecked = lastChecked;
@@ -114,6 +116,22 @@ public class Device implements DatabaseEntity {
 
     public void setIp(String ip) {
         this.ip = ip;
+    }
+
+    public long getDeviceId() {
+        return deviceId;
+    }
+
+    public void setDeviceId(long deviceId) {
+        this.deviceId = deviceId;
+    }
+
+    public String getDeviceInventoryNumber() {
+        return deviceInventoryNumber;
+    }
+
+    public void setDeviceInventoryNumber(String deviceInventoryNumber) {
+        this.deviceInventoryNumber = deviceInventoryNumber;
     }
 
     @Override

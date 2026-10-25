@@ -40,8 +40,8 @@ public class DeviceCreateDialog extends Dialog<Device> {
         cbType.setDisable(true);
 
         ComboBox<TypeMark> cbTypeMark = new ComboBox<>();
-        cbTypeMark.setPromptText("Загрузка марок...");
-        cbTypeMark.setDisable(true);
+        cbTypeMark.setPromptText("Сначала выберите тип");
+        cbTypeMark.setDisable(true); // Изначально отключен
 
         ComboBox<OSystem> cbOs = new ComboBox<>();
         cbOs.setPromptText("Загрузка ОС...");
@@ -72,70 +72,76 @@ public class DeviceCreateDialog extends Dialog<Device> {
         getDialogPane().setContent(grid);
         Platform.runLater(tfSerial::requestFocus);
 
+        setupComboBoxRendering(cbType, Type::getDisplayName);
+        setupComboBoxRendering(cbTypeMark, TypeMark::getDisplayName);
+        setupComboBoxRendering(cbOs, OSystem::getDisplayName);
+
         ApplicationFeatures.runAsync(() -> {
             try {
                 List<Type> types = App.getInstance().bus().getTypeService().getAll(ClientUser.get());
-                List<TypeMark> marks = App.getInstance().bus().getTypeMarkService().getAll(ClientUser.get());
                 List<OSystem> osSystems = App.getInstance().bus().getOSystemService().getAll(ClientUser.get());
 
                 Platform.runLater(() -> {
                     cbType.getItems().setAll(types);
-                    cbType.setCellFactory(lv -> new ListCell<>() {
-                        protected void updateItem(Type item, boolean empty) {
-                            super.updateItem(item, empty);
-                            setText(empty || item == null ? null : item.getDisplayName());
-                        }
-                    });
-                    cbType.setButtonCell(new ListCell<>() {
-                        protected void updateItem(Type item, boolean empty) {
-                            super.updateItem(item, empty);
-                            setText(empty || item == null ? null : item.getDisplayName());
-                        }
-                    });
-
-                    cbTypeMark.getItems().setAll(marks);
-                    cbTypeMark.setCellFactory(lv -> new ListCell<>() {
-                        protected void updateItem(TypeMark item, boolean empty) {
-                            super.updateItem(item, empty);
-                            setText(empty || item == null ? null : item.getDisplayName());
-                        }
-                    });
-                    cbTypeMark.setButtonCell(new ListCell<>() {
-                        protected void updateItem(TypeMark item, boolean empty) {
-                            super.updateItem(item, empty);
-                            setText(empty || item == null ? null : item.getDisplayName());
-                        }
-                    });
-
                     cbOs.getItems().setAll(osSystems);
-                    cbOs.setCellFactory(lv -> new ListCell<>() {
-                        protected void updateItem(OSystem item, boolean empty) {
-                            super.updateItem(item, empty);
-                            setText(empty || item == null ? null : item.getDisplayName());
-                        }
-                    });
-                    cbOs.setButtonCell(new ListCell<>() {
-                        protected void updateItem(OSystem item, boolean empty) {
-                            super.updateItem(item, empty);
-                            setText(empty || item == null ? null : item.getDisplayName());
-                        }
-                    });
 
                     cbType.setDisable(false);
-                    cbTypeMark.setDisable(false);
                     cbOs.setDisable(false);
                 });
             } catch (Exception e) {
-                Platform.runLater(() -> cbType.setPromptText("Ошибка загрузки"));
+                Platform.runLater(() -> {
+                    cbType.setPromptText("Ошибка загрузки");
+                    cbOs.setPromptText("Ошибка загрузки");
+                });
             }
+        });
+
+        cbType.valueProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue == null) {
+                Platform.runLater(() -> {
+                    cbTypeMark.getItems().clear();
+                    cbTypeMark.setValue(null);
+                    cbTypeMark.setPromptText("Сначала выберите тип");
+                    cbTypeMark.setDisable(true);
+                });
+                return;
+            }
+
+            long typeId = ((Number) newValue.getId()).longValue();
+
+            Platform.runLater(() -> {
+                cbTypeMark.getItems().clear();
+                cbTypeMark.setValue(null);
+                cbTypeMark.setPromptText("Загрузка марок...");
+                cbTypeMark.setDisable(true);
+            });
+
+            ApplicationFeatures.runAsync(() -> {
+                try {
+                    List<TypeMark> marks = App.getInstance().bus().getTypeMarkService()
+                            .getTypeMarksByTypeId(ClientUser.get(), typeId);
+
+                    Platform.runLater(() -> {
+                        cbTypeMark.getItems().setAll(marks);
+                        cbTypeMark.setDisable(false);
+                        if (marks.isEmpty()) {
+                            cbTypeMark.setPromptText("Нет доступных марок");
+                        } else {
+                            cbTypeMark.setPromptText("Выберите марку");
+                        }
+                    });
+                } catch (Exception e) {
+                    Platform.runLater(() -> {
+                        cbTypeMark.setPromptText("Ошибка загрузки");
+                        cbTypeMark.setDisable(true);
+                    });
+                    e.printStackTrace();
+                }
+            });
         });
 
         setResultConverter(dialogButton -> {
             if (dialogButton == createButtonType) {
-                if (tfSerial.getText().isBlank()) {
-                    AlertUtil.error("Ошибка", "Серийный номер обязателен!");
-                    return null;
-                }
                 if (cbType.getValue() == null) {
                     AlertUtil.error("Ошибка", "Необходимо выбрать тип!");
                     return null;
@@ -143,13 +149,13 @@ public class DeviceCreateDialog extends Dialog<Device> {
 
                 Device device = new Device();
                 device.setDeviceSerial(tfSerial.getText().trim());
-                device.setTypeId(cbType.getValue().getId().intValue());
+                device.setTypeId(((Number) cbType.getValue().getId()).intValue());
 
                 TypeMark tm = cbTypeMark.getValue();
-                device.setTypeMarkId(tm != null ? tm.getId().intValue() : null);
+                device.setTypeMarkId(tm != null ? ((Number) tm.getId()).intValue() : null);
 
                 OSystem os = cbOs.getValue();
-                device.setOsId(os != null ? os.getId() : null);
+                device.setOsId(os != null ? ((Number) os.getId()).longValue() : null);
 
                 device.setIp(tfIp.getText().isBlank() ? null : tfIp.getText().trim());
                 device.setStatus(DeviceStatusUtil.getDbKey(cbStatus.getValue()));
@@ -158,6 +164,23 @@ public class DeviceCreateDialog extends Dialog<Device> {
                 return device;
             }
             return null;
+        });
+    }
+
+    private <T> void setupComboBoxRendering(ComboBox<T> comboBox, java.util.function.Function<T, String> displayNameExtractor) {
+        comboBox.setCellFactory(lv -> new ListCell<T>() {
+            @Override
+            protected void updateItem(T item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? null : displayNameExtractor.apply(item));
+            }
+        });
+        comboBox.setButtonCell(new ListCell<T>() {
+            @Override
+            protected void updateItem(T item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? null : displayNameExtractor.apply(item));
+            }
         });
     }
 }

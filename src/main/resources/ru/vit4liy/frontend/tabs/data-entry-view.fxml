@@ -11,7 +11,6 @@
 
     <TabPane tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
         <tabs>
-            <!-- Вкладка Устройства -->
             <Tab text="🖨 Устройства">
                 <VBox spacing="12">
                     <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
@@ -47,12 +46,11 @@
                         <TextField fx:id="tfDeviceDescription" promptText="Необязательно" GridPane.rowIndex="7" GridPane.columnIndex="1"/>
                     </GridPane>
 
-                    <Button text="✅ Добавить устройство" onAction="#onSubmitDevice" styleClass="btn-primary" maxWidth="250"/>
+                    <Button text="Добавить устройство" onAction="#onSubmitDevice" styleClass="btn-primary" maxWidth="250"/>
                 </VBox>
             </Tab>
 
-            <!-- Вкладка Сотрудники -->
-            <Tab text="👥 Сотрудники">
+            <Tab text="Сотрудники">
                 <VBox spacing="12">
                     <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
 
@@ -75,10 +73,10 @@
                         <TextField fx:id="tfEmployeeThirdname" promptText="Необязательно" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
 
                         <Label text="Телефон:" GridPane.rowIndex="4" GridPane.columnIndex="0" styleClass="field-label"/>
-                        <TextField fx:id="tfEmployeePhone" promptText="Необязательно" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+                        <TextField fx:id="tfEmployeePhone" promptText="Необязательно" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
                     </GridPane>
 
-                    <Button text="✅ Добавить сотрудника" onAction="#onSubmitEmployee" styleClass="btn-primary" maxWidth="250"/>
+                    <Button text="Добавить сотрудника" onAction="#onSubmitEmployee" styleClass="btn-primary" maxWidth="250"/>
                 </VBox>
             </Tab>
 
@@ -106,7 +104,7 @@
                         <TextField fx:id="tfPhoneIp" promptText="Необязательно" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
                     </GridPane>
 
-                    <Button text="✅ Добавить телефон" onAction="#onSubmitPhone" styleClass="btn-primary" maxWidth="250"/>
+                    <Button text="Добавить телефон" onAction="#onSubmitPhone" styleClass="btn-primary" maxWidth="250"/>
                 </VBox>
             </Tab>
         </tabs>

@@ -16,9 +16,9 @@
         <ComboBox fx:id="cbStatusFilter" promptText="Статус" prefWidth="150"/>
         <ComboBox fx:id="cbOsFilter" promptText="ОС" prefWidth="150"/>
         <Region HBox.hgrow="ALWAYS"/>
-        <Button text="➕ Добавить" onAction="#onAddDevice" styleClass="btn-primary"/>
-        <Button text=" Редактировать" onAction="#onEditDevice"/>
-        <Button text="🔄 Обновить" onAction="#onReload"/>
+        <Button text="Добавить" onAction="#onAddDevice" styleClass="btn-primary"/>
+        <Button text="Редактировать" onAction="#onEditDevice"/>
+        <Button text="Обновить" onAction="#onReload"/>
         <Button text="🗑 Удалить" onAction="#onDeleteDevice" styleClass="btn-danger"/>
     </HBox>
 
@@ -27,6 +27,7 @@
         <columns>
             <TableColumn fx:id="colId" text="ID" prefWidth="60"/>
             <TableColumn fx:id="colSerial" text="Серийный номер" prefWidth="150"/>
+            <TableColumn fx:id="colInventory" text="Инвентарный номер" prefWidth="150"/>
             <TableColumn fx:id="colType" text="Тип" prefWidth="120"/>
             <TableColumn fx:id="colOs" text="ОС" prefWidth="120"/>
             <TableColumn fx:id="colIp" text="IP" prefWidth="120"/>
@@ -49,26 +50,29 @@
             <Label text="ID:" GridPane.rowIndex="0" GridPane.columnIndex="0" styleClass="field-label"/>
             <Label fx:id="lblId" text="—" GridPane.rowIndex="0" GridPane.columnIndex="1" styleClass="field-value"/>
 
-            <Label text="Серийный №:" GridPane.rowIndex="1" GridPane.columnIndex="0" styleClass="field-label"/>
+            <Label text="Серийный номер:" GridPane.rowIndex="1" GridPane.columnIndex="0" styleClass="field-label"/>
             <Label fx:id="lblSerial" text="—" GridPane.rowIndex="1" GridPane.columnIndex="1" styleClass="field-value"/>
 
-            <Label text="Тип:" GridPane.rowIndex="2" GridPane.columnIndex="0" styleClass="field-label"/>
-            <Label fx:id="lblType" text="—" GridPane.rowIndex="2" GridPane.columnIndex="1" styleClass="field-value"/>
+            <Label text="Инвентарный номер:" GridPane.rowIndex="2" GridPane.columnIndex="0" styleClass="field-label"/>
+            <Label fx:id="lblInventory" text="—" GridPane.rowIndex="2" GridPane.columnIndex="1" styleClass="field-value"/>
 
-            <Label text="ОС:" GridPane.rowIndex="3" GridPane.columnIndex="0" styleClass="field-label"/>
-            <Label fx:id="lblOs" text="—" GridPane.rowIndex="3" GridPane.columnIndex="1" styleClass="field-value"/>
+            <Label text="Тип:" GridPane.rowIndex="3" GridPane.columnIndex="0" styleClass="field-label"/>
+            <Label fx:id="lblType" text="—" GridPane.rowIndex="3" GridPane.columnIndex="1" styleClass="field-value"/>
 
-            <Label text="IP:" GridPane.rowIndex="4" GridPane.columnIndex="0" styleClass="field-label"/>
-            <Label fx:id="lblIp" text="—" GridPane.rowIndex="4" GridPane.columnIndex="1" styleClass="field-value"/>
+            <Label text="ОС:" GridPane.rowIndex="4" GridPane.columnIndex="0" styleClass="field-label"/>
+            <Label fx:id="lblOs" text="—" GridPane.rowIndex="4" GridPane.columnIndex="1" styleClass="field-value"/>
 
-            <Label text="Локация:" GridPane.rowIndex="5" GridPane.columnIndex="0" styleClass="field-label"/>
-            <Label fx:id="lblLocation" text="—" GridPane.rowIndex="5" GridPane.columnIndex="1" styleClass="field-value"/>
+            <Label text="IP:" GridPane.rowIndex="5" GridPane.columnIndex="0" styleClass="field-label"/>
+            <Label fx:id="lblIp" text="—" GridPane.rowIndex="5" GridPane.columnIndex="1" styleClass="field-value"/>
 
-            <Label text="Статус:" GridPane.rowIndex="6" GridPane.columnIndex="0" styleClass="field-label"/>
-            <Label fx:id="lblStatus" text="—" GridPane.rowIndex="6" GridPane.columnIndex="1" styleClass="field-value"/>
+            <Label text="Локация:" GridPane.rowIndex="6" GridPane.columnIndex="0" styleClass="field-label"/>
+            <Label fx:id="lblLocation" text="—" GridPane.rowIndex="6" GridPane.columnIndex="1" styleClass="field-value"/>
 
-            <Label text="Описание:" GridPane.rowIndex="7" GridPane.columnIndex="0" styleClass="field-label"/>
-            <Label fx:id="lblDescription" text="—" GridPane.rowIndex="7" GridPane.columnIndex="1" styleClass="field-value" wrapText="true"/>
+            <Label text="Статус:" GridPane.rowIndex="7" GridPane.columnIndex="0" styleClass="field-label"/>
+            <Label fx:id="lblStatus" text="—" GridPane.rowIndex="7" GridPane.columnIndex="1" styleClass="field-value"/>
+
+            <Label text="Описание:" GridPane.rowIndex="8" GridPane.columnIndex="0" styleClass="field-label"/>
+            <Label fx:id="lblDescription" text="—" GridPane.rowIndex="8" GridPane.columnIndex="1" styleClass="field-value" wrapText="true"/>
         </GridPane>
     </TitledPane>
 </VBox>

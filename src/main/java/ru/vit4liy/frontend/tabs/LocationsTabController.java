@@ -3,6 +3,7 @@ package ru.vit4liy.frontend.tabs;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
@@ -36,6 +37,7 @@ public class LocationsTabController extends BaseTabController {
     @FXML private TreeView<Location> locationsTree;
     @FXML private Label lblKey;
     @FXML private Label lblDisplayName;
+    @FXML private Label lblNickname; // <-- Добавлено
     @FXML private Label lblParent;
     @FXML private Label lblId;
     @FXML private Button btnAdd;
@@ -66,7 +68,14 @@ public class LocationsTabController extends BaseTabController {
                     } else {
                         setDisable(false);
                         setStyle("");
-                        setText(item.getDisplayName());
+
+                        // <-- ИЗМЕНЕНИЕ: Форматирование текста ячейки с учетом nickname
+                        String displayText = item.getDisplayName();
+                        if (item.getNickname() != null && !item.getNickname().isBlank()) {
+                            displayText += " - " + item.getNickname();
+                        }
+                        setText(displayText);
+
                         setContextMenu(createContextMenu(item));
                     }
                 }
@@ -97,24 +106,24 @@ public class LocationsTabController extends BaseTabController {
         BackendDataBus bus = App.getInstance().bus();
 
         setupListView(lvDevices,
-                    device -> {
-                        try {
-                            return String.format("%s %s%s (ID: %d, S/N: %s, INV: %d)"
-                                    .formatted(
-                                            bus.getTypeService().getById(ClientUser.get(), device.getTypeId()).get().getDisplayName(),
-                                            bus.getTypeMarkService().getById(ClientUser.get(), device.getTypeMarkId()).get().getDisplayName(),
-                                            (device.getOsId() != null ? " / %s".formatted(
-                                                 bus.getOSystemService().getById(ClientUser.get(), device.getOsId()).get().getDisplayName()
-                                            ) : ""),
-                                            device.getId(),
-                                            device.getDeviceSerial(),
-                                            0L
-                                    )
-                            );
-                        } catch (Exception e) {
-                            throw new RuntimeException(e);
-                        }
-                    },
+                device -> {
+                    try {
+                        return String.format("%s %s%s (ID: %d, S/N: %s, INV: %s)"
+                                .formatted(
+                                        bus.getTypeService().getById(ClientUser.get(), device.getTypeId()).get().getDisplayName(),
+                                        bus.getTypeMarkService().getById(ClientUser.get(), device.getTypeMarkId()).get().getDisplayName(),
+                                        (device.getOsId() != null ? " / %s".formatted(
+                                                bus.getOSystemService().getById(ClientUser.get(), device.getOsId()).get().getDisplayName()
+                                        ) : ""),
+                                        device.getId(),
+                                        device.getDeviceSerial(),
+                                        device.getDeviceInventoryNumber()
+                                )
+                        );
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                },
                 this::detachDevice,
                 this::showDeviceDetails);
 
@@ -176,7 +185,9 @@ public class LocationsTabController extends BaseTabController {
         });
         MenuItem details = new MenuItem("Подробнее...");
         details.setOnAction(e -> {
-
+            if (item instanceof Device) showDeviceDetails((Device) item);
+            else if (item instanceof Employee) showEmployeeDetails((Employee) item);
+            else if (item instanceof Phone) showPhoneDetails((Phone) item);
         });
         menu.getItems().addAll(details, new SeparatorMenuItem(), detach);
         return menu;
@@ -209,10 +220,72 @@ public class LocationsTabController extends BaseTabController {
     private void onAddLocation() {
         TreeItem<Location> selected = locationsTree.getSelectionModel().getSelectedItem();
         if (selected != null && selected.getValue() != null) {
-            createChildLocation(selected.getValue());
+            showLocationCreationDialog(selected.getValue());
         } else {
-            createRootLocation();
+            showLocationCreationDialog(null);
         }
+    }
+
+    // <-- ИЗМЕНЕНИЕ: Универсальный диалог создания локации (заменяет createRootLocation и createChildLocation)
+    private void showLocationCreationDialog(Location parent) {
+        Dialog<Location> dialog = new Dialog<>();
+        dialog.setTitle(parent == null ? "Новая корневая локация" : "Новая дочерняя локация");
+        dialog.setHeaderText(parent == null ? "Создание корневой локации" : "Родитель: " + parent.getDisplayName());
+
+        ButtonType createButtonType = new ButtonType("Создать", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(createButtonType, ButtonType.CANCEL);
+
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20, 150, 10, 10));
+
+        TextField nameField = new TextField();
+        nameField.setPromptText("Название локации (обязательно)");
+
+        TextField nicknameField = new TextField();
+        nicknameField.setPromptText("Никнейм / краткое имя (необязательно)");
+
+        grid.add(new Label("Название:"), 0, 0);
+        grid.add(nameField, 1, 0);
+        grid.add(new Label("Никнейм:"), 0, 1);
+        grid.add(nicknameField, 1, 1);
+
+        dialog.getDialogPane().setContent(grid);
+
+        javafx.scene.Node createButton = dialog.getDialogPane().lookupButton(createButtonType);
+        createButton.setDisable(true);
+
+        nameField.textProperty().addListener((obs, oldVal, newVal) -> {
+            createButton.setDisable(newVal == null || newVal.trim().isEmpty());
+        });
+
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == createButtonType) {
+                Location loc = new Location();
+                loc.setDisplayName(nameField.getText().trim());
+                String nick = nicknameField.getText().trim();
+                loc.setNickname(nick.isBlank() ? null : nick);
+                loc.setKey(generateKey(nameField.getText().trim()));
+                if (parent != null) {
+                    loc.setParentId(parent.getId());
+                }
+                return loc;
+            }
+            return null;
+        });
+
+        dialog.showAndWait().ifPresent(location -> {
+            runAsync(() -> {
+                try {
+                    App.getInstance().bus().getLocationService().create(ClientUser.get(), location);
+                    Platform.runLater(this::reloadTree);
+                    Platform.runLater(() -> AlertUtil.info("Успех", "Локация создана"));
+                } catch (Exception e) {
+                    handleError(e);
+                }
+            });
+        });
     }
 
     @FXML
@@ -224,6 +297,147 @@ public class LocationsTabController extends BaseTabController {
         editLocation(currentSelectedLocation);
     }
 
+    private void editLocation(Location location) {
+        Dialog<Location> dialog = new Dialog<>();
+        dialog.setTitle("Редактировать локацию");
+        dialog.setHeaderText("Изменение данных: " + location.getDisplayName());
+
+        ButtonType saveButtonType = new ButtonType("Сохранить", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(saveButtonType, ButtonType.CANCEL);
+
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new javafx.geometry.Insets(20, 150, 10, 10));
+
+        TextField nameField = new TextField(location.getDisplayName());
+        nameField.setPromptText("Название локации");
+
+        TextField nicknameField = new TextField(location.getNickname() != null ? location.getNickname() : "");
+        nicknameField.setPromptText("Никнейм / краткое имя (необязательно)");
+
+        ComboBox<Location> parentCombo = new ComboBox<>();
+
+        List<Location> possibleParents = new ArrayList<>();
+        possibleParents.add(null);
+
+        for (Location loc : allLocations) {
+            if (loc.getId().equals(location.getId())) continue;
+            if (!isDescendant(location, loc)) {
+                possibleParents.add(loc);
+            }
+        }
+
+        parentCombo.getItems().setAll(possibleParents);
+
+        parentCombo.setConverter(new javafx.util.StringConverter<Location>() {
+            @Override
+            public String toString(Location loc) {
+                if (loc == null) {
+                    return "! Нет";
+                }
+                return buildLocationPath(loc, allLocations);
+            }
+
+            @Override
+            public Location fromString(String string) {
+                return null;
+            }
+        });
+
+        parentCombo.setCellFactory(lv -> new javafx.scene.control.ListCell<Location>() {
+            @Override
+            protected void updateItem(Location item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText("! Нет");
+                } else {
+                    setText(buildLocationPath(item, allLocations));
+                }
+            }
+        });
+
+        parentCombo.setButtonCell(new javafx.scene.control.ListCell<Location>() {
+            @Override
+            protected void updateItem(Location item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText("! Нет");
+                } else {
+                    setText(buildLocationPath(item, allLocations));
+                }
+            }
+        });
+
+        Location currentParent = location.getParentId() == null ? null :
+                allLocations.stream().filter(l -> l.getId().equals(location.getParentId())).findFirst().orElse(null);
+
+        parentCombo.setValue(currentParent);
+
+        grid.add(new Label("Название:"), 0, 0);
+        grid.add(nameField, 1, 0);
+        grid.add(new Label("Никнейм:"), 0, 1);
+        grid.add(nicknameField, 1, 1);
+        grid.add(new Label("Родительская локация:"), 0, 2);
+        grid.add(parentCombo, 1, 2);
+
+        dialog.getDialogPane().setContent(grid);
+
+        javafx.scene.Node saveButton = dialog.getDialogPane().lookupButton(saveButtonType);
+        saveButton.setDisable(nameField.getText() == null || nameField.getText().trim().isEmpty());
+
+        nameField.textProperty().addListener((obs, oldVal, newVal) -> {
+            saveButton.setDisable(newVal == null || newVal.trim().isEmpty());
+        });
+
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == saveButtonType) {
+                Location updated = new Location();
+                updated.setId(location.getId());
+                updated.setKey(location.getKey());
+                updated.setDisplayName(nameField.getText().trim());
+
+                String nick = nicknameField.getText().trim();
+                updated.setNickname(nick.isBlank() ? null : nick);
+
+                Location selectedParent = parentCombo.getValue();
+                updated.setParentId(selectedParent == null ? null : selectedParent.getId());
+
+                return updated;
+            }
+            return null;
+        });
+
+        dialog.showAndWait().ifPresent(updatedLocation -> {
+            runAsync(() -> {
+                try {
+                    App.getInstance().bus().getLocationService().update(ClientUser.get(), updatedLocation);
+                    Platform.runLater(this::reloadTree);
+                    Platform.runLater(() -> AlertUtil.info("Успех", "Локация успешно обновлена"));
+                } catch (Exception e) {
+                    handleError(e);
+                }
+            });
+        });
+    }
+
+    private boolean isDescendant(Location targetLocation, Location potentialAncestor) {
+        Long currentParentId = targetLocation.getParentId();
+        while (currentParentId != null && currentParentId != 0) {
+            if (currentParentId.equals(potentialAncestor.getId())) {
+                return true;
+            }
+            Long finalCurrentParentId = currentParentId;
+            Location parent = allLocations.stream()
+                    .filter(l -> l.getId().equals(finalCurrentParentId))
+                    .findFirst()
+                    .orElse(null);
+            if (parent == null) break;
+            currentParentId = parent.getParentId();
+        }
+        return false;
+    }
+
     @FXML
     private void onDeleteLocation() {
         if (currentSelectedLocation == null) {
@@ -233,83 +447,8 @@ public class LocationsTabController extends BaseTabController {
         deleteLocation(currentSelectedLocation);
     }
 
-    private void createRootLocation() {
-        TextInputDialog dialog = new TextInputDialog();
-        dialog.setTitle("Новая локация");
-        dialog.setHeaderText("Создание корневой локации");
-        dialog.setContentText("Название:");
-        dialog.showAndWait().ifPresent(name -> {
-            if (name.isBlank()) {
-                showError("Название не может быть пустым");
-                return;
-            }
-            runAsync(() -> {
-                try {
-                    Location loc = new Location();
-                    loc.setDisplayName(name.trim());
-                    loc.setKey(generateKey(name.trim()));
-                    App.getInstance().bus().getLocationService().create(ClientUser.get(), loc);
-                    Platform.runLater(this::reloadTree);
-                    Platform.runLater(() -> AlertUtil.info("Успех", "Локация создана"));
-                } catch (Exception e) {
-                    handleError(e);
-                }
-            });
-        });
-    }
-
-    private void createChildLocation(Location parent) {
-        TextInputDialog dialog = new TextInputDialog();
-        dialog.setTitle("Новая дочерняя локация");
-        dialog.setHeaderText("Родитель: " + parent.getDisplayName());
-        dialog.setContentText("Название:");
-        dialog.showAndWait().ifPresent(name -> {
-            if (name.isBlank()) {
-                showError("Название не может быть пустым");
-                return;
-            }
-            runAsync(() -> {
-                try {
-                    Location loc = new Location();
-                    loc.setDisplayName(name.trim());
-                    loc.setKey(generateKey(name.trim()));
-                    loc.setParentId(parent.getId());
-                    App.getInstance().bus().getLocationService().create(ClientUser.get(), loc);
-                    Platform.runLater(this::reloadTree);
-                    Platform.runLater(() -> AlertUtil.info("Успех", "Дочерняя локация создана"));
-                } catch (Exception e) {
-                    handleError(e);
-                }
-            });
-        });
-    }
-
-    private void editLocation(Location location) {
-        TextInputDialog dialog = new TextInputDialog(location.getDisplayName());
-        dialog.setTitle("Редактировать локацию");
-        dialog.setHeaderText("Текущее название: " + location.getDisplayName());
-        dialog.setContentText("Новое название:");
-        dialog.showAndWait().ifPresent(name -> {
-            if (name.isBlank()) {
-                showError("Название не может быть пустым");
-                return;
-            }
-            runAsync(() -> {
-                try {
-                    location.setDisplayName(name.trim());
-                    App.getInstance().bus().getLocationService().update(ClientUser.get(), location);
-                    Platform.runLater(this::reloadTree);
-                    Platform.runLater(() -> AlertUtil.info("Успех", "Локация обновлена"));
-                } catch (Exception e) {
-                    handleError(e);
-                }
-            });
-        });
-    }
-
     private void deleteLocation(Location location) {
-        if (!AlertUtil.confirm("Удаление локации",
-                "Вы уверены, что хотите удалить локацию \"" + location.getDisplayName() + "\"?")) {
+        if (!AlertUtil.confirm("Удаление локации", "Вы уверены, что хотите удалить локацию \"" + location.getDisplayName() + "\"?")) {
             return;
         }
         runAsync(() -> {
@@ -336,7 +475,7 @@ public class LocationsTabController extends BaseTabController {
         attachPhone.setOnAction(e -> attachPhone(location));
 
         MenuItem addChild = new MenuItem("➕ Создать дочернюю локацию");
-        addChild.setOnAction(e -> createChildLocation(location));
+        addChild.setOnAction(e -> showLocationCreationDialog(location)); // <-- Обновлено
 
         MenuItem edit = new MenuItem("✏ Редактировать");
         edit.setOnAction(e -> editLocation(location));
@@ -399,6 +538,8 @@ public class LocationsTabController extends BaseTabController {
         if (loc == null) return;
         lblId.setText(String.valueOf(loc.getId()));
         lblDisplayName.setText(loc.getDisplayName());
+        // <-- ИЗМЕНЕНИЕ: Отображение никнейма
+        lblNickname.setText(loc.getNickname() != null && !loc.getNickname().isBlank() ? loc.getNickname() : "—");
         lblKey.setText(loc.getKey() == null ? "—" : loc.getKey());
         lblParent.setText(buildLocationPath(loc, allLocations));
 
@@ -457,6 +598,7 @@ public class LocationsTabController extends BaseTabController {
     private void clearDetails() {
         lblId.setText("—");
         lblDisplayName.setText("—");
+        lblNickname.setText("—"); // <-- ИЗМЕНЕНИЕ
         lblKey.setText("—");
         lblParent.setText("—");
         lvDevices.setItems(FXCollections.observableArrayList());
@@ -502,13 +644,14 @@ public class LocationsTabController extends BaseTabController {
 
                     addDetailRow(grid, 0, "ID:", String.valueOf(device.getId()));
                     addDetailRow(grid, 1, "Серийный номер:", device.getDeviceSerial() != null ? device.getDeviceSerial() : "—");
-                    addDetailRow(grid, 2, "Тип:", finalTypeName);
-                    addDetailRow(grid, 3, "Марка:", finalMarkName);
-                    addDetailRow(grid, 4, "ОС:", finalOsName); // <-- Добавлено
-                    addDetailRow(grid, 5, "IP:", device.getIp() != null ? device.getIp() : "—"); // <-- Добавлено
-                    addDetailRow(grid, 6, "Статус:", DeviceStatusUtil.getDisplayName(device.getStatus()));
-                    addDetailRow(grid, 7, "Описание:", device.getDescription() != null ? device.getDescription() : "—");
-                    addDetailRow(grid, 8, "Последняя проверка:", DateUtil.format(device.getLastChecked()));
+                    addDetailRow(grid, 1, "Инвентарный номер:", device.getDeviceInventoryNumber() != null ? device.getDeviceInventoryNumber() : "—");
+                    addDetailRow(grid, 3, "Тип:", finalTypeName);
+                    addDetailRow(grid, 4, "Марка:", finalMarkName);
+                    addDetailRow(grid, 5, "ОС:", finalOsName);
+                    addDetailRow(grid, 6, "IP:", device.getIp() != null ? device.getIp() : "—");
+                    addDetailRow(grid, 7, "Статус:", DeviceStatusUtil.getDisplayName(device.getStatus()));
+                    addDetailRow(grid, 8, "Описание:", device.getDescription() != null ? device.getDescription() : "—");
+                    addDetailRow(grid, 9, "Последняя проверка:", DateUtil.format(device.getLastChecked()));
 
                     showInfoDialog("Детали устройства", grid);
                 });
@@ -526,7 +669,7 @@ public class LocationsTabController extends BaseTabController {
         addDetailRow(grid, 0, "ID:", String.valueOf(phone.getId()));
         addDetailRow(grid, 1, "Корпоративный:", phone.getCorpPhoneNumber() != null ? phone.getCorpPhoneNumber() : "—");
         addDetailRow(grid, 2, "Городской:", phone.getPublicPhoneNumber() != null ? phone.getPublicPhoneNumber() : "—");
-        addDetailRow(grid, 3, "IP:", phone.getIp() != null ? phone.getIp() : "—"); // <-- Добавлено
+        addDetailRow(grid, 3, "IP:", phone.getIp() != null ? phone.getIp() : "—");
         addDetailRow(grid, 4, "Последняя проверка:", DateUtil.format(phone.getLastChecked()));
 
         showInfoDialog("Детали телефона", grid);
@@ -572,7 +715,7 @@ public class LocationsTabController extends BaseTabController {
         comboBox.getItems().setAll(items);
         comboBox.setPromptText("Выберите элемент...");
 
-        comboBox.setCellFactory(lv -> new ListCell<T>() {
+        comboBox.setCellFactory(lv -> new ListCell<>() {
             @Override
             protected void updateItem(T item, boolean empty) {
                 super.updateItem(item, empty);
@@ -580,7 +723,7 @@ public class LocationsTabController extends BaseTabController {
             }
         });
 
-        comboBox.setButtonCell(new ListCell<T>() {
+        comboBox.setButtonCell(new ListCell<>() {
             @Override
             protected void updateItem(T item, boolean empty) {
                 super.updateItem(item, empty);
@@ -798,6 +941,7 @@ public class LocationsTabController extends BaseTabController {
             }
         });
     }
+
     @FXML
     private void onAttachDevice() {
         if (currentSelectedLocation == null) {

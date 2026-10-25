@@ -15,12 +15,14 @@ public class Location implements DatabaseEntity {
     private String key;
     @ForeignId(foreignClass = Location.class) private Long parentId;
     @UniqueValueIdentifier private String displayName;
+    private String nickname;
 
-    public Location(long locationId, String key, Long parentId, String displayName) {
+    public Location(long locationId, String key, Long parentId, String displayName, String nickname) {
         this.locationId = locationId;
         this.key = key;
         this.parentId = parentId;
         this.displayName = displayName;
+        this.nickname = nickname;
     }
 
     public Location() {
@@ -61,6 +63,22 @@ public class Location implements DatabaseEntity {
 
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
+    }
+
+    public long getLocationId() {
+        return locationId;
+    }
+
+    public void setLocationId(long locationId) {
+        this.locationId = locationId;
+    }
+
+    public String getNickname() {
+        return nickname;
+    }
+
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
     }
 
     @Override

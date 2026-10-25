@@ -29,6 +29,7 @@ public class DevicesTabController extends BaseTabController {
     @FXML private TableView<Device> devicesTable;
     @FXML private TableColumn<Device, Long> colId;
     @FXML private TableColumn<Device, String> colSerial;
+    @FXML private TableColumn<Device, String> colInventory;
     @FXML private TableColumn<Device, String> colType;
     @FXML private TableColumn<Device, String> colOs;
     @FXML private TableColumn<Device, String> colIp;
@@ -43,6 +44,7 @@ public class DevicesTabController extends BaseTabController {
 
     @FXML private Label lblId;
     @FXML private Label lblSerial;
+    @FXML private Label lblInventory;
     @FXML private Label lblType;
     @FXML private Label lblOs;
     @FXML private Label lblIp;
@@ -59,6 +61,7 @@ public class DevicesTabController extends BaseTabController {
     public void initialize(URL url, ResourceBundle rb) {
         colId.setCellValueFactory(cd -> new SimpleLongProperty(cd.getValue().getId()).asObject());
         colSerial.setCellValueFactory(cd -> new SimpleStringProperty(cd.getValue().getDeviceSerial()));
+        colInventory.setCellValueFactory(cd -> new SimpleStringProperty(cd.getValue().getDeviceInventoryNumber()));
         colType.setCellValueFactory(cd -> new SimpleStringProperty(
                 typeNameMap.getOrDefault((long) cd.getValue().getTypeId(), "ID: " + cd.getValue().getTypeId())
         ));
@@ -241,6 +244,7 @@ public class DevicesTabController extends BaseTabController {
         }
         lblId.setText(String.valueOf(d.getId()));
         lblSerial.setText(d.getDeviceSerial() == null ? "—" : d.getDeviceSerial());
+        lblInventory.setText(d.getDeviceInventoryNumber() == null ? "—" : d.getDeviceInventoryNumber());
         lblType.setText(typeNameMap.getOrDefault((long) d.getTypeId(), "ID: " + d.getTypeId()));
         lblOs.setText(osNameMap.getOrDefault(d.getOsId(), "—"));
         lblIp.setText(d.getIp() != null ? d.getIp() : "—");
@@ -252,6 +256,7 @@ public class DevicesTabController extends BaseTabController {
     private void clearDetails() {
         lblId.setText("—");
         lblSerial.setText("—");
+        lblInventory.setText("");
         lblType.setText("—");
         lblOs.setText("—");
         lblIp.setText("—");

@@ -154,10 +154,6 @@ public class DeviceEditDialog extends Dialog<Device> {
 
         setResultConverter(dialogButton -> {
             if (dialogButton == saveButtonType) {
-                if (tfSerial.getText().isBlank()) {
-                    AlertUtil.error("Ошибка", "Серийный номер обязателен!");
-                    return null;
-                }
                 if (cbType.getValue() == null) {
                     AlertUtil.error("Ошибка", "Необходимо выбрать тип!");
                     return null;

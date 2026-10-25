@@ -17,5 +17,5 @@ public interface BackendDataBus {
     TypeMarkBusService getTypeMarkService();
     DatabaseService getDatabaseService();
 
-    <T extends Entity> GenericDatabaseBusService<T> getService(Class<T> clazz);
+    <T extends Entity> GenericDatabaseBusService<T> getService(Class<?> clazz);
 }

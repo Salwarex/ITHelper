@@ -95,7 +95,7 @@ public class WebBackendDataBus implements BackendDataBus {
     }
 
     @Override
-    public <T extends Entity> GenericDatabaseBusService<T> getService(Class<T> clazz) {
+    public <T extends Entity> GenericDatabaseBusService<T> getService(Class<?> clazz) {
         return null;
     }
 }

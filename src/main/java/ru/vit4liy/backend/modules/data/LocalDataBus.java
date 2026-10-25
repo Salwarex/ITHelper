@@ -134,7 +134,7 @@ public class LocalDataBus implements BackendDataBus {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T extends Entity> GenericDatabaseBusService<T> getService(Class<T> clazz) {
+    public <T extends Entity> GenericDatabaseBusService<T> getService(Class<?> clazz) {
         if (clazz == Device.class) {
             return (GenericDatabaseBusService<T>) getDeviceService();
         } else if (clazz == Location.class) {

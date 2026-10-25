@@ -21,13 +21,10 @@ import ru.vit4liy.base.model.type.Type;
 import ru.vit4liy.base.model.typemark.TypeMark;
 import ru.vit4liy.frontend.base.BaseTabController;
 import ru.vit4liy.frontend.util.AlertUtil;
-import ru.vit4liy.frontend.util.ApplicationFeatures;
 import ru.vit4liy.frontend.util.ClientUser;
 import ru.vit4liy.frontend.util.DeviceStatusUtil;
-import ru.vit4liy.perm.MissingPermissionException;
 
 import java.net.URL;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -49,12 +46,12 @@ public class DataEntryController extends BaseTabController {
     @FXML private TextField tfEmployeeSurname;
     @FXML private TextField tfEmployeeName;
     @FXML private TextField tfEmployeeThirdname;
+    @FXML private TextField tfEmployeePhone;
 
     @FXML private HBox phoneLocationCascade;
     @FXML private TextField tfPhoneCorp;
     @FXML private TextField tfPhonePublic;
     @FXML private TextField tfPhoneIp;
-    @FXML private TextField tfEmployeePhone;
 
     private List<ComboBox<Location>> deviceLocationBoxes = new ArrayList<>();
     private List<ComboBox<Location>> employeeLocationBoxes = new ArrayList<>();
@@ -68,6 +65,7 @@ public class DataEntryController extends BaseTabController {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         setupDeviceStatusComboBox();
+        setupDeviceTypeListener();
         Platform.runLater(this::loadInitialData);
     }
 
@@ -81,12 +79,58 @@ public class DataEntryController extends BaseTabController {
         loadInitialData();
     }
 
+    private void setupDeviceTypeListener() {
+        cbDeviceType.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal == null) {
+                Platform.runLater(() -> {
+                    allMarks.clear();
+                    cbDeviceMark.getItems().clear();
+                    cbDeviceMark.getEditor().clear();
+                    cbDeviceMark.setValue(null);
+                    cbDeviceMark.setPromptText("Сначала выберите тип");
+                    cbDeviceMark.setDisable(true);
+                });
+                return;
+            }
+
+            long typeId = ((Number) newVal.getId()).longValue();
+
+            Platform.runLater(() -> {
+                allMarks.clear();
+                cbDeviceMark.getItems().clear();
+                cbDeviceMark.getEditor().clear();
+                cbDeviceMark.setValue(null);
+                cbDeviceMark.setPromptText("Загрузка марок...");
+                cbDeviceMark.setDisable(true);
+            });
+
+            runAsync(() -> {
+                try {
+                    List<TypeMark> marks = App.getInstance().bus().getTypeMarkService()
+                            .getTypeMarksByTypeId(ClientUser.get(), typeId);
+                    Platform.runLater(() -> {
+                        allMarks.clear();
+                        allMarks.addAll(marks);
+                        cbDeviceMark.getItems().setAll(marks);
+                        cbDeviceMark.setDisable(false);
+                        cbDeviceMark.setPromptText(marks.isEmpty() ? "Нет доступных марок" : "Выберите или введите марку");
+                    });
+                } catch (Exception e) {
+                    Platform.runLater(() -> {
+                        cbDeviceMark.setPromptText("Ошибка загрузки марок");
+                        cbDeviceMark.setDisable(true);
+                    });
+                    handleError(e);
+                }
+            });
+        });
+    }
+
     public void loadInitialData() {
         runAsync(() -> {
             try {
                 allLocations = App.getInstance().bus().getLocationService().getAll(ClientUser.get());
                 allTypes = App.getInstance().bus().getTypeService().getAll(ClientUser.get());
-                allMarks = App.getInstance().bus().getTypeMarkService().getAll(ClientUser.get());
                 allOsSystems = App.getInstance().bus().getOSystemService().getAll(ClientUser.get());
 
                 Platform.runLater(() -> {
@@ -95,7 +139,11 @@ public class DataEntryController extends BaseTabController {
                     buildLocationCascade(phoneLocationCascade, phoneLocationBoxes, null);
 
                     setupEditableComboBox(cbDeviceType, allTypes, Type::getDisplayName);
+
                     setupEditableComboBox(cbDeviceMark, allMarks, TypeMark::getDisplayName);
+                    cbDeviceMark.setDisable(true);
+                    cbDeviceMark.setPromptText("Сначала выберите тип");
+
                     setupEditableComboBox(cbDeviceOs, allOsSystems, OSystem::getDisplayName);
                 });
             } catch (Exception e) {
@@ -133,7 +181,7 @@ public class DataEntryController extends BaseTabController {
             @Override
             public T fromString(String string) {
                 if (string == null || string.isBlank()) return null;
-                return items.stream()
+                return comboBox.getItems().stream()
                         .filter(item -> textExtractor.apply(item).equalsIgnoreCase(string.trim()))
                         .findFirst()
                         .orElse(null);
@@ -336,6 +384,9 @@ public class DataEntryController extends BaseTabController {
                             long markId = App.getInstance().bus().getTypeMarkService().create(ClientUser.get(), mark);
                             mark.setId(markId);
                             allMarks.add(mark);
+
+                            final TypeMark createdMark = mark;
+                            Platform.runLater(() -> cbDeviceMark.getItems().add(createdMark));
                         }
                     }
                 }
@@ -419,8 +470,7 @@ public class DataEntryController extends BaseTabController {
         buildLocationCascade(deviceLocationCascade, deviceLocationBoxes, null);
         cbDeviceType.setValue(null);
         cbDeviceType.getEditor().clear();
-        cbDeviceMark.setValue(null);
-        cbDeviceMark.getEditor().clear();
+
         cbDeviceOs.setValue(null);
         cbDeviceOs.getEditor().clear();
         tfDeviceSerial.clear();
