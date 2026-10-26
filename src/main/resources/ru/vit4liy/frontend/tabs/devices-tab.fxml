@@ -53,7 +53,7 @@
             <Label text="Инвентарный номер:" GridPane.rowIndex="2" GridPane.columnIndex="0" styleClass="field-label"/>
             <Label fx:id="lblInventory" text="—" GridPane.rowIndex="2" GridPane.columnIndex="1" styleClass="field-value"/>
 
-            <Label text="Тип:" GridPane.rowIndex="3" GridPane.columnIndex="0" styleClass="field-label"/>
+            <Label text="Устройство:" GridPane.rowIndex="3" GridPane.columnIndex="0" styleClass="field-label"/>
             <Label fx:id="lblType" text="—" GridPane.rowIndex="3" GridPane.columnIndex="1" styleClass="field-value"/>
 
             <Label text="ОС:" GridPane.rowIndex="4" GridPane.columnIndex="0" styleClass="field-label"/>

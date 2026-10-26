@@ -11,6 +11,8 @@ import ru.vit4liy.frontend.tabs.*;
 import ru.vit4liy.frontend.util.AlertUtil;
 import ru.vit4liy.frontend.util.ApplicationFeatures;
 import ru.vit4liy.frontend.util.ClientUser;
+import ru.vit4liy.it72h.lib.logger.output.Output;
+import ru.vit4liy.it72h.lib.logger.output.OutputPreset;
 
 import java.io.File;
 
@@ -69,7 +71,7 @@ public class MainController {
                                 .importAll(ClientUser.get(), file, true);
                         Platform.runLater(() -> {
                             AlertUtil.info("Успех", "Данные успешно импортированы");
-                            refreshAllTabs(); // <-- Обновляем все вкладки
+                            refreshAllTabs();
                         });
                     } catch (Exception e) {
                         Platform.runLater(() -> AlertUtil.errorWithStack("Ошибка импорта", e));
@@ -98,7 +100,7 @@ public class MainController {
                                 .importAll(ClientUser.get(), file, false);
                         Platform.runLater(() -> {
                             AlertUtil.info("Успех", "Данные успешно добавлены");
-                            refreshAllTabs(); // <-- Обновляем все вкладки
+                            refreshAllTabs();
                         });
                     } catch (Exception e) {
                         Platform.runLater(() -> AlertUtil.errorWithStack("Ошибка импорта", e));
@@ -157,5 +159,33 @@ public class MainController {
                 Platform.runLater(() -> AlertUtil.errorWithStack("Ошибка удаления данных", e));
             }
         });
+    }
+
+    @FXML
+    private void onLightTheme() {
+        if (tabPane.getScene() != null) {
+            tabPane.getScene().getRoot().getStyleClass().remove("dark");
+            App.getConfig().set("theme", "light");
+            saveConfig();
+            App.getLogger().out(Output.of(OutputPreset.DEFAULT, "Theme changed to light"));
+        }
+    }
+
+    @FXML
+    private void onDarkTheme() {
+        if (tabPane.getScene() != null) {
+            tabPane.getScene().getRoot().getStyleClass().add("dark");
+            App.getConfig().set("theme", "dark");
+            saveConfig();
+            App.getLogger().out(Output.of(OutputPreset.DEFAULT, "Theme changed to dark"));
+        }
+    }
+
+    private void saveConfig() {
+        try {
+            App.getConfig().save();
+        } catch (Exception e) {
+            App.getLogger().out(Output.of(OutputPreset.ERROR, "Can't change theme: " + e.getMessage()));
+        }
     }
 }

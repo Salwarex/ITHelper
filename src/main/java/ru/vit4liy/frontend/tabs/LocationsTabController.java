@@ -25,10 +25,7 @@ import ru.vit4liy.perm.MissingPermissionException;
 
 import java.net.URL;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.ResourceBundle;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -105,39 +102,8 @@ public class LocationsTabController extends BaseTabController {
 
         BackendDataBus bus = App.getInstance().bus();
 
-        // === ИСПРАВЛЕНИЕ: Безопасное извлечение данных с защитой от null и пустых Optional ===
         setupListView(lvDevices,
-                device -> {
-                    try {
-                        String typeName = bus.getTypeService().getById(ClientUser.get(), device.getTypeId())
-                                .map(Type::getDisplayName).orElse("Неизвестный тип");
-
-                        String markName = "—";
-                        if (device.getTypeMarkId() != null) {
-                            markName = bus.getTypeMarkService().getById(ClientUser.get(), device.getTypeMarkId())
-                                    .map(TypeMark::getDisplayName).orElse("Неизвестная марка");
-                        }
-
-                        String osName = "";
-                        if (device.getOsId() != null) {
-                            osName = " / " + bus.getOSystemService().getById(ClientUser.get(), device.getOsId())
-                                    .map(OSystem::getDisplayName).orElse("Неизвестная ОС");
-                        }
-
-                        return String.format("%s %s%s (ID: %d, S/N: %s, INV: %s)",
-                                typeName,
-                                markName,
-                                osName,
-                                device.getId(),
-                                device.getDeviceSerial() != null ? device.getDeviceSerial() : "—",
-                                device.getDeviceInventoryNumber() != null ? device.getDeviceInventoryNumber() : "—"
-                        );
-                    } catch (Exception e) {
-                        System.err.println("Ошибка форматирования устройства ID=" + device.getId());
-                        e.printStackTrace();
-                        return "Ошибка отображения (ID: " + device.getId() + ")";
-                    }
-                },
+                this::formatDeviceForDisplay,
                 this::detachDevice,
                 this::showDeviceDetails);
 
@@ -191,20 +157,125 @@ public class LocationsTabController extends BaseTabController {
 
     private <T> ContextMenu createDetachMenu(T item, Consumer<T> onDetach) {
         ContextMenu menu = new ContextMenu();
-        MenuItem detach = new MenuItem("Отвязать");
-        detach.setOnAction(e -> {
-            if (AlertUtil.confirm("Отвязать", "Вы уверены, что хотите отвязать этот объект от локации?")) {
-                onDetach.accept(item);
-            }
-        });
+
         MenuItem details = new MenuItem("Подробнее...");
         details.setOnAction(e -> {
             if (item instanceof Device) showDeviceDetails((Device) item);
             else if (item instanceof Employee) showEmployeeDetails((Employee) item);
             else if (item instanceof Phone) showPhoneDetails((Phone) item);
         });
-        menu.getItems().addAll(details, new SeparatorMenuItem(), detach);
+
+        MenuItem transfer = new MenuItem("Перенести");
+        transfer.setOnAction(e -> showTransferDialog(item));
+
+        MenuItem detach = new MenuItem("Отвязать");
+        detach.setOnAction(e -> {
+            if (AlertUtil.confirm("Отвязать", "Вы уверены, что хотите отвязать этот объект от локации?")) {
+                onDetach.accept(item);
+            }
+        });
+
+        menu.getItems().addAll(details, transfer, new SeparatorMenuItem(), detach);
         return menu;
+    }
+
+    private <T> void showTransferDialog(T item) {
+        if (currentSelectedLocation == null) return;
+
+        Dialog<Location> dialog = new Dialog<>();
+        dialog.setTitle("Перенести объект");
+        dialog.setHeaderText("Выберите новую локацию для переноса");
+
+        ButtonType transferButtonType = new ButtonType("Перенести", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(transferButtonType, ButtonType.CANCEL);
+
+        ComboBox<Location> locationCombo = new ComboBox<>();
+
+        List<Location> otherLocations = allLocations.stream()
+                .filter(loc -> !loc.getId().equals(currentSelectedLocation.getId()))
+                .collect(Collectors.toList());
+
+        locationCombo.getItems().setAll(otherLocations);
+        locationCombo.setPromptText("Выберите локацию...");
+
+        locationCombo.setCellFactory(lv -> new ListCell<Location>() {
+            @Override
+            protected void updateItem(Location loc, boolean empty) {
+                super.updateItem(loc, empty);
+                setText((empty || loc == null) ? null : buildLocationPath(loc, allLocations));
+            }
+        });
+        locationCombo.setButtonCell(new ListCell<Location>() {
+            @Override
+            protected void updateItem(Location loc, boolean empty) {
+                super.updateItem(loc, empty);
+                setText((empty || loc == null) ? null : buildLocationPath(loc, allLocations));
+            }
+        });
+
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.add(new Label("Новая локация:"), 0, 0);
+        grid.add(locationCombo, 1, 0);
+
+        dialog.getDialogPane().setContent(grid);
+
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == transferButtonType) {
+                return locationCombo.getValue();
+            }
+            return null;
+        });
+
+        dialog.showAndWait().ifPresent(newLocation -> {
+            if (newLocation == null) return;
+
+            runAsync(() -> {
+                try {
+                    if (item instanceof Device) {
+                        Device dev = (Device) item;
+                        App.getInstance().bus().getDeviceLocationService().delete(ClientUser.get(),
+                                new ru.vit4liy.rsc.misc.MultiId<>(dev.getId(), currentSelectedLocation.getId()));
+                        DeviceLocation dl = new DeviceLocation();
+                        dl.setAId(dev.getId());
+                        dl.setBId(newLocation.getId());
+                        dl.setCreatedAt(System.currentTimeMillis());
+                        dl.setLastChecked(System.currentTimeMillis());
+                        App.getInstance().bus().getDeviceLocationService().create(ClientUser.get(), dl);
+
+                    } else if (item instanceof Employee) {
+                        Employee emp = (Employee) item;
+                        App.getInstance().bus().getEmployeeLocationService().delete(ClientUser.get(),
+                                new ru.vit4liy.rsc.misc.MultiId<>(emp.getId(), currentSelectedLocation.getId()));
+                        EmployeeLocation el = new EmployeeLocation();
+                        el.setAId(emp.getId());
+                        el.setBId(newLocation.getId());
+                        el.setCreatedAt(System.currentTimeMillis());
+                        el.setLastChecked(System.currentTimeMillis());
+                        App.getInstance().bus().getEmployeeLocationService().create(ClientUser.get(), el);
+
+                    } else if (item instanceof Phone) {
+                        Phone phone = (Phone) item;
+                        App.getInstance().bus().getLocationPhoneService().delete(ClientUser.get(),
+                                new ru.vit4liy.rsc.misc.MultiId<>(currentSelectedLocation.getId(), phone.getId()));
+                        LocationPhone lp = new LocationPhone();
+                        lp.setAId(newLocation.getId());
+                        lp.setBId(phone.getId());
+                        lp.setCreatedAt(System.currentTimeMillis());
+                        lp.setLastChecked(System.currentTimeMillis());
+                        App.getInstance().bus().getLocationPhoneService().create(ClientUser.get(), lp);
+                    }
+
+                    Platform.runLater(() -> {
+                        AlertUtil.info("Успех", "Объект успешно перенесен");
+                        showLocationDetails(currentSelectedLocation);
+                    });
+                } catch (Exception e) {
+                    handleError(e);
+                }
+            });
+        });
     }
 
     private TreeCell<?> findTreeCell(Node node) {
@@ -305,6 +376,109 @@ public class LocationsTabController extends BaseTabController {
                     handleError(e);
                 }
             });
+        });
+    }
+
+    private void showBulkLocationCreationDialog(Location parent) {
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Множественное создание расположений");
+        dialog.setHeaderText(parent == null ? "Корневое расположение" : "Родитель: " + parent.getDisplayName());
+
+        ButtonType createButtonType = new ButtonType("Создать", ButtonBar.ButtonData.OK_DONE);
+        ButtonType cancelButtonType = new ButtonType("Отмена", ButtonBar.ButtonData.CANCEL_CLOSE);
+        dialog.getDialogPane().getButtonTypes().addAll(createButtonType, cancelButtonType);
+
+        GridPane grid = new GridPane();
+        int textFieldWidth = 300;
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20, textFieldWidth, 10, 10));
+
+        TextField fromField = new TextField("1");
+        fromField.setPromptText("Например, 1");
+        fromField.setMinWidth(textFieldWidth);
+
+        TextField toField = new TextField("10");
+        toField.setPromptText("Например, 10");
+        toField.setMinWidth(textFieldWidth);
+
+        TextField formatField = new TextField("Кабинет %03d");
+        formatField.setPromptText("Например, Кабинет %03d (результат: Кабинет 014) или %03d (результат: 014)");
+        formatField.setMinWidth(textFieldWidth);
+
+        grid.add(new Label("От:"), 0, 0);
+        grid.add(fromField, 1, 0);
+        grid.add(new Label("До:"), 0, 1);
+        grid.add(toField, 1, 1);
+        grid.add(new Label("Формат:"), 0, 2);
+        grid.add(formatField, 1, 2);
+
+        GridPane.setHgrow(fromField, javafx.scene.layout.Priority.ALWAYS);
+        GridPane.setHgrow(toField, javafx.scene.layout.Priority.ALWAYS);
+        GridPane.setHgrow(formatField, javafx.scene.layout.Priority.ALWAYS);
+
+        dialog.getDialogPane().setContent(grid);
+
+        javafx.scene.Node createButton = dialog.getDialogPane().lookupButton(createButtonType);
+        createButton.setDisable(true);
+
+        Runnable validate = () -> {
+            try {
+                int from = Integer.parseInt(fromField.getText().trim());
+                int to = Integer.parseInt(toField.getText().trim());
+                String format = formatField.getText().trim();
+
+                boolean valid = from <= to && !format.isBlank();
+                if (valid) {
+                    String.format(format, from);
+                }
+
+                createButton.setDisable(!valid);
+            } catch (Exception e) {
+                createButton.setDisable(true);
+            }
+        };
+
+        fromField.textProperty().addListener((obs, oldVal, newVal) -> validate.run());
+        toField.textProperty().addListener((obs, oldVal, newVal) -> validate.run());
+        formatField.textProperty().addListener((obs, oldVal, newVal) -> validate.run());
+
+        validate.run();
+
+        dialog.setResultConverter(dialogButton -> dialogButton);
+
+        dialog.showAndWait().ifPresent(result -> {
+            if (result == createButtonType) {
+                int from = Integer.parseInt(fromField.getText().trim());
+                int to = Integer.parseInt(toField.getText().trim());
+                String format = formatField.getText().trim();
+                Location finalParent = parent;
+
+                runAsync(() -> {
+                    try {
+                        int count = 0;
+                        for (int i = from; i <= to; i++) {
+                            String displayName = String.format(format, i);
+                            Location loc = new Location();
+                            loc.setDisplayName(displayName);
+                            loc.setKey(generateKey(displayName) + "-" + i);
+                            if (finalParent != null) {
+                                loc.setParentId(finalParent.getId());
+                            }
+                            App.getInstance().bus().getLocationService().create(ClientUser.get(), loc);
+                            count++;
+                        }
+
+                        int finalCount = count;
+                        Platform.runLater(() -> {
+                            reloadTree();
+                            AlertUtil.info("Успех", "Успешно создано " + finalCount + " локаций");
+                        });
+                    } catch (Exception e) {
+                        handleError(e);
+                    }
+                });
+            }
         });
     }
 
@@ -493,29 +667,32 @@ public class LocationsTabController extends BaseTabController {
     private ContextMenu createContextMenu(Location location) {
         ContextMenu menu = new ContextMenu();
 
-        MenuItem attachDevice = new MenuItem("🖨 Привязать устройство");
+        MenuItem attachDevice = new MenuItem("Привязать устройство");
         attachDevice.setOnAction(e -> attachDevice(location));
 
-        MenuItem attachEmployee = new MenuItem("👥 Привязать сотрудника");
+        MenuItem attachEmployee = new MenuItem("Привязать сотрудника");
         attachEmployee.setOnAction(e -> attachEmployee(location));
 
-        MenuItem attachPhone = new MenuItem("📞 Привязать телефон");
+        MenuItem attachPhone = new MenuItem("Привязать телефон");
         attachPhone.setOnAction(e -> attachPhone(location));
 
-        MenuItem addChild = new MenuItem("➕ Создать дочернюю локацию");
+        MenuItem addChild = new MenuItem("Создать дочернюю локацию");
         addChild.setOnAction(e -> showLocationCreationDialog(location));
 
-        MenuItem edit = new MenuItem("✏ Редактировать");
+        MenuItem addBulk = new MenuItem("Множественное добавление");
+        addBulk.setOnAction(e -> showBulkLocationCreationDialog(location));
+
+        MenuItem edit = new MenuItem("Редактировать");
         edit.setOnAction(e -> editLocation(location));
 
-        MenuItem delete = new MenuItem("🗑 Удалить");
+        MenuItem delete = new MenuItem("Удалить");
         delete.setOnAction(e -> deleteLocation(location));
 
         menu.getItems().addAll(
                 new SeparatorMenuItem(),
                 attachDevice, attachEmployee, attachPhone,
                 new SeparatorMenuItem(),
-                addChild, edit, delete
+                addChild, addBulk, edit, delete
         );
 
         return menu;
@@ -533,12 +710,23 @@ public class LocationsTabController extends BaseTabController {
     }
 
     private void buildTree(List<Location> all) {
+        Set<Long> expandedIds = new HashSet<>();
+        if (locationsTree.getRoot() != null) {
+            collectExpandedIds(locationsTree.getRoot(), expandedIds);
+        }
+
+        Long selectedId = null;
+        TreeItem<Location> selectedItem = locationsTree.getSelectionModel().getSelectedItem();
+        if (selectedItem != null && selectedItem.getValue() != null) {
+            selectedId = selectedItem.getValue().getId();
+        }
+
         TreeItem<Location> root = new TreeItem<>();
         root.setExpanded(true);
 
         for (Location loc : all) {
             if (loc.getParentId() == null || loc.getParentId() == 0) {
-                TreeItem<Location> item = createItem(loc, all);
+                TreeItem<Location> item = createItem(loc, all, expandedIds);
                 root.getChildren().add(item);
             }
         }
@@ -546,20 +734,55 @@ public class LocationsTabController extends BaseTabController {
         locationsTree.setRoot(root);
         locationsTree.setShowRoot(false);
 
-        if (!root.getChildren().isEmpty()) {
+        if (selectedId != null) {
+            TreeItem<Location> itemToSelect = findItemById(root, selectedId);
+            if (itemToSelect != null) {
+                locationsTree.getSelectionModel().select(itemToSelect);
+            } else if (!root.getChildren().isEmpty()) {
+                locationsTree.getSelectionModel().select(root.getChildren().get(0));
+            }
+        } else if (!root.getChildren().isEmpty()) {
             locationsTree.getSelectionModel().select(root.getChildren().get(0));
         }
     }
 
-    private TreeItem<Location> createItem(Location parent, List<Location> all) {
+    private TreeItem<Location> createItem(Location parent, List<Location> all, Set<Long> expandedIds) {
         TreeItem<Location> item = new TreeItem<>(parent);
         for (Location child : all) {
             if (parent.getId() != null && parent.getId().equals(child.getParentId())) {
-                item.getChildren().add(createItem(child, all));
+                item.getChildren().add(createItem(child, all, expandedIds));
             }
         }
-        item.setExpanded(true);
+
+        if (parent.getId() != null && expandedIds.contains(parent.getId())) {
+            item.setExpanded(true);
+        } else {
+            item.setExpanded(false);
+        }
+
         return item;
+    }
+
+    private void collectExpandedIds(TreeItem<Location> item, Set<Long> expandedIds) {
+        if (item.isExpanded() && item.getValue() != null) {
+            expandedIds.add(item.getValue().getId());
+        }
+        for (TreeItem<Location> child : item.getChildren()) {
+            collectExpandedIds(child, expandedIds);
+        }
+    }
+
+    private TreeItem<Location> findItemById(TreeItem<Location> root, Long id) {
+        if (root.getValue() != null && root.getValue().getId().equals(id)) {
+            return root;
+        }
+        for (TreeItem<Location> child : root.getChildren()) {
+            TreeItem<Location> found = findItemById(child, id);
+            if (found != null) {
+                return found;
+            }
+        }
+        return null;
     }
 
     private void showLocationDetails(Location loc) {
@@ -671,7 +894,6 @@ public class LocationsTabController extends BaseTabController {
                     grid.setHgap(15);
                     grid.setVgap(10);
 
-                    // === ИСПРАВЛЕНИЕ: Уникальные индексы строк (было два раза row=1) ===
                     addDetailRow(grid, 0, "ID:", String.valueOf(device.getId()));
                     addDetailRow(grid, 1, "Серийный номер:", device.getDeviceSerial() != null ? device.getDeviceSerial() : "—");
                     addDetailRow(grid, 2, "Инвентарный номер:", device.getDeviceInventoryNumber() != null ? device.getDeviceInventoryNumber() : "—");
@@ -812,7 +1034,7 @@ public class LocationsTabController extends BaseTabController {
 
                 final List<Device> finalAvailableDevices = availableDevices;
                 Platform.runLater(() -> showAttachDialog(location, finalAvailableDevices, "Привязать устройство", "Устройство:",
-                        device -> device.getDeviceSerial() != null ? device.getDeviceSerial() : "ID: " + device.getId(),
+                        this::formatDeviceForDisplay,
                         device -> {
                             DeviceLocation dl = new DeviceLocation();
                             dl.setAId(device.getId());
@@ -1001,5 +1223,38 @@ public class LocationsTabController extends BaseTabController {
 
     private String generateKey(String name) {
         return "LOC-" + name.toUpperCase().replaceAll("[^A-ZА-Я0-9]", "_") + "-" + System.currentTimeMillis() % 10000;
+    }
+
+    private String formatDeviceForDisplay(Device device) {
+        try {
+            BackendDataBus bus = App.getInstance().bus();
+            String typeName = bus.getTypeService().getById(ClientUser.get(), device.getTypeId())
+                    .map(Type::getDisplayName).orElse("Неизвестный тип");
+
+            String markName = "—";
+            if (device.getTypeMarkId() != null) {
+                markName = bus.getTypeMarkService().getById(ClientUser.get(), device.getTypeMarkId())
+                        .map(TypeMark::getDisplayName).orElse("Неизвестная марка");
+            }
+
+            String osName = "";
+            if (device.getOsId() != null) {
+                osName = " / " + bus.getOSystemService().getById(ClientUser.get(), device.getOsId())
+                        .map(OSystem::getDisplayName).orElse("Неизвестная ОС");
+            }
+
+            return String.format("%s %s%s (ID: %d, S/N: %s, INV: %s)",
+                    typeName,
+                    markName,
+                    osName,
+                    device.getId(),
+                    device.getDeviceSerial() != null ? device.getDeviceSerial() : "—",
+                    device.getDeviceInventoryNumber() != null ? device.getDeviceInventoryNumber() : "—"
+            );
+        } catch (Exception e) {
+            System.err.println("Ошибка форматирования устройства ID=" + device.getId());
+            e.printStackTrace();
+            return "Ошибка отображения (ID: " + device.getId() + ")";
+        }
     }
 }

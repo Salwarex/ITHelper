@@ -16,4 +16,6 @@ web:
   port: 2701
 debug: false
 
-version: 2
+theme: "light"
+
+version: 3

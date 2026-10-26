@@ -18,6 +18,12 @@
           <MenuItem text="Очистить все данные" onAction="#onFullDelete"/>
         </items>
       </Menu>
+      <Menu mnemonicParsing="false" text="Вид">
+        <items>
+          <MenuItem text="Светлая тема" onAction="#onLightTheme"/>
+          <MenuItem text="Тёмная тема" onAction="#onDarkTheme"/>
+        </items>
+      </Menu>
     </menus>
   </MenuBar>
 

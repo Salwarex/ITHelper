@@ -1,8 +1,14 @@
-/* === Базовые стили === */
+/* ==========================================================================
+   БАЗОВЫЕ СТИЛИ (СВЕТЛАЯ ТЕМА)
+   ========================================================================== */
+
 .root {
     -fx-font-family: "Segoe UI", "Arial", sans-serif;
     -fx-font-size: 13px;
     -fx-base: #f5f6f8;
+    -fx-background: #ffffff;
+    -fx-control-inner-background: #ffffff;
+    -fx-accent: #2563eb;
 }
 
 /* === Заголовки === */
@@ -45,6 +51,10 @@
 .btn-danger:hover { -fx-background-color: #b91c1c; }
 
 /* === Таблицы === */
+.table-view {
+    -fx-background-color: #ffffff;
+    -fx-control-inner-background: #ffffff;
+}
 .table-view .column-header-background {
     -fx-background-color: #f3f4f6;
 }
@@ -53,14 +63,21 @@
     -fx-border-color: #e5e7eb;
     -fx-font-weight: 600;
     -fx-text-fill: #374151;
-    -fx-alignment: CENTER_LEFT; /* Выравнивание текста заголовка по левому краю */
+    -fx-alignment: CENTER_LEFT;
 }
 .table-view .column-header .label {
     -fx-alignment: CENTER_LEFT;
-    -fx-padding: 0 0 0 10; /* Небольшой отступ слева для красоты */
+    -fx-padding: 0 0 0 10;
+    -fx-text-fill: #374151;
 }
 .table-view .table-row-cell:odd { -fx-background-color: #ffffff; }
 .table-view .table-row-cell:even { -fx-background-color: #f9fafb; }
+.table-view .table-row-cell {
+    -fx-text-fill: #111827;
+}
+.table-view .table-row-cell .text {
+    -fx-fill: #111827;
+}
 .table-view .table-row-cell:selected {
     -fx-background-color: #dbeafe;
 }
@@ -69,7 +86,14 @@
 }
 .table-view .table-row-cell:hover { -fx-background-color: #eff6ff; }
 
-/* === Дерево === */
+/* === Дерево (TreeView) === */
+.tree-view {
+    -fx-background-color: #ffffff;
+    -fx-control-inner-background: #ffffff;
+}
+.tree-view .tree-cell {
+    -fx-text-fill: #111827;
+}
 .tree-view .tree-cell:selected {
     -fx-background-color: #dbeafe;
     -fx-text-fill: #1e3a8a;
@@ -83,32 +107,60 @@
     -fx-font-weight: 600;
     -fx-padding: 8 12 8 12;
 }
+.titled-pane > .content {
+    -fx-background-color: #ffffff;
+}
 
 /* === TextField / ComboBox === */
-.text-field, .combo-box {
+.text-field, .combo-box, .combo-box .list-cell {
     -fx-background-color: white;
     -fx-border-color: #d1d5db;
     -fx-border-radius: 6;
     -fx-background-radius: 6;
     -fx-padding: 6 10 6 10;
+    -fx-text-fill: #111827;
+    -fx-prompt-text-fill: #9ca3af;
 }
 .text-field:focused, .combo-box:focused {
     -fx-border-color: #2563eb;
     -fx-effect: dropshadow(gaussian, rgba(37,99,235,0.25), 6, 0, 0, 0);
+}
+.combo-box .list-view {
+    -fx-background-color: white;
+    -fx-border-color: #d1d5db;
+}
+.combo-box .list-cell:hover {
+    -fx-background-color: #f3f4f6;
+}
+.combo-box .list-cell:selected {
+    -fx-background-color: #dbeafe;
+    -fx-text-fill: #1e3a8a;
 }
 
 /* === TabPane === */
 .tab-pane > .tab-header-area > .tab-header-background {
     -fx-background-color: #f3f4f6;
 }
-.tab-pane .tab {
+.tab-pane > .tab-header-area > .headers-region > .tab {
     -fx-background-color: #e5e7eb;
     -fx-padding: 8 18 8 18;
     -fx-background-radius: 6 6 0 0;
 }
-.tab-pane .tab:selected {
+.tab-pane > .tab-header-area > .headers-region > .tab > .tab-container > .tab-label {
+    -fx-text-fill: #4b5563;
+}
+.tab-pane > .tab-header-area > .headers-region > .tab:selected {
     -fx-background-color: white;
+}
+.tab-pane > .tab-header-area > .headers-region > .tab:selected > .tab-container > .tab-label {
+    -fx-text-fill: #111827;
     -fx-font-weight: 600;
+}
+.tab-pane > .tab-header-area > .headers-region > .tab:hover {
+    -fx-background-color: #d1d5db;
+}
+.tab-pane > .tab-header-area > .headers-region > .tab:hover > .tab-container > .tab-label {
+    -fx-text-fill: #1f2937;
 }
 
 /* === SplitPane === */
@@ -117,20 +169,249 @@
     -fx-padding: 0 1 0 1;
 }
 
-/* === Отключение выделения пустых ячеек TreeView === */
-.tree-view .tree-cell:empty {
-    -fx-background-color: transparent;
-    -fx-cursor: default;
+/* === MenuBar === */
+.menu-bar {
+    -fx-background-color: #f3f4f6;
 }
-.tree-view .tree-cell:empty:hover {
-    -fx-background-color: transparent;
+.menu-bar .menu {
+    -fx-text-fill: #1f2937;
+}
+.menu-bar .menu:hover {
+    -fx-background-color: #e5e7eb;
+}
+.menu-bar .menu-item {
+    -fx-background-color: #ffffff;
+}
+.menu-bar .menu-item:hover {
+    -fx-background-color: #eff6ff;
+}
+.menu-bar .menu-item .label {
+    -fx-text-fill: #1f2937;
 }
 
-/* === Отключение выделения для disabled ячеек === */
+/* === Отключение выделения пустых/отключенных ячеек TreeView === */
+.tree-view .tree-cell:empty,
 .tree-view .tree-cell:disabled {
     -fx-background-color: transparent;
     -fx-cursor: default;
 }
+.tree-view .tree-cell:empty:hover,
 .tree-view .tree-cell:disabled:hover {
     -fx-background-color: transparent;
+}
+
+
+/* ==========================================================================
+   ТЁМНАЯ ТЕМА (активируется добавлением класса "dark" к .root)
+   ========================================================================== */
+
+.root.dark {
+    -fx-base: #1e1e1e;
+    -fx-background: #1e1e1e;
+    -fx-control-inner-background: #2d2d2d;
+    -fx-accent: #3b82f6;
+}
+
+/* === Тексты === */
+.root.dark .h1,
+.root.dark .h2,
+.root.dark .field-value,
+.root.dark .label,
+.root.dark .text {
+    -fx-text-fill: #e5e7eb;
+}
+
+.root.dark .field-label {
+    -fx-text-fill: #9ca3af;
+}
+
+/* === Кнопки === */
+.root.dark .button {
+    -fx-background-color: #374151;
+    -fx-text-fill: #e5e7eb;
+}
+.root.dark .button:hover { -fx-background-color: #4b5563; }
+.root.dark .button:pressed { -fx-background-color: #6b7280; }
+
+.root.dark .btn-primary { -fx-background-color: #2563eb; -fx-text-fill: white; }
+.root.dark .btn-primary:hover { -fx-background-color: #1d4ed8; }
+.root.dark .btn-primary:pressed { -fx-background-color: #1e40af; }
+
+.root.dark .btn-danger { -fx-background-color: #dc2626; -fx-text-fill: white; }
+.root.dark .btn-danger:hover { -fx-background-color: #b91c1c; }
+
+/* === Таблицы (с полным исправлением чёрного текста) === */
+.root.dark .table-view {
+    -fx-background-color: #2d2d2d;
+    -fx-control-inner-background: #2d2d2d;
+}
+
+.root.dark .table-view .column-header-background {
+    -fx-background-color: #252526;
+}
+
+.root.dark .table-view .column-header {
+    -fx-background-color: transparent;
+    -fx-border-color: #374151;
+    -fx-font-weight: 600;
+}
+
+.root.dark .table-view .column-header .label,
+.root.dark .table-view .column-header .label .text {
+    -fx-text-fill: #e5e7eb;
+    -fx-fill: #e5e7eb;
+}
+
+.root.dark .table-view .table-row-cell:odd {
+    -fx-background-color: #2d2d2d;
+}
+
+.root.dark .table-view .table-row-cell:even {
+    -fx-background-color: #333333;
+}
+
+/* КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ: задаём цвет текста на всех уровнях */
+.root.dark .table-view .table-row-cell,
+.root.dark .table-view .table-row-cell .table-cell,
+.root.dark .table-view .table-row-cell .text {
+    -fx-text-fill: #e5e7eb;
+    -fx-fill: #e5e7eb;
+}
+
+.root.dark .table-view .table-row-cell:selected {
+    -fx-background-color: #1e3a8a;
+}
+
+.root.dark .table-view .table-row-cell:selected,
+.root.dark .table-view .table-row-cell:selected .table-cell,
+.root.dark .table-view .table-row-cell:selected .text {
+    -fx-text-fill: #dbeafe;
+    -fx-fill: #dbeafe;
+}
+
+.root.dark .table-view .table-row-cell:hover {
+    -fx-background-color: #374151;
+}
+
+/* === Дерево (TreeView) === */
+.root.dark .tree-view {
+    -fx-background-color: #2d2d2d;
+    -fx-control-inner-background: #2d2d2d;
+}
+.root.dark .tree-view .tree-cell {
+    -fx-text-fill: #e5e7eb;
+}
+.root.dark .tree-view .tree-cell:selected {
+    -fx-background-color: #1e3a8a;
+    -fx-text-fill: #dbeafe;
+}
+.root.dark .tree-view .tree-cell:hover { -fx-background-color: #374151; }
+
+/* === TitledPane === */
+.root.dark .titled-pane > .title {
+    -fx-background-color: #252526;
+}
+.root.dark .titled-pane > .title .text {
+    -fx-fill: #e5e7eb;
+}
+.root.dark .titled-pane > .content {
+    -fx-background-color: #2d2d2d;
+}
+
+/* === TextField / ComboBox === */
+.root.dark .text-field,
+.root.dark .combo-box,
+.root.dark .combo-box .list-cell {
+    -fx-background-color: #333333;
+    -fx-border-color: #4b5563;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-padding: 6 10 6 10;
+    -fx-text-fill: #e5e7eb;
+    -fx-prompt-text-fill: #9ca3af;
+}
+.root.dark .text-field:focused,
+.root.dark .combo-box:focused {
+    -fx-border-color: #3b82f6;
+    -fx-effect: dropshadow(gaussian, rgba(59,130,246,0.25), 6, 0, 0, 0);
+}
+.root.dark .combo-box .list-view {
+    -fx-background-color: #333333;
+    -fx-border-color: #4b5563;
+}
+.root.dark .combo-box .list-cell:hover {
+    -fx-background-color: #4b5563;
+}
+.root.dark .combo-box .list-cell:selected {
+    -fx-background-color: #1e3a8a;
+    -fx-text-fill: #dbeafe;
+}
+
+/* === Вкладки (TabPane) — серый оттенок, без градиента === */
+.root.dark .tab-pane > .tab-header-area > .tab-header-background {
+    -fx-background-color: #252526;
+}
+
+.root.dark .tab-pane > .tab-header-area > .headers-region > .tab {
+    -fx-background-color: #374151;
+    -fx-padding: 8 18 8 18;
+    -fx-background-radius: 6 6 0 0;
+}
+
+.root.dark .tab-pane > .tab-header-area > .headers-region > .tab > .tab-container > .tab-label {
+    -fx-text-fill: #9ca3af;
+}
+
+.root.dark .tab-pane > .tab-header-area > .headers-region > .tab:selected {
+    -fx-background-color: #1e1e1e;
+}
+
+.root.dark .tab-pane > .tab-header-area > .headers-region > .tab:selected > .tab-container > .tab-label {
+    -fx-text-fill: #e5e7eb;
+    -fx-font-weight: 600;
+}
+
+.root.dark .tab-pane > .tab-header-area > .headers-region > .tab:hover {
+    -fx-background-color: #4b5563;
+}
+
+.root.dark .tab-pane > .tab-header-area > .headers-region > .tab:hover > .tab-container > .tab-label {
+    -fx-text-fill: #e5e7eb;
+}
+
+/* === Разделитель (SplitPane) === */
+.root.dark .split-pane > .split-pane-divider {
+    -fx-background-color: #374151;
+}
+
+/* === Menu Bar — без белого градиента === */
+.root.dark .menu-bar {
+    -fx-background-color: #1e1e1e;
+}
+.root.dark .menu-bar .menu {
+    -fx-text-fill: #e5e7eb;
+}
+.root.dark .menu-bar .menu:hover {
+    -fx-background-color: #374151;
+}
+.root.dark .menu-bar .menu-item {
+    -fx-background-color: #2d2d2d;
+}
+.root.dark .menu-bar .menu-item:hover {
+    -fx-background-color: #374151;
+}
+.root.dark .menu-bar .menu-item .label {
+    -fx-text-fill: #e5e7eb;
+}
+
+/* === Контекстное меню === */
+.root.dark .context-menu {
+    -fx-background-color: #2d2d2d;
+    -fx-border-color: #374151;
+}
+.root.dark .context-menu .menu-item .label {
+    -fx-text-fill: #e5e7eb;
+}
+.root.dark .context-menu .menu-item:hover {
+    -fx-background-color: #374151;
 }

@@ -25,7 +25,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
 public class Frontend extends Module {
-    private final static String TITLE = "ITУчёт Beta, версия 0.16 — Инструмент сисадмина";
+    private final static String TITLE = "ITHelper Beta, версия 0.16 — Инструмент сисадмина";
 
     private final ExecutorService pool;
     private MainController mainController;
@@ -70,6 +70,17 @@ public class Frontend extends Module {
             throw new RuntimeException(e);
         }
         Log.out("Scene loaded successfully!");
+
+        String theme = App.getConfig().getString("theme", "light");
+        Log.out("Загружена тема из config.yml: " + theme);
+
+        if ("dark".equalsIgnoreCase(theme)) {
+            scene.getRoot().getStyleClass().add("dark");
+            Log.out("Применена тёмная тема");
+        } else {
+            scene.getRoot().getStyleClass().remove("dark");
+            Log.out("Применена светлая тема");
+        }
 
         this.mainController = fxmlLoader.getController();
         Log.out("Controller loaded successfully!");

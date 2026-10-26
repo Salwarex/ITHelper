@@ -155,6 +155,10 @@ public class DeviceCreateDialog extends Dialog<Device> {
 
                 Device device = new Device();
                 device.setDeviceSerial(tfSerial.getText().trim());
+
+                String inventory = tfSerialInv.getText().trim();
+                device.setDeviceInventoryNumber(inventory.isBlank() ? null : inventory);
+
                 device.setTypeId(((Number) cbType.getValue().getId()).intValue());
 
                 TypeMark tm = cbTypeMark.getValue();

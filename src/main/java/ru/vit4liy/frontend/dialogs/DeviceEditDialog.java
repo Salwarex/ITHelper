@@ -19,7 +19,7 @@ import java.util.List;
 public class DeviceEditDialog extends Dialog<Device> {
     public DeviceEditDialog(Device device) {
         setTitle("Редактировать устройство");
-        setHeaderText("Серийный номер: " + device.getDeviceSerial());
+        setHeaderText("Серийный номер: " + (device.getDeviceSerial() != null ? device.getDeviceSerial() : "Не указан"));
 
         ButtonType saveButtonType = new ButtonType("Сохранить", ButtonBar.ButtonData.OK_DONE);
         getDialogPane().getButtonTypes().addAll(saveButtonType, ButtonType.CANCEL);
@@ -29,8 +29,11 @@ public class DeviceEditDialog extends Dialog<Device> {
         grid.setVgap(10);
         grid.setPadding(new Insets(20, 150, 10, 10));
 
-        TextField tfSerial = new TextField(device.getDeviceSerial());
+        TextField tfSerial = new TextField(device.getDeviceSerial() != null ? device.getDeviceSerial() : "");
         tfSerial.setPromptText("Серийный номер");
+
+        TextField tfSerialInv = new TextField(device.getDeviceInventoryNumber() != null ? device.getDeviceInventoryNumber() : "");
+        tfSerialInv.setPromptText("Инвентарный номер");
 
         TextField tfIp = new TextField(device.getIp() != null ? device.getIp() : "");
         tfIp.setPromptText("IP-адрес (необязательно)");
@@ -56,18 +59,27 @@ public class DeviceEditDialog extends Dialog<Device> {
 
         grid.add(new Label("Серийный номер:"), 0, 0);
         grid.add(tfSerial, 1, 0);
-        grid.add(new Label("IP-адрес:"), 0, 1);
-        grid.add(tfIp, 1, 1);
-        grid.add(new Label("Тип:"), 0, 2);
-        grid.add(cbType, 1, 2);
-        grid.add(new Label("Марка:"), 0, 3);
-        grid.add(cbTypeMark, 1, 3);
-        grid.add(new Label("ОС:"), 0, 4);
-        grid.add(cbOs, 1, 4);
-        grid.add(new Label("Статус:"), 0, 5);
-        grid.add(cbStatus, 1, 5);
-        grid.add(new Label("Описание:"), 0, 6);
-        grid.add(tfDesc, 1, 6);
+
+        grid.add(new Label("Инвентарный номер:"), 0, 1);
+        grid.add(tfSerialInv, 1, 1);
+
+        grid.add(new Label("IP-адрес:"), 0, 2);
+        grid.add(tfIp, 1, 2);
+
+        grid.add(new Label("Тип:"), 0, 3);
+        grid.add(cbType, 1, 3);
+
+        grid.add(new Label("Марка:"), 0, 4);
+        grid.add(cbTypeMark, 1, 4);
+
+        grid.add(new Label("ОС:"), 0, 5);
+        grid.add(cbOs, 1, 5);
+
+        grid.add(new Label("Статус:"), 0, 6);
+        grid.add(cbStatus, 1, 6);
+
+        grid.add(new Label("Описание:"), 0, 7);
+        grid.add(tfDesc, 1, 7);
 
         getDialogPane().setContent(grid);
         Platform.runLater(tfSerial::requestFocus);
@@ -159,7 +171,12 @@ public class DeviceEditDialog extends Dialog<Device> {
                     return null;
                 }
 
-                device.setDeviceSerial(tfSerial.getText().trim());
+                String serial = tfSerial.getText().trim();
+                device.setDeviceSerial(serial.isBlank() ? null : serial);
+
+                String inventory = tfSerialInv.getText().trim();
+                device.setDeviceInventoryNumber(inventory.isBlank() ? null : inventory);
+
                 device.setTypeId(cbType.getValue().getId().intValue());
 
                 TypeMark tm = cbTypeMark.getValue();
@@ -172,6 +189,7 @@ public class DeviceEditDialog extends Dialog<Device> {
                 device.setStatus(DeviceStatusUtil.getDbKey(cbStatus.getValue()));
                 device.setDescription(tfDesc.getText().trim());
                 device.setLastChecked(System.currentTimeMillis());
+
                 return device;
             }
             return null;

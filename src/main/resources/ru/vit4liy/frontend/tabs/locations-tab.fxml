@@ -44,10 +44,10 @@
                 <Label fx:id="lblParent" text="—" GridPane.rowIndex="4" GridPane.columnIndex="1" styleClass="field-value" wrapText="true"/>
             </GridPane>
 
-            <TitledPane text="🖨 Устройства" expanded="true">
+            <TitledPane text="Устройства" expanded="true">
                 <VBox spacing="5">
                     <HBox alignment="CENTER_RIGHT">
-                        <Button text="➕ Привязать устройство" onAction="#onAttachDevice" styleClass="btn-primary" maxWidth="200"/>
+                        <Button text="Привязать устройство" onAction="#onAttachDevice" styleClass="btn-primary" maxWidth="200"/>
                     </HBox>
                     <ListView fx:id="lvDevices" minHeight="150" prefHeight="180"/>
                 </VBox>
@@ -75,7 +75,7 @@
 
             <HBox spacing="10">
                 <Button fx:id="btnEdit" text="Редактировать" onAction="#onEditLocation" styleClass="btn-primary"/>
-                <Button fx:id="btnDelete" text="🗑 Удалить" onAction="#onDeleteLocation" styleClass="btn-danger"/>
+                <Button fx:id="btnDelete" text="Удалить" onAction="#onDeleteLocation" styleClass="btn-danger"/>
             </HBox>
         </VBox>
     </ScrollPane>
