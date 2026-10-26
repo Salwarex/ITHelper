@@ -80,11 +80,8 @@ public class DataEntryController extends BaseTabController {
         loadInitialData();
     }
 
-    // === ИЗМЕНЕННАЯ ЛОГИКА СЛУШАТЕЛЕЙ ===
     private void setupDeviceTypeListener() {
-        // Реагируем на выбор существующего типа из списка
         cbDeviceType.valueProperty().addListener((obs, oldVal, newVal) -> updateMarkFieldState());
-        // Реагируем на ручной ввод текста в поле типа
         cbDeviceType.getEditor().textProperty().addListener((obs, oldVal, newVal) -> updateMarkFieldState());
     }
 
@@ -93,21 +90,18 @@ public class DataEntryController extends BaseTabController {
         String typedType = cbDeviceType.getEditor().getText().trim();
 
         if (selectedType != null) {
-            // Выбран существующий тип -> загружаем его марки
             long typeId = ((Number) selectedType.getId()).longValue();
             loadMarksForExistingType(typeId);
         } else if (!typedType.isBlank()) {
-            // Пользователь вводит новый тип -> разрешаем ввод новой марки, но очищаем старые
             Platform.runLater(() -> {
                 allMarks.clear();
                 cbDeviceMark.getItems().clear();
                 cbDeviceMark.getEditor().clear();
                 cbDeviceMark.setValue(null);
-                cbDeviceMark.setDisable(false); // РАЗРЕШАЕМ ВВОД!
+                cbDeviceMark.setDisable(false);
                 cbDeviceMark.setPromptText("Введите новую марку");
             });
         } else {
-            // Поле типа полностью пустое -> блокируем марку
             Platform.runLater(() -> {
                 allMarks.clear();
                 cbDeviceMark.getItems().clear();
@@ -149,7 +143,6 @@ public class DataEntryController extends BaseTabController {
             }
         });
     }
-    // =====================================
 
     public void loadInitialData() {
         runAsync(() -> {
@@ -367,7 +360,6 @@ public class DataEntryController extends BaseTabController {
                     return;
                 }
 
-                // 1. Сначала гарантируем, что тип существует (выбран или создан)
                 Type type = cbDeviceType.getValue();
                 if (type == null) {
                     String typeName = cbDeviceType.getEditor().getText().trim();
@@ -392,12 +384,11 @@ public class DataEntryController extends BaseTabController {
                     return;
                 }
 
-                // 2. Теперь работаем с маркой. Тип УЖЕ имеет ID (либо был выбран, либо только что создан)
                 TypeMark mark = cbDeviceMark.getValue();
                 if (mark == null) {
                     String markName = cbDeviceMark.getEditor().getText().trim();
                     if (!markName.isBlank()) {
-                        Type finalType = type; // Безопасно, так как type выше гарантированно не null
+                        Type finalType = type;
                         mark = allMarks.stream()
                                 .filter(m -> m.getDisplayName().equalsIgnoreCase(markName) &&
                                         m.getTypeId() == finalType.getId().intValue())
@@ -406,7 +397,7 @@ public class DataEntryController extends BaseTabController {
                         if (mark == null) {
                             mark = new TypeMark();
                             mark.setDisplayName(markName);
-                            mark.setTypeId(finalType.getId().intValue()); // Привязываем к ID нового или существующего типа
+                            mark.setTypeId(finalType.getId().intValue());
                             mark.setCreatedAt(System.currentTimeMillis());
                             long markId = App.getInstance().bus().getTypeMarkService().create(ClientUser.get(), mark);
                             mark.setId(markId);
