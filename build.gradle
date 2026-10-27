@@ -142,12 +142,12 @@ jpackage {
     mainJar = jar.archiveFileName.get()
     mainClass = "ru.vit4liy.Launcher"
 
-    // fileAssociations = ["package/windows/file.associations"] // Закомментировано, чтобы не ломать сборку, если файла нет
+    fileAssociations = ["package/windows/file.associations"]
     verbose = true
 
     if (isWindows) {
         type = ImageType.EXE
-        // icon = "package/windows/invc.ico" // Закомментировано, чтобы не ломать сборку, если файла нет
+        icon = "package/windows/invc.ico"
         winMenu = true
         winShortcut = true
         winConsole = false
