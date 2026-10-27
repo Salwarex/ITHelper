@@ -1,6 +1,6 @@
 package ru.vit4liy.backend.modules.data.phone;
 
-import ru.vit4liy.backend.base.model.phone.Phone;
+import ru.vit4liy.base.model.phone.Phone;
 import ru.vit4liy.rsc.DatabaseManager;
 import ru.vit4liy.rsc.repository.EntityRepository;
 

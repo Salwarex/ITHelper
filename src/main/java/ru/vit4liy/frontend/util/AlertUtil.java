@@ -6,6 +6,7 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
+import ru.vit4liy.base.util.Log;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -15,6 +16,7 @@ public final class AlertUtil {
     private AlertUtil() {}
 
     public static void info(String title, String message) {
+        Log.out("info: %s: %s".formatted(title, message));
         Platform.runLater(() -> {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle(title);
@@ -25,6 +27,7 @@ public final class AlertUtil {
     }
 
     public static void error(String title, String message) {
+        Log.err("error: %s: %s".formatted(title, message));
         Platform.runLater(() -> {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle(title);
@@ -35,6 +38,11 @@ public final class AlertUtil {
     }
 
     public static void errorWithStack(String title, Throwable t) {
+        Log.err("error: %s: %s".formatted(title, t.getMessage()));
+        for(StackTraceElement stackTraceElement : t.getStackTrace()){
+            Log.err(stackTraceElement.toString());
+        }
+
         Platform.runLater(() -> {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle(title);

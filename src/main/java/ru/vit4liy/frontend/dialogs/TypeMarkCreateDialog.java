@@ -4,10 +4,12 @@ import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
-import ru.vit4liy.backend.base.model.type.Type;
+import ru.vit4liy.App;
+import ru.vit4liy.base.model.type.Type;
 import ru.vit4liy.frontend.util.AlertUtil;
-import ru.vit4liy.frontend.util.Backend;
-import ru.vit4liy.backend.base.model.typemark.TypeMark;
+import ru.vit4liy.frontend.util.ApplicationFeatures;
+import ru.vit4liy.base.model.typemark.TypeMark;
+import ru.vit4liy.frontend.util.ClientUser;
 
 import java.util.List;
 
@@ -39,9 +41,9 @@ public class TypeMarkCreateDialog extends Dialog<TypeMark> {
         getDialogPane().setContent(grid);
         Platform.runLater(tfName::requestFocus);
 
-        Backend.runAsync(() -> {
+        ApplicationFeatures.runAsync(() -> {
             try {
-                List<Type> types = Backend.db().getTypeService().getAll();
+                List<Type> types = App.getInstance().bus().getTypeService().getAll(ClientUser.get());
                 Platform.runLater(() -> {
                     cbType.getItems().setAll(types);
                     cbType.setCellFactory(lv -> new ListCell<>() {

@@ -7,18 +7,17 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import ru.vit4liy.backend.base.model.device.Device;
-import ru.vit4liy.backend.base.model.device.system.OSystem;
-import ru.vit4liy.backend.base.model.intersections.DeviceLocation;
-import ru.vit4liy.backend.base.model.location.Location;
-import ru.vit4liy.backend.base.model.type.Type;
+import ru.vit4liy.App;
+import ru.vit4liy.base.model.device.Device;
+import ru.vit4liy.base.model.device.system.OSystem;
+import ru.vit4liy.base.model.intersections.DeviceLocation;
+import ru.vit4liy.base.model.location.Location;
+import ru.vit4liy.base.model.type.Type;
+import ru.vit4liy.base.model.typemark.TypeMark; // <-- Добавлен импорт
 import ru.vit4liy.frontend.base.BaseTabController;
 import ru.vit4liy.frontend.dialogs.DeviceCreateDialog;
 import ru.vit4liy.frontend.dialogs.DeviceEditDialog;
-import ru.vit4liy.frontend.util.AlertUtil;
-import ru.vit4liy.frontend.util.Backend;
-import ru.vit4liy.frontend.util.DeviceStatusUtil;
-import ru.vit4liy.frontend.util.LocationPathUtil;
+import ru.vit4liy.frontend.util.*;
 
 import java.net.URL;
 import java.util.HashMap;
@@ -31,20 +30,23 @@ public class DevicesTabController extends BaseTabController {
     @FXML private TableView<Device> devicesTable;
     @FXML private TableColumn<Device, Long> colId;
     @FXML private TableColumn<Device, String> colSerial;
+    @FXML private TableColumn<Device, String> colInventory;
     @FXML private TableColumn<Device, String> colType;
     @FXML private TableColumn<Device, String> colOs;
     @FXML private TableColumn<Device, String> colIp;
     @FXML private TableColumn<Device, String> colLocation;
     @FXML private TableColumn<Device, String> colStatus;
-    @FXML private TableColumn<Device, String> colDescription;
+    //@FXML private TableColumn<Device, String> colDescription;
 
     @FXML private TextField tfSearch;
+    @FXML private TextField tfSearchInv;
     @FXML private ComboBox<String> cbStatusFilter;
     @FXML private ComboBox<String> cbOsFilter;
     @FXML private TextField tfIpFilter;
 
     @FXML private Label lblId;
     @FXML private Label lblSerial;
+    @FXML private Label lblInventory;
     @FXML private Label lblType;
     @FXML private Label lblOs;
     @FXML private Label lblIp;
@@ -54,6 +56,7 @@ public class DevicesTabController extends BaseTabController {
 
     private final ObservableList<Device> data = FXCollections.observableArrayList();
     private Map<Long, String> typeNameMap = new HashMap<>();
+    private Map<Long, String> typeMarkNameMap = new HashMap<>(); // <-- Уже был у вас
     private Map<Long, String> osNameMap = new HashMap<>();
     private Map<Long, String> deviceLocationPaths = new HashMap<>();
 
@@ -61,9 +64,22 @@ public class DevicesTabController extends BaseTabController {
     public void initialize(URL url, ResourceBundle rb) {
         colId.setCellValueFactory(cd -> new SimpleLongProperty(cd.getValue().getId()).asObject());
         colSerial.setCellValueFactory(cd -> new SimpleStringProperty(cd.getValue().getDeviceSerial()));
-        colType.setCellValueFactory(cd -> new SimpleStringProperty(
-                typeNameMap.getOrDefault((long) cd.getValue().getTypeId(), "ID: " + cd.getValue().getTypeId())
-        ));
+        colInventory.setCellValueFactory(cd -> new SimpleStringProperty(cd.getValue().getDeviceInventoryNumber()));
+
+        // === ИЗМЕНЕНИЕ: Формирование строки "Тип Марка" ===
+        colType.setCellValueFactory(cd -> {
+            Device device = cd.getValue();
+            String typeName = typeNameMap.getOrDefault((long) device.getTypeId(), "ID: " + device.getTypeId());
+
+            if (device.getTypeMarkId() != null) {
+                String markName = typeMarkNameMap.getOrDefault((long) device.getTypeMarkId(), "");
+                if (!markName.isEmpty()) {
+                    return new SimpleStringProperty(typeName + " " + markName);
+                }
+            }
+            return new SimpleStringProperty(typeName);
+        });
+
         colOs.setCellValueFactory(cd -> new SimpleStringProperty(
                 osNameMap.getOrDefault(cd.getValue().getOsId(), "—")
         ));
@@ -76,7 +92,7 @@ public class DevicesTabController extends BaseTabController {
         colStatus.setCellValueFactory(cd -> new SimpleStringProperty(
                 DeviceStatusUtil.getDisplayName(cd.getValue().getStatus())
         ));
-        colDescription.setCellValueFactory(cd -> new SimpleStringProperty(cd.getValue().getDescription()));
+        //colDescription.setCellValueFactory(cd -> new SimpleStringProperty(cd.getValue().getDescription()));
 
         devicesTable.setItems(data);
         devicesTable.getSelectionModel().selectedItemProperty().addListener((obs, old, d) -> showDetails(d));
@@ -85,6 +101,7 @@ public class DevicesTabController extends BaseTabController {
         cbStatusFilter.getSelectionModel().selectFirst();
 
         tfSearch.textProperty().addListener((obs, o, n) -> reload());
+        tfSearchInv.textProperty().addListener((obs, o, n) -> reload());
         cbStatusFilter.setOnAction(e -> reload());
         cbOsFilter.setOnAction(e -> reload());
         tfIpFilter.textProperty().addListener((obs, o, n) -> reload());
@@ -101,7 +118,7 @@ public class DevicesTabController extends BaseTabController {
         dialog.showAndWait().ifPresent(device -> {
             runAsync(() -> {
                 try {
-                    Backend.db().getDeviceService().create(device);
+                    App.getInstance().bus().getDeviceService().create(ClientUser.get(), device);
                     Platform.runLater(() -> {
                         AlertUtil.info("Успех", "Устройство создано");
                         reload();
@@ -121,7 +138,7 @@ public class DevicesTabController extends BaseTabController {
         dialog.showAndWait().ifPresent(updated -> {
             runAsync(() -> {
                 try {
-                    Backend.db().getDeviceService().update(updated);
+                    App.getInstance().bus().getDeviceService().update(ClientUser.get(), updated);
                     Platform.runLater(() -> {
                         AlertUtil.info("Успех", "Устройство обновлено");
                         reload();
@@ -146,7 +163,7 @@ public class DevicesTabController extends BaseTabController {
         }
         runAsync(() -> {
             try {
-                Backend.db().getDeviceService().delete(d.getId());
+                App.getInstance().bus().getDeviceService().delete(ClientUser.get(), d.getId());
                 Platform.runLater(() -> {
                     AlertUtil.info("Успех", "Устройство удалено");
                     reload();
@@ -163,20 +180,26 @@ public class DevicesTabController extends BaseTabController {
     public void reload() {
         runAsync(() -> {
             try {
-                List<Type> types = Backend.db().getTypeService().getAll();
+                List<Type> types = App.getInstance().bus().getTypeService().getAll(ClientUser.get());
                 Map<Long, String> tempTypeNameMap = new HashMap<>();
                 for (Type t : types) {
                     tempTypeNameMap.put(t.getId(), t.getDisplayName());
                 }
 
-                List<OSystem> osSystems = Backend.db().getOSystemService().getAll();
+                List<TypeMark> typeMarks = App.getInstance().bus().getTypeMarkService().getAll(ClientUser.get());
+                Map<Long, String> tempTypeMarkNameMap = new HashMap<>();
+                for (TypeMark tm : typeMarks) {
+                    tempTypeMarkNameMap.put(tm.getId(), tm.getDisplayName());
+                }
+
+                List<OSystem> osSystems = App.getInstance().bus().getOSystemService().getAll(ClientUser.get());
                 Map<Long, String> tempOsNameMap = new HashMap<>();
                 for (OSystem os : osSystems) {
                     tempOsNameMap.put(os.getId(), os.getDisplayName());
                 }
 
-                List<Location> allLocations = Backend.db().getLocationService().getAll();
-                List<DeviceLocation> mappings = Backend.db().getDeviceLocationService().getAll();
+                List<Location> allLocations = App.getInstance().bus().getLocationService().getAll(ClientUser.get());
+                List<DeviceLocation> mappings = App.getInstance().bus().getDeviceLocationService().getAll(ClientUser.get());
                 Map<Long, String> tempLocationPaths = new HashMap<>();
 
                 for (DeviceLocation dl : mappings) {
@@ -189,38 +212,41 @@ public class DevicesTabController extends BaseTabController {
                 }
 
                 String query = tfSearch.getText();
+                String queryInv = tfSearchInv.getText();
                 String ipFilter = tfIpFilter != null ? tfIpFilter.getText() : null;
                 String statusFilter = cbStatusFilter != null ? cbStatusFilter.getValue() : null;
                 String osFilter = cbOsFilter != null ? cbOsFilter.getValue() : null;
 
                 List<Device> result;
                 if (query != null && !query.isBlank()) {
-                    result = Backend.db().getDeviceService().getDeviceBySerial(query.trim())
+                    result = App.getInstance().bus().getDeviceService().getDeviceBySerial(ClientUser.get(), query.trim())
+                            .map(List::of).orElse(List.of());
+                } else if (queryInv != null && !queryInv.isBlank()) {
+                    result = App.getInstance().bus().getDeviceService().getDeviceByInventory(ClientUser.get(), queryInv.trim())
                             .map(List::of).orElse(List.of());
                 } else if (ipFilter != null && !ipFilter.isBlank()) {
-                    result = Backend.db().getDeviceService().getDevicesByIp(ipFilter.trim());
+                    result = App.getInstance().bus().getDeviceService().getDevicesByIp(ClientUser.get(), ipFilter.trim());
                 } else if (osFilter != null && !osFilter.equals("Все ОС")) {
                     OSystem selectedOs = osSystems.stream()
                             .filter(os -> os.getDisplayName().equals(osFilter))
                             .findFirst().orElse(null);
-                    result = selectedOs != null ? Backend.db().getDeviceService().getDevicesByOsId(selectedOs.getId()) : List.of();
+                    result = selectedOs != null ? App.getInstance().bus().getDeviceService().getDevicesByOsId(ClientUser.get(), selectedOs.getId()) : List.of();
                 } else if (statusFilter != null && !statusFilter.equals("Все статусы")) {
                     String dbStatus = DeviceStatusUtil.getDbKey(statusFilter);
-                    result = Backend.db().getDeviceService().getDevicesByStatus(dbStatus);
+                    result = App.getInstance().bus().getDeviceService().getDevicesByStatus(ClientUser.get(), dbStatus);
                 } else {
-                    result = Backend.db().getDeviceService().getAll();
+                    result = App.getInstance().bus().getDeviceService().getAll(ClientUser.get());
                 }
 
                 Platform.runLater(() -> {
                     this.typeNameMap = tempTypeNameMap;
+                    this.typeMarkNameMap = tempTypeMarkNameMap;
                     this.osNameMap = tempOsNameMap;
                     this.deviceLocationPaths = tempLocationPaths;
 
                     data.setAll(result);
 
-                    colType.setVisible(false); colType.setVisible(true);
-                    colLocation.setVisible(false); colLocation.setVisible(true);
-                    colOs.setVisible(false); colOs.setVisible(true);
+                    devicesTable.refresh();
 
                     if (cbOsFilter != null && cbOsFilter.getItems().isEmpty()) {
                         cbOsFilter.getItems().add("Все ОС");
@@ -243,7 +269,20 @@ public class DevicesTabController extends BaseTabController {
         }
         lblId.setText(String.valueOf(d.getId()));
         lblSerial.setText(d.getDeviceSerial() == null ? "—" : d.getDeviceSerial());
-        lblType.setText(typeNameMap.getOrDefault((long) d.getTypeId(), "ID: " + d.getTypeId()));
+        lblInventory.setText(d.getDeviceInventoryNumber() == null ? "—" : d.getDeviceInventoryNumber());
+
+        String typeName = typeNameMap.getOrDefault((long) d.getTypeId(), "ID: " + d.getTypeId());
+        if (d.getTypeMarkId() != null) {
+            String markName = typeMarkNameMap.getOrDefault((long) d.getTypeMarkId(), "");
+            if (!markName.isEmpty()) {
+                lblType.setText(typeName + " " + markName);
+            } else {
+                lblType.setText(typeName);
+            }
+        } else {
+            lblType.setText(typeName);
+        }
+
         lblOs.setText(osNameMap.getOrDefault(d.getOsId(), "—"));
         lblIp.setText(d.getIp() != null ? d.getIp() : "—");
         lblLocation.setText(deviceLocationPaths.getOrDefault(d.getId(), "Не назначено"));
@@ -254,6 +293,7 @@ public class DevicesTabController extends BaseTabController {
     private void clearDetails() {
         lblId.setText("—");
         lblSerial.setText("—");
+        lblInventory.setText("—");
         lblType.setText("—");
         lblOs.setText("—");
         lblIp.setText("—");

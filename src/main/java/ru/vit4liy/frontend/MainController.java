@@ -5,11 +5,14 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.stage.FileChooser;
+import ru.vit4liy.App;
 import ru.vit4liy.frontend.base.BaseTabController;
 import ru.vit4liy.frontend.tabs.*;
 import ru.vit4liy.frontend.util.AlertUtil;
-import ru.vit4liy.frontend.util.Backend;
-import ru.vit4liy.frontend.util.ExportImportService;
+import ru.vit4liy.frontend.util.ApplicationFeatures;
+import ru.vit4liy.frontend.util.ClientUser;
+import ru.vit4liy.it72h.lib.logger.output.Output;
+import ru.vit4liy.it72h.lib.logger.output.OutputPreset;
 
 import java.io.File;
 
@@ -59,12 +62,16 @@ public class MainController {
         if (file != null) {
             if (AlertUtil.confirm("Импорт (затирание)",
                     "Все текущие данные будут удалены и заменены данными из файла. Продолжить?")) {
-                Backend.runAsync(() -> {
+                ApplicationFeatures.runAsync(() -> {
                     try {
-                        ExportImportService.importOverwrite(file);
+                        App.getInstance()
+                                .getModuleLoader()
+                                .getDistributionModule()
+                                .getImportService()
+                                .importAll(ClientUser.get(), file, true);
                         Platform.runLater(() -> {
                             AlertUtil.info("Успех", "Данные успешно импортированы");
-                            refreshAllTabs(); // <-- Обновляем все вкладки
+                            refreshAllTabs();
                         });
                     } catch (Exception e) {
                         Platform.runLater(() -> AlertUtil.errorWithStack("Ошибка импорта", e));
@@ -84,12 +91,16 @@ public class MainController {
         if (file != null) {
             if (AlertUtil.confirm("Импорт (добавочный)",
                     "Данные из файла будут добавлены к существующим. Продолжить?")) {
-                Backend.runAsync(() -> {
+                ApplicationFeatures.runAsync(() -> {
                     try {
-                        ExportImportService.importAppend(file);
+                        App.getInstance()
+                                .getModuleLoader()
+                                .getDistributionModule()
+                                .getImportService()
+                                .importAll(ClientUser.get(), file, false);
                         Platform.runLater(() -> {
                             AlertUtil.info("Успех", "Данные успешно добавлены");
-                            refreshAllTabs(); // <-- Обновляем все вкладки
+                            refreshAllTabs();
                         });
                     } catch (Exception e) {
                         Platform.runLater(() -> AlertUtil.errorWithStack("Ошибка импорта", e));
@@ -116,14 +127,65 @@ public class MainController {
         File file = fileChooser.showSaveDialog(null);
 
         if (file != null) {
-            Backend.runAsync(() -> {
+            ApplicationFeatures.runAsync(() -> {
                 try {
-                    ExportImportService.exportToFile(file);
+                    App.getInstance()
+                            .getModuleLoader()
+                            .getDistributionModule()
+                            .getExportService()
+                            .exportAll(ClientUser.get(), file);
                     Platform.runLater(() -> AlertUtil.info("Успех", "Данные успешно экспортированы в " + file.getName()));
                 } catch (Exception e) {
                     Platform.runLater(() -> AlertUtil.errorWithStack("Ошибка экспорта", e));
                 }
             });
+        }
+    }
+
+    @FXML
+    private void onFullDelete(){
+        ApplicationFeatures.runAsync(() -> {
+            try {
+                App.getInstance()
+                        .getModuleLoader()
+                        .getBus()
+                        .getDatabaseService()
+                        .removeAll(ClientUser.get());
+                Platform.runLater(() -> {
+                    AlertUtil.info("Успех", "Данные успешно удалены!");
+                    refreshAllTabs();
+                });
+            } catch (Exception e) {
+                Platform.runLater(() -> AlertUtil.errorWithStack("Ошибка удаления данных", e));
+            }
+        });
+    }
+
+    @FXML
+    private void onLightTheme() {
+        if (tabPane.getScene() != null) {
+            tabPane.getScene().getRoot().getStyleClass().remove("dark");
+            App.getConfig().set("theme", "light");
+            saveConfig();
+            App.getLogger().out(Output.of(OutputPreset.DEFAULT, "Theme changed to light"));
+        }
+    }
+
+    @FXML
+    private void onDarkTheme() {
+        if (tabPane.getScene() != null) {
+            tabPane.getScene().getRoot().getStyleClass().add("dark");
+            App.getConfig().set("theme", "dark");
+            saveConfig();
+            App.getLogger().out(Output.of(OutputPreset.DEFAULT, "Theme changed to dark"));
+        }
+    }
+
+    private void saveConfig() {
+        try {
+            App.getConfig().save();
+        } catch (Exception e) {
+            App.getLogger().out(Output.of(OutputPreset.ERROR, "Can't change theme: " + e.getMessage()));
         }
     }
 }

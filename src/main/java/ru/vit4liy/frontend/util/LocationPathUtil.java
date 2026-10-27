@@ -1,6 +1,6 @@
 package ru.vit4liy.frontend.util;
 
-import ru.vit4liy.backend.base.model.location.Location;
+import ru.vit4liy.base.model.location.Location;
 
 import java.util.ArrayList;
 import java.util.List;

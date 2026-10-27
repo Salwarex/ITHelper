@@ -1,7 +1,6 @@
 package ru.vit4liy.backend.modules.data.typemark;
 
-import ru.vit4liy.backend.base.model.phone.Phone;
-import ru.vit4liy.backend.base.model.typemark.TypeMark;
+import ru.vit4liy.base.model.typemark.TypeMark;
 import ru.vit4liy.rsc.DatabaseManager;
 import ru.vit4liy.rsc.repository.EntityRepository;
 
@@ -15,7 +14,7 @@ public class TypeMarkRepository extends EntityRepository<TypeMark> {
 
     public List<TypeMark> findByTypeId(long typeId) throws SQLException {
         List<TypeMark> list = new ArrayList<>();
-        try (Connection conn = db.getConnection(); PreparedStatement stmt = conn.prepareStatement("SELECT * FROM TypeMarks WHERE type_id = ?")) {
+        try (Connection conn = db.getConnection(); PreparedStatement stmt = conn.prepareStatement("SELECT * FROM TypeMark WHERE type_id = ?")) {
             stmt.setLong(1, typeId);
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) list.add(map(rs));
@@ -25,7 +24,7 @@ public class TypeMarkRepository extends EntityRepository<TypeMark> {
     }
 
     public Optional<TypeMark> findByDisplayName(String displayName) throws SQLException {
-        try (Connection conn = db.getConnection(); PreparedStatement stmt = conn.prepareStatement("SELECT * FROM TypeMarks WHERE display_name = ?")) {
+        try (Connection conn = db.getConnection(); PreparedStatement stmt = conn.prepareStatement("SELECT * FROM TypeMark WHERE display_name = ?")) {
             stmt.setString(1, displayName);
             try (ResultSet rs = stmt.executeQuery()) { if (rs.next()) return Optional.of(map(rs)); }
         }

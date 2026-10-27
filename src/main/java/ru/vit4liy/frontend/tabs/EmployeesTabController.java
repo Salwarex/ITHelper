@@ -7,16 +7,12 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.layout.GridPane;
-import ru.vit4liy.backend.base.model.employee.Employee;
-import ru.vit4liy.backend.base.model.intersections.EmployeeLocation;
-import ru.vit4liy.backend.base.model.location.Location;
+import ru.vit4liy.App;
+import ru.vit4liy.base.model.employee.Employee;
+import ru.vit4liy.base.model.intersections.EmployeeLocation;
+import ru.vit4liy.base.model.location.Location;
 import ru.vit4liy.frontend.base.BaseTabController;
-import ru.vit4liy.frontend.util.AlertUtil;
-import ru.vit4liy.frontend.util.Backend;
-import ru.vit4liy.frontend.util.DateUtil;
-import ru.vit4liy.frontend.util.EmployeeStatusUtil;
-import ru.vit4liy.frontend.util.LocationPathUtil;
+import ru.vit4liy.frontend.util.*;
 
 import java.net.URL;
 import java.util.HashMap;
@@ -97,8 +93,8 @@ public class EmployeesTabController extends BaseTabController {
 
         runAsync(() -> {
             try {
-                List<Location> allLocations = Backend.db().getLocationService().getAll();
-                List<EmployeeLocation> mappings = Backend.db().getEmployeeLocationService().getAll();
+                List<Location> allLocations = App.getInstance().bus().getLocationService().getAll(ClientUser.get());
+                List<EmployeeLocation> mappings = App.getInstance().bus().getEmployeeLocationService().getAll(ClientUser.get());
 
                 Map<Long, String> tempPaths = new HashMap<>();
                 for (EmployeeLocation el : mappings) {
@@ -112,21 +108,21 @@ public class EmployeesTabController extends BaseTabController {
 
                 List<Employee> result;
                 if (query == null || query.isBlank()) {
-                    result = Backend.db().getEmployeeService().getAll();
+                    result = App.getInstance().bus().getEmployeeService().getAll(ClientUser.get());
                 } else {
                     String searchQuery = query.trim();
                     result = switch (mode) {
-                        case "По имени" -> Backend.db().getEmployeeService().searchEmployeesByName(searchQuery);
-                        case "По ФИО целиком" -> Backend.db().getEmployeeService().searchEmployeesByFullName(searchQuery);
-                        default -> Backend.db().getEmployeeService().searchEmployeesBySurname(searchQuery);
+                        case "По имени" -> App.getInstance().bus().getEmployeeService().searchEmployeesByName(ClientUser.get(), searchQuery);
+                        case "По ФИО целиком" -> App.getInstance().bus().getEmployeeService().searchEmployeesByFullName(ClientUser.get(), searchQuery);
+                        default -> App.getInstance().bus().getEmployeeService().searchEmployeesBySurname(ClientUser.get(), searchQuery);
                     };
                 }
 
                 Platform.runLater(() -> {
                     this.employeeLocationPaths = tempPaths;
                     data.setAll(result);
-                    colLocation.setVisible(false);
-                    colLocation.setVisible(true);
+
+                    employeesTable.refresh();
                 });
             } catch (Exception e) {
                 handleError(e);
@@ -165,7 +161,7 @@ public class EmployeesTabController extends BaseTabController {
         dialog.showAndWait().ifPresent(employee -> {
             runAsync(() -> {
                 try {
-                    Backend.db().getEmployeeService().create(employee);
+                    App.getInstance().bus().getEmployeeService().create(ClientUser.get(), employee);
                     Platform.runLater(() -> {
                         AlertUtil.info("Успех", "Сотрудник создан");
                         reload();
@@ -189,7 +185,7 @@ public class EmployeesTabController extends BaseTabController {
         dialog.showAndWait().ifPresent(updated -> {
             runAsync(() -> {
                 try {
-                    Backend.db().getEmployeeService().update(updated);
+                    App.getInstance().bus().getEmployeeService().update(ClientUser.get(), updated);
                     Platform.runLater(() -> {
                         AlertUtil.info("Успех", "Сотрудник обновлён");
                         reload();
@@ -215,7 +211,7 @@ public class EmployeesTabController extends BaseTabController {
 
         runAsync(() -> {
             try {
-                Backend.db().getEmployeeService().delete(emp.getId());
+                App.getInstance().bus().getEmployeeService().delete(ClientUser.get(), emp.getId());
                 Platform.runLater(() -> {
                     AlertUtil.info("Успех", "Сотрудник удалён");
                     reload();

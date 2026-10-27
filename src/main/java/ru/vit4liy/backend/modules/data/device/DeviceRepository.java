@@ -1,6 +1,6 @@
 package ru.vit4liy.backend.modules.data.device;
 
-import ru.vit4liy.backend.base.model.device.Device;
+import ru.vit4liy.base.model.device.Device;
 import ru.vit4liy.rsc.DatabaseManager;
 import ru.vit4liy.rsc.repository.EntityRepository;
 
@@ -15,6 +15,14 @@ public class DeviceRepository extends EntityRepository<Device> {
     public Optional<Device> findByDeviceSerial(String serial) throws SQLException {
         try (Connection conn = db.getConnection(); PreparedStatement stmt = conn.prepareStatement("SELECT * FROM Device WHERE device_serial = ?")) {
             stmt.setString(1, serial);
+            try (ResultSet rs = stmt.executeQuery()) { if (rs.next()) return Optional.of(map(rs)); }
+        }
+        return Optional.empty();
+    }
+
+    public Optional<Device> findByDeviceInventory(String inventory) throws SQLException {
+        try (Connection conn = db.getConnection(); PreparedStatement stmt = conn.prepareStatement("SELECT * FROM Device WHERE device_inventory = ?")) {
+            stmt.setString(1, inventory);
             try (ResultSet rs = stmt.executeQuery()) { if (rs.next()) return Optional.of(map(rs)); }
         }
         return Optional.empty();
@@ -68,6 +76,7 @@ public class DeviceRepository extends EntityRepository<Device> {
         d.setOsId(osObj == null ? null : ((Number) osObj).longValue());
 
         d.setDeviceSerial(rs.getString("device_serial"));
+        d.setDeviceInventoryNumber(rs.getString("device_inventory"));
         d.setDescription(rs.getString("description"));
         d.setStatus(rs.getString("status"));
         d.setIp(rs.getString("ip"));
@@ -92,16 +101,17 @@ public class DeviceRepository extends EntityRepository<Device> {
         }
 
         stmt.setString(4, device.getDeviceSerial());
-        stmt.setString(5, device.getDescription());
-        stmt.setString(6, device.getStatus());
+        stmt.setString(5, device.getDeviceInventoryNumber());
+        stmt.setString(6, device.getDescription());
+        stmt.setString(7, device.getStatus());
 
         if (device.getIp() == null) {
-            stmt.setNull(7, java.sql.Types.VARCHAR);
+            stmt.setNull(8, java.sql.Types.VARCHAR);
         } else {
-            stmt.setString(7, device.getIp());
+            stmt.setString(8, device.getIp());
         }
 
-        stmt.setLong(8, device.getLastChecked());
+        stmt.setLong(9, device.getLastChecked());
     }
 
     @Override
@@ -112,6 +122,7 @@ public class DeviceRepository extends EntityRepository<Device> {
                 "type_mark_id", "{int}",
                 "os_id", "{long}",
                 "device_serial", "VARCHAR(255) UNIQUE",
+                "device_inventory", "VARCHAR(255) UNIQUE",
                 "description", "VARCHAR(255)",
                 "status", "VARCHAR(50) NOT NULL DEFAULT 'GOOD_WORK'",
                 "ip", "VARCHAR(45)",

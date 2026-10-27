@@ -11,8 +11,7 @@
 
     <TabPane tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
         <tabs>
-            <!-- Вкладка Устройства -->
-            <Tab text="🖨 Устройства">
+            <Tab text="Устройства">
                 <VBox spacing="12">
                     <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
 
@@ -25,34 +24,36 @@
                         <Label text="Расположение:" GridPane.rowIndex="0" GridPane.columnIndex="0" styleClass="field-label"/>
                         <HBox fx:id="deviceLocationCascade" spacing="5" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
 
-                        <Label text="Инвентарный номер:" GridPane.rowIndex="1" GridPane.columnIndex="0" styleClass="field-label"/>
+                        <Label text="Серийный номер:" GridPane.rowIndex="1" GridPane.columnIndex="0" styleClass="field-label"/>
                         <TextField fx:id="tfDeviceSerial" promptText="Обязательно" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
 
-                        <Label text="Тип устройства:" GridPane.rowIndex="2" GridPane.columnIndex="0" styleClass="field-label"/>
-                        <ComboBox fx:id="cbDeviceType" promptText="Выберите или введите" editable="true" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                        <Label text="Инвентарный номер:" GridPane.rowIndex="2" GridPane.columnIndex="0" styleClass="field-label"/>
+                        <TextField fx:id="tfDeviceInv" promptText="Обязательно" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
 
-                        <Label text="Марка устройства:" GridPane.rowIndex="3" GridPane.columnIndex="0" styleClass="field-label"/>
-                        <ComboBox fx:id="cbDeviceMark" promptText="Выберите или введите" editable="true" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+                        <Label text="Тип устройства:" GridPane.rowIndex="3" GridPane.columnIndex="0" styleClass="field-label"/>
+                        <ComboBox fx:id="cbDeviceType" promptText="Выберите или введите" editable="true" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
 
-                        <Label text="IP адрес:" GridPane.rowIndex="4" GridPane.columnIndex="0" styleClass="field-label"/>
-                        <TextField fx:id="tfDeviceIp" promptText="Необязательно" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+                        <Label text="Марка устройства:" GridPane.rowIndex="4" GridPane.columnIndex="0" styleClass="field-label"/>
+                        <ComboBox fx:id="cbDeviceMark" promptText="Выберите или введите" editable="true" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
 
-                        <Label text="ОС:" GridPane.rowIndex="5" GridPane.columnIndex="0" styleClass="field-label"/>
-                        <ComboBox fx:id="cbDeviceOs" promptText="Выберите или введите (необязательно)" editable="true" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+                        <Label text="IP адрес:" GridPane.rowIndex="5" GridPane.columnIndex="0" styleClass="field-label"/>
+                        <TextField fx:id="tfDeviceIp" promptText="Необязательно" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
 
-                        <Label text="Статус:" GridPane.rowIndex="6" GridPane.columnIndex="0" styleClass="field-label"/>
-                        <ComboBox fx:id="cbDeviceStatus" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
+                        <Label text="ОС:" GridPane.rowIndex="6" GridPane.columnIndex="0" styleClass="field-label"/>
+                        <ComboBox fx:id="cbDeviceOs" promptText="Выберите или введите (необязательно)" editable="true" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
 
-                        <Label text="Описание:" GridPane.rowIndex="7" GridPane.columnIndex="0" styleClass="field-label"/>
-                        <TextField fx:id="tfDeviceDescription" promptText="Необязательно" GridPane.rowIndex="7" GridPane.columnIndex="1"/>
+                        <Label text="Статус:" GridPane.rowIndex="7" GridPane.columnIndex="0" styleClass="field-label"/>
+                        <ComboBox fx:id="cbDeviceStatus" GridPane.rowIndex="7" GridPane.columnIndex="1"/>
+
+                        <Label text="Описание:" GridPane.rowIndex="8" GridPane.columnIndex="0" styleClass="field-label"/>
+                        <TextField fx:id="tfDeviceDescription" promptText="Необязательно" GridPane.rowIndex="8" GridPane.columnIndex="1"/>
                     </GridPane>
 
-                    <Button text="✅ Добавить устройство" onAction="#onSubmitDevice" styleClass="btn-primary" maxWidth="250"/>
+                    <Button text="Добавить устройство" onAction="#onSubmitDevice" styleClass="btn-primary" maxWidth="250"/>
                 </VBox>
             </Tab>
 
-            <!-- Вкладка Сотрудники -->
-            <Tab text="👥 Сотрудники">
+            <Tab text="Сотрудники">
                 <VBox spacing="12">
                     <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
 
@@ -75,15 +76,14 @@
                         <TextField fx:id="tfEmployeeThirdname" promptText="Необязательно" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
 
                         <Label text="Телефон:" GridPane.rowIndex="4" GridPane.columnIndex="0" styleClass="field-label"/>
-                        <TextField fx:id="tfEmployeePhone" promptText="Необязательно" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+                        <TextField fx:id="tfEmployeePhone" promptText="Необязательно" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
                     </GridPane>
 
-                    <Button text="✅ Добавить сотрудника" onAction="#onSubmitEmployee" styleClass="btn-primary" maxWidth="250"/>
+                    <Button text="Добавить сотрудника" onAction="#onSubmitEmployee" styleClass="btn-primary" maxWidth="250"/>
                 </VBox>
             </Tab>
 
-            <!-- Вкладка Телефоны -->
-            <Tab text="📞 Телефоны">
+            <Tab text="Телефоны">
                 <VBox spacing="12">
                     <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
 
@@ -106,7 +106,7 @@
                         <TextField fx:id="tfPhoneIp" promptText="Необязательно" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
                     </GridPane>
 
-                    <Button text="✅ Добавить телефон" onAction="#onSubmitPhone" styleClass="btn-primary" maxWidth="250"/>
+                    <Button text="Добавить телефон" onAction="#onSubmitPhone" styleClass="btn-primary" maxWidth="250"/>
                 </VBox>
             </Tab>
         </tabs>

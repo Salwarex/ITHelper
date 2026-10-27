@@ -7,26 +7,24 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
 import javafx.util.StringConverter;
-import ru.vit4liy.backend.base.model.device.Device;
-import ru.vit4liy.backend.base.model.device.system.OSystem;
-import ru.vit4liy.backend.base.model.employee.Employee;
-import ru.vit4liy.backend.base.model.intersections.DeviceLocation;
-import ru.vit4liy.backend.base.model.intersections.EmployeeLocation;
-import ru.vit4liy.backend.base.model.intersections.LocationPhone;
-import ru.vit4liy.backend.base.model.location.Location;
-import ru.vit4liy.backend.base.model.phone.Phone;
-import ru.vit4liy.backend.base.model.type.Type;
-import ru.vit4liy.backend.base.model.typemark.TypeMark;
+import ru.vit4liy.App;
+import ru.vit4liy.base.model.device.Device;
+import ru.vit4liy.base.model.device.system.OSystem;
+import ru.vit4liy.base.model.employee.Employee;
+import ru.vit4liy.base.model.intersections.DeviceLocation;
+import ru.vit4liy.base.model.intersections.EmployeeLocation;
+import ru.vit4liy.base.model.intersections.LocationPhone;
+import ru.vit4liy.base.model.location.Location;
+import ru.vit4liy.base.model.phone.Phone;
+import ru.vit4liy.base.model.type.Type;
+import ru.vit4liy.base.model.typemark.TypeMark;
 import ru.vit4liy.frontend.base.BaseTabController;
 import ru.vit4liy.frontend.util.AlertUtil;
-import ru.vit4liy.frontend.util.Backend;
+import ru.vit4liy.frontend.util.ClientUser;
 import ru.vit4liy.frontend.util.DeviceStatusUtil;
-import ru.vit4liy.perm.MissingPermissionException;
 
 import java.net.URL;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -37,6 +35,7 @@ public class DataEntryController extends BaseTabController {
 
     @FXML private HBox deviceLocationCascade;
     @FXML private TextField tfDeviceSerial;
+    @FXML private TextField tfDeviceInv;
     @FXML private ComboBox<Type> cbDeviceType;
     @FXML private ComboBox<TypeMark> cbDeviceMark;
     @FXML private TextField tfDeviceIp;
@@ -48,12 +47,12 @@ public class DataEntryController extends BaseTabController {
     @FXML private TextField tfEmployeeSurname;
     @FXML private TextField tfEmployeeName;
     @FXML private TextField tfEmployeeThirdname;
+    @FXML private TextField tfEmployeePhone;
 
     @FXML private HBox phoneLocationCascade;
     @FXML private TextField tfPhoneCorp;
     @FXML private TextField tfPhonePublic;
     @FXML private TextField tfPhoneIp;
-    @FXML private TextField tfEmployeePhone;
 
     private List<ComboBox<Location>> deviceLocationBoxes = new ArrayList<>();
     private List<ComboBox<Location>> employeeLocationBoxes = new ArrayList<>();
@@ -67,6 +66,7 @@ public class DataEntryController extends BaseTabController {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         setupDeviceStatusComboBox();
+        setupDeviceTypeListener();
         Platform.runLater(this::loadInitialData);
     }
 
@@ -80,13 +80,76 @@ public class DataEntryController extends BaseTabController {
         loadInitialData();
     }
 
+    private void setupDeviceTypeListener() {
+        cbDeviceType.valueProperty().addListener((obs, oldVal, newVal) -> updateMarkFieldState());
+        cbDeviceType.getEditor().textProperty().addListener((obs, oldVal, newVal) -> updateMarkFieldState());
+    }
+
+    private void updateMarkFieldState() {
+        Type selectedType = cbDeviceType.getValue();
+        String typedType = cbDeviceType.getEditor().getText().trim();
+
+        if (selectedType != null) {
+            long typeId = ((Number) selectedType.getId()).longValue();
+            loadMarksForExistingType(typeId);
+        } else if (!typedType.isBlank()) {
+            Platform.runLater(() -> {
+                allMarks.clear();
+                cbDeviceMark.getItems().clear();
+                cbDeviceMark.getEditor().clear();
+                cbDeviceMark.setValue(null);
+                cbDeviceMark.setDisable(false);
+                cbDeviceMark.setPromptText("Введите новую марку");
+            });
+        } else {
+            Platform.runLater(() -> {
+                allMarks.clear();
+                cbDeviceMark.getItems().clear();
+                cbDeviceMark.getEditor().clear();
+                cbDeviceMark.setValue(null);
+                cbDeviceMark.setDisable(true);
+                cbDeviceMark.setPromptText("Сначала укажите тип");
+            });
+        }
+    }
+
+    private void loadMarksForExistingType(long typeId) {
+        Platform.runLater(() -> {
+            allMarks.clear();
+            cbDeviceMark.getItems().clear();
+            cbDeviceMark.getEditor().clear();
+            cbDeviceMark.setValue(null);
+            cbDeviceMark.setPromptText("Загрузка марок...");
+            cbDeviceMark.setDisable(true);
+        });
+
+        runAsync(() -> {
+            try {
+                List<TypeMark> marks = App.getInstance().bus().getTypeMarkService()
+                        .getTypeMarksByTypeId(ClientUser.get(), typeId);
+                Platform.runLater(() -> {
+                    allMarks.clear();
+                    allMarks.addAll(marks);
+                    cbDeviceMark.getItems().setAll(marks);
+                    cbDeviceMark.setDisable(false);
+                    cbDeviceMark.setPromptText(marks.isEmpty() ? "Нет марок (введите новую)" : "Выберите или введите марку");
+                });
+            } catch (Exception e) {
+                Platform.runLater(() -> {
+                    cbDeviceMark.setPromptText("Ошибка загрузки");
+                    cbDeviceMark.setDisable(true);
+                });
+                handleError(e);
+            }
+        });
+    }
+
     public void loadInitialData() {
         runAsync(() -> {
             try {
-                allLocations = Backend.db().getLocationService().getAll();
-                allTypes = Backend.db().getTypeService().getAll();
-                allMarks = Backend.db().getTypeMarkService().getAll();
-                allOsSystems = Backend.db().getOSystemService().getAll();
+                allLocations = App.getInstance().bus().getLocationService().getAll(ClientUser.get());
+                allTypes = App.getInstance().bus().getTypeService().getAll(ClientUser.get());
+                allOsSystems = App.getInstance().bus().getOSystemService().getAll(ClientUser.get());
 
                 Platform.runLater(() -> {
                     buildLocationCascade(deviceLocationCascade, deviceLocationBoxes, null);
@@ -94,7 +157,11 @@ public class DataEntryController extends BaseTabController {
                     buildLocationCascade(phoneLocationCascade, phoneLocationBoxes, null);
 
                     setupEditableComboBox(cbDeviceType, allTypes, Type::getDisplayName);
+
                     setupEditableComboBox(cbDeviceMark, allMarks, TypeMark::getDisplayName);
+                    cbDeviceMark.setDisable(true);
+                    cbDeviceMark.setPromptText("Сначала укажите тип");
+
                     setupEditableComboBox(cbDeviceOs, allOsSystems, OSystem::getDisplayName);
                 });
             } catch (Exception e) {
@@ -132,7 +199,7 @@ public class DataEntryController extends BaseTabController {
             @Override
             public T fromString(String string) {
                 if (string == null || string.isBlank()) return null;
-                return items.stream()
+                return comboBox.getItems().stream()
                         .filter(item -> textExtractor.apply(item).equalsIgnoreCase(string.trim()))
                         .findFirst()
                         .orElse(null);
@@ -236,7 +303,7 @@ public class DataEntryController extends BaseTabController {
         }
     }
 
-    private Location resolveOrCreateLocation(List<ComboBox<Location>> boxes) throws MissingPermissionException, SQLException {
+    private Location resolveOrCreateLocation(List<ComboBox<Location>> boxes) throws Exception {
         Location currentParent = null;
         Location lastFilledLocation = null;
 
@@ -265,7 +332,7 @@ public class DataEntryController extends BaseTabController {
                 resolved.setParentId(currentParent != null ? currentParent.getId() : null);
                 resolved.setKey("LOC-" + typedName.toUpperCase().replaceAll("[^A-ZА-Я0-9]", "_") + "-" + System.currentTimeMillis() % 10000);
 
-                long newId = Backend.db().getLocationService().create(resolved);
+                long newId = App.getInstance().bus().getLocationService().create(ClientUser.get(), resolved);
                 resolved.setId(newId);
 
                 allLocations.add(resolved);
@@ -305,7 +372,7 @@ public class DataEntryController extends BaseTabController {
                             type = new Type();
                             type.setDisplayName(typeName);
                             type.setCreatedAt(System.currentTimeMillis());
-                            long typeId = Backend.db().getTypeService().create(type);
+                            long typeId = App.getInstance().bus().getTypeService().create(ClientUser.get(), type);
                             type.setId(typeId);
                             allTypes.add(type);
                         }
@@ -330,11 +397,14 @@ public class DataEntryController extends BaseTabController {
                         if (mark == null) {
                             mark = new TypeMark();
                             mark.setDisplayName(markName);
-                            mark.setTypeId(type.getId().intValue());
+                            mark.setTypeId(finalType.getId().intValue());
                             mark.setCreatedAt(System.currentTimeMillis());
-                            long markId = Backend.db().getTypeMarkService().create(mark);
+                            long markId = App.getInstance().bus().getTypeMarkService().create(ClientUser.get(), mark);
                             mark.setId(markId);
                             allMarks.add(mark);
+
+                            final TypeMark createdMark = mark;
+                            Platform.runLater(() -> cbDeviceMark.getItems().add(createdMark));
                         }
                     }
                 }
@@ -350,7 +420,7 @@ public class DataEntryController extends BaseTabController {
                         if (os == null) {
                             os = new OSystem();
                             os.setDisplayName(osName);
-                            long osId = Backend.db().getOSystemService().create(os);
+                            long osId = App.getInstance().bus().getOSystemService().create(ClientUser.get(), os);
                             os.setId(osId);
                             allOsSystems.add(os);
                         }
@@ -358,7 +428,8 @@ public class DataEntryController extends BaseTabController {
                 }
 
                 Device device = new Device();
-                device.setDeviceSerial(tfDeviceSerial.getText().trim());
+                device.setDeviceSerial(tfDeviceSerial.getText().isBlank() ? null : tfDeviceSerial.getText().trim());
+                device.setDeviceInventoryNumber(tfDeviceInv.getText().isBlank() ? null : tfDeviceInv.getText().trim());
                 device.setTypeId(type.getId().intValue());
                 device.setTypeMarkId(mark != null ? mark.getId().intValue() : null);
                 device.setOsId(os != null ? os.getId() : null);
@@ -367,14 +438,14 @@ public class DataEntryController extends BaseTabController {
                 device.setDescription(tfDeviceDescription.getText().trim());
                 device.setLastChecked(System.currentTimeMillis());
 
-                long deviceId = Backend.db().getDeviceService().create(device);
+                long deviceId = App.getInstance().bus().getDeviceService().create(ClientUser.get(), device);
 
                 DeviceLocation dl = new DeviceLocation();
                 dl.setAId(deviceId);
                 dl.setBId(finalLocation.getId());
                 dl.setCreatedAt(System.currentTimeMillis());
                 dl.setLastChecked(System.currentTimeMillis());
-                Backend.db().getDeviceLocationService().create(dl);
+                App.getInstance().bus().getDeviceLocationService().create(ClientUser.get(), dl);
 
                 Platform.runLater(() -> {
                     AlertUtil.info("Успех", "Устройство успешно добавлено");
@@ -393,10 +464,6 @@ public class DataEntryController extends BaseTabController {
 
         if (!hasLocation) {
             showError("Укажите расположение");
-            return false;
-        }
-        if (tfDeviceSerial.getText().isBlank()) {
-            showError("Введите инвентарный номер");
             return false;
         }
         if (cbDeviceType.getEditor().getText().trim().isBlank() && cbDeviceType.getValue() == null) {
@@ -423,6 +490,7 @@ public class DataEntryController extends BaseTabController {
         cbDeviceOs.setValue(null);
         cbDeviceOs.getEditor().clear();
         tfDeviceSerial.clear();
+        tfDeviceInv.clear();
         tfDeviceIp.clear();
         cbDeviceStatus.setValue("Работает хорошо");
         tfDeviceDescription.clear();
@@ -452,14 +520,14 @@ public class DataEntryController extends BaseTabController {
                 emp.setLastChecked(now);
                 emp.setPhone(tfEmployeePhone.getText().isBlank() ? null : tfEmployeePhone.getText().trim());
 
-                long empId = Backend.db().getEmployeeService().create(emp);
+                long empId = App.getInstance().bus().getEmployeeService().create(ClientUser.get(), emp);
 
                 EmployeeLocation el = new EmployeeLocation();
                 el.setAId(empId);
                 el.setBId(finalLocation.getId());
                 el.setCreatedAt(now);
                 el.setLastChecked(now);
-                Backend.db().getEmployeeLocationService().create(el);
+                App.getInstance().bus().getEmployeeLocationService().create(ClientUser.get(), el);
 
                 Platform.runLater(() -> {
                     AlertUtil.info("Успех", "Сотрудник успешно добавлен");
@@ -518,14 +586,14 @@ public class DataEntryController extends BaseTabController {
                 phone.setIp(tfPhoneIp.getText().isBlank() ? null : tfPhoneIp.getText().trim());
                 phone.setLastChecked(System.currentTimeMillis());
 
-                long phoneId = Backend.db().getPhoneService().create(phone);
+                long phoneId = App.getInstance().bus().getPhoneService().create(ClientUser.get(), phone);
 
                 LocationPhone lp = new LocationPhone();
                 lp.setAId(finalLocation.getId());
                 lp.setBId(phoneId);
                 lp.setCreatedAt(System.currentTimeMillis());
                 lp.setLastChecked(System.currentTimeMillis());
-                Backend.db().getLocationPhoneService().create(lp);
+                App.getInstance().bus().getLocationPhoneService().create(ClientUser.get(), lp);
 
                 Platform.runLater(() -> {
                     AlertUtil.info("Успех", "Телефон успешно добавлен");

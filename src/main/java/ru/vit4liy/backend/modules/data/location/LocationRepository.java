@@ -1,6 +1,6 @@
 package ru.vit4liy.backend.modules.data.location;
 
-import ru.vit4liy.backend.base.model.location.Location;
+import ru.vit4liy.base.model.location.Location;
 import ru.vit4liy.rsc.DatabaseManager;
 import ru.vit4liy.rsc.repository.EntityRepository;
 
@@ -46,6 +46,7 @@ public class LocationRepository extends EntityRepository<Location> {
                 "key", "VARCHAR(255) NOT NULL UNIQUE",
                 "parent_id", "{long}",
                 "display_name", "VARCHAR(255) NOT NULL",
+                "nickname", "VARCHAR(255)",
         };
     }
 
@@ -58,6 +59,8 @@ public class LocationRepository extends EntityRepository<Location> {
         l.setParentId(parentIdObj == null ? null : ((Number) parentIdObj).longValue());
 
         l.setDisplayName(rs.getString("display_name"));
+        String nickname = rs.getString("nickname");
+        l.setNickname(nickname);
         return l;
     }
 
@@ -70,6 +73,7 @@ public class LocationRepository extends EntityRepository<Location> {
             stmt.setLong(2, location.getParentId());
         }
         stmt.setString(3, location.getDisplayName());
+        stmt.setString(4, location.getNickname());
     }
 
     @Override

@@ -13,10 +13,10 @@
     <HBox spacing="10" alignment="CENTER_LEFT">
         <ComboBox fx:id="cbSearchMode" prefWidth="180"/>
         <TextField fx:id="tfSearch" promptText="🔍 Поиск сотрудника..." prefWidth="320" HBox.hgrow="ALWAYS"/>
-        <Button text="➕ Добавить" onAction="#onAddEmployee" styleClass="btn-primary"/>
-        <Button text="✏ Редактировать" onAction="#onEditEmployee"/>
-        <Button text="🔄 Обновить" onAction="#onReload"/>
-        <Button text="🗑 Удалить" onAction="#onDeleteEmployee" styleClass="btn-danger"/>
+        <Button text="Добавить" onAction="#onAddEmployee" styleClass="btn-primary"/>
+        <Button text="Редактировать" onAction="#onEditEmployee"/>
+        <Button text="Обновить" onAction="#onReload"/>
+        <Button text="Удалить" onAction="#onDeleteEmployee" styleClass="btn-danger"/>
     </HBox>
 
     <!-- Таблица сотрудников -->

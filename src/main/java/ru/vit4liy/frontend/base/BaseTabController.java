@@ -2,7 +2,7 @@ package ru.vit4liy.frontend.base;
 
 import javafx.fxml.Initializable;
 import ru.vit4liy.frontend.util.AlertUtil;
-import ru.vit4liy.frontend.util.Backend;
+import ru.vit4liy.frontend.util.ApplicationFeatures;
 
 
 public abstract class BaseTabController implements Initializable {
@@ -26,7 +26,7 @@ public abstract class BaseTabController implements Initializable {
     }
 
     protected void runAsync(Runnable task, Runnable onDone) {
-        Backend.runAsync(task, onDone, this::handleError);
+        ApplicationFeatures.runAsync(task, onDone, this::handleError);
     }
 
     protected void handleError(Exception e) {

@@ -1,6 +1,6 @@
 package ru.vit4liy.backend.modules.data.intersections.employeeLocation;
 
-import ru.vit4liy.backend.base.model.intersections.EmployeeLocation;
+import ru.vit4liy.base.model.intersections.EmployeeLocation;
 import ru.vit4liy.rsc.DatabaseManager;
 import ru.vit4liy.rsc.repository.IntersectionRepository;
 
