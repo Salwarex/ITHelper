@@ -51,8 +51,17 @@ public class DeviceCreateDialog extends Dialog<Device> {
         cbOs.setDisable(true);
 
         ComboBox<String> cbStatus = new ComboBox<>();
-        cbStatus.getItems().addAll("Работает хорошо", "Сломан", "В ремонте", "Списан");
-        cbStatus.setValue("Работает хорошо");
+        cbStatus.getItems().addAll(
+                "В работе, хорошее состояние",
+                "В работе, постоянные жалобы",
+                "В работе, плохое состояние",
+                "На складе, хорошее состояние",
+                "На складе, плохое состояние",
+                "Сломан",
+                "В ремонте",
+                "Списан"
+        );
+        cbStatus.setValue("В работе, хорошее состояние");
 
         TextField tfDesc = new TextField();
         tfDesc.setPromptText("Например, описание неисправностей");

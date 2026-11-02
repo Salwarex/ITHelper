@@ -6,11 +6,14 @@ import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.stage.FileChooser;
 import ru.vit4liy.App;
+import ru.vit4liy.base.util.FileUtils;
 import ru.vit4liy.frontend.base.BaseTabController;
 import ru.vit4liy.frontend.tabs.*;
 import ru.vit4liy.frontend.util.AlertUtil;
 import ru.vit4liy.frontend.util.ApplicationFeatures;
 import ru.vit4liy.frontend.util.ClientUser;
+import ru.vit4liy.frontend.dialogs.ConfirmDialog;
+import ru.vit4liy.frontend.dialogs.WaitDialog;
 import ru.vit4liy.it72h.lib.logger.output.Output;
 import ru.vit4liy.it72h.lib.logger.output.OutputPreset;
 
@@ -179,6 +182,75 @@ public class MainController {
             saveConfig();
             App.getLogger().out(Output.of(OutputPreset.DEFAULT, "Theme changed to dark"));
         }
+    }
+
+
+    @FXML
+    private void onRecreateDatabase() {
+        boolean confirmed = ConfirmDialog.show(
+                "Пересоздание базы данных",
+                "Это действие создаст временную резервную копию, полностью удалит текущий файл БД, создаст новую пустую структуру и восстановит в неё данные.\n\nПроцесс может занять несколько секунд. Продолжить?",
+                "Да, пересоздать"
+        );
+
+        if (!confirmed) {
+            return;
+        }
+
+        WaitDialog waitDialog = new WaitDialog("Начинается процесс пересоздания БД.\nПожалуйста, подождите...");
+
+        ApplicationFeatures.runAsync(() -> {
+            try {
+                Platform.runLater(waitDialog::show);
+
+                String baseDir = String.valueOf(FileUtils.getBaseDir());
+                File tempFile = new File(baseDir, "temp.ith");
+                File dbFile = new File(baseDir, "database.db");
+
+                App.getInstance()
+                        .getModuleLoader()
+                        .getDistributionModule()
+                        .getExportService()
+                        .exportAll(ClientUser.get(), tempFile);
+
+
+                if (dbFile.exists()) {
+                    App.getInstance()
+                            .getModuleLoader()
+                            .getBus()
+                            .getDatabaseService()
+                            .drop(ClientUser.get());
+                }
+
+                App.getInstance()
+                        .getModuleLoader()
+                        .getBus()
+                        .getDatabaseService()
+                        .recreate(ClientUser.get());
+
+                App.getInstance()
+                        .getModuleLoader()
+                        .getDistributionModule()
+                        .getImportService()
+                        .importAll(ClientUser.get(), tempFile, true);
+
+                if (tempFile.exists()) {
+                    tempFile.delete();
+                }
+
+                Platform.runLater(() -> {
+                    waitDialog.close();
+                    AlertUtil.info("Успех", "База данных успешно пересоздана и данные восстановлены!");
+                    refreshAllTabs();
+                });
+
+            } catch (Exception e) {
+                Platform.runLater(() -> {
+                    waitDialog.close();
+                    AlertUtil.errorWithStack("Ошибка пересоздания БД", e);
+                });
+            }
+        });
     }
 
     private void saveConfig() {

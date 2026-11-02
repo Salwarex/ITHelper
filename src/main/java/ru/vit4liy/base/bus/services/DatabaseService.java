@@ -6,5 +6,8 @@ import ru.vit4liy.rsc.service.GenericBusService;
 import java.sql.SQLException;
 
 public interface DatabaseService extends GenericBusService {
+    void init(Permissible executor) throws SQLException;
+    void recreate(Permissible executor) throws SQLException;
     void removeAll(Permissible executor) throws SQLException;
+    void drop(Permissible executor) throws SQLException;
 }
