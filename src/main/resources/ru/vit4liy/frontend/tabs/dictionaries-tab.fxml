@@ -48,6 +48,7 @@
                     <columns>
                         <TableColumn fx:id="colPhoneCorp" text="Корпоративный" prefWidth="200"/>
                         <TableColumn fx:id="colPhonePublic" text="Городской" prefWidth="200"/>
+                        <TableColumn fx:id="colPhoneIp" text="IP-адрес" prefWidth="150"/>
                     </columns>
                 </TableView>
             </VBox>

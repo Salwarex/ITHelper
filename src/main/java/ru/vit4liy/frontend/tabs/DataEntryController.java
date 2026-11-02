@@ -216,8 +216,17 @@ public class DataEntryController extends BaseTabController {
     }
 
     private void setupDeviceStatusComboBox() {
-        cbDeviceStatus.getItems().addAll("Работает хорошо", "Сломан", "В ремонте", "Списан");
-        cbDeviceStatus.setValue("Работает хорошо");
+        cbDeviceStatus.getItems().addAll(
+                "В работе, хорошее состояние",
+                "В работе, постоянные жалобы",
+                "В работе, плохое состояние",
+                "На складе, хорошее состояние",
+                "На складе, плохое состояние",
+                "Сломан",
+                "В ремонте",
+                "Списан"
+        );
+        cbDeviceStatus.setValue("В работе, хорошее состояние");
     }
 
     private void buildLocationCascade(HBox container, List<ComboBox<Location>> boxes, Location initialSelection) {

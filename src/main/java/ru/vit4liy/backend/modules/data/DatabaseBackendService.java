@@ -6,7 +6,9 @@ import ru.vit4liy.perm.PermissionService;
 import ru.vit4liy.rsc.DatabaseManager;
 import ru.vit4liy.rsc.service.Service;
 
+import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 public class DatabaseBackendService extends Service implements DatabaseService{
     private final DatabaseManager manager;
@@ -15,6 +17,16 @@ public class DatabaseBackendService extends Service implements DatabaseService{
         super(permissionService);
         this.manager = manager;
 
+    }
+
+    @Override
+    public void init(Permissible executor) throws SQLException {
+        manager.startUp();
+    }
+
+    @Override
+    public void recreate(Permissible executor) throws SQLException {
+        manager.createTables();
     }
 
     @Override
@@ -39,4 +51,39 @@ public class DatabaseBackendService extends Service implements DatabaseService{
         conn.createStatement().execute("PRAGMA foreign_keys = ON;");
         conn.close();
     }
+
+    @Override
+    public void drop(Permissible permissible) throws SQLException {
+        Connection conn = manager.getConnection();
+        try {
+            if (!manager.isMySQL()) {
+                conn.createStatement().execute("PRAGMA foreign_keys = OFF;");
+            }
+
+            String[] tables = {
+                    "DeviceLocation", "EmployeeLocation", "LocationPhone",
+                    "Device", "Employee", "Phone", "TypeMark", "OSystem", "Type", "Location"
+            };
+
+            for (String table : tables) {
+                try (Statement stmt = conn.createStatement()) {
+                    stmt.execute("DROP TABLE IF EXISTS " + table);
+                } catch (SQLException e) {
+                }
+            }
+
+            if (!manager.isMySQL()) {
+                try (Statement stmt = conn.createStatement()) {
+                    stmt.execute("DELETE FROM sqlite_sequence");
+                } catch (SQLException ignored) {}
+            }
+
+            if (!manager.isMySQL()) {
+                conn.createStatement().execute("PRAGMA foreign_keys = ON;");
+            }
+        } finally {
+            manager.closeCurrentThreadConnection();
+        }
+    }
+
 }
