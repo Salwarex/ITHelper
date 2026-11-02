@@ -31,6 +31,7 @@ public class DictionariesTabController extends BaseTabController {
     @FXML private TableView<Phone> phonesTable;
     @FXML private TableColumn<Phone, String> colPhoneCorp;
     @FXML private TableColumn<Phone, String> colPhonePublic;
+    @FXML private TableColumn<Phone, String> colPhoneIp;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -44,6 +45,7 @@ public class DictionariesTabController extends BaseTabController {
         });
         colPhoneCorp.setCellValueFactory(cd -> new javafx.beans.property.SimpleStringProperty(cd.getValue().getCorpPhoneNumber()));
         colPhonePublic.setCellValueFactory(cd -> new javafx.beans.property.SimpleStringProperty(cd.getValue().getPublicPhoneNumber()));
+        colPhoneIp.setCellValueFactory(cd -> new javafx.beans.property.SimpleStringProperty(cd.getValue().getIp()));
         colOsName.setCellValueFactory(cd -> new javafx.beans.property.SimpleStringProperty(cd.getValue().getDisplayName()));
     }
 
@@ -162,14 +164,16 @@ public class DictionariesTabController extends BaseTabController {
         d.setTitle("Новый телефон");
         ButtonType ok = new ButtonType("Создать", ButtonBar.ButtonData.OK_DONE);
         d.getDialogPane().getButtonTypes().addAll(ok, ButtonType.CANCEL);
-        TextField corp = new TextField(); corp.setPromptText("Корп. (4 цифры)");
-        TextField pub = new TextField(); pub.setPromptText("Городской (6 цифр)");
+        TextField corp = new TextField(); corp.setPromptText("Внутренний");
+        TextField pub = new TextField(); pub.setPromptText("Городской");
+        TextField ipa = new TextField(); ipa.setPromptText("IP адрес");
         javafx.scene.layout.GridPane grid = new javafx.scene.layout.GridPane();
         grid.setHgap(10); grid.setVgap(10);
-        grid.add(new Label("Корпоративный:"), 0, 0); grid.add(corp, 1, 0);
+        grid.add(new Label("Внутренний:"), 0, 0); grid.add(corp, 1, 0);
         grid.add(new Label("Городской:"), 0, 1); grid.add(pub, 1, 1);
+        grid.add(new Label("IP адрес:"), 0, 2); grid.add(ipa, 1, 2);
         d.getDialogPane().setContent(grid);
-        d.setResultConverter(b -> b == ok ? createPhone(corp.getText(), pub.getText()) : null);
+        d.setResultConverter(b -> b == ok ? createPhone(corp.getText(), pub.getText(), ipa.getText()) : null);
         d.showAndWait().ifPresent(phone -> runAsync(() -> {
             try { App.getInstance().bus().getPhoneService().create(ClientUser.get(), phone); Platform.runLater(this::reloadAll); }
             catch (Exception e) { handleError(e); }
@@ -182,14 +186,16 @@ public class DictionariesTabController extends BaseTabController {
         d.setTitle("Редактировать телефон");
         ButtonType ok = new ButtonType("Сохранить", ButtonBar.ButtonData.OK_DONE);
         d.getDialogPane().getButtonTypes().addAll(ok, ButtonType.CANCEL);
-        TextField corp = new TextField(p.getCorpPhoneNumber()); corp.setPromptText("4 цифры");
-        TextField pub = new TextField(p.getPublicPhoneNumber()); pub.setPromptText("6 цифр");
+        TextField corp = new TextField(p.getCorpPhoneNumber()); corp.setPromptText("Внутренний");
+        TextField pub = new TextField(p.getPublicPhoneNumber()); pub.setPromptText("Городской");
+        TextField ipa = new TextField(p.getIp()); ipa.setPromptText("IP-адрес");
         javafx.scene.layout.GridPane grid = new javafx.scene.layout.GridPane();
         grid.setHgap(10); grid.setVgap(10);
-        grid.add(new Label("Корпоративный:"), 0, 0); grid.add(corp, 1, 0);
+        grid.add(new Label("Внутренний:"), 0, 0); grid.add(corp, 1, 0);
         grid.add(new Label("Городской:"), 0, 1); grid.add(pub, 1, 1);
+        grid.add(new Label("IP-адрес:"), 0, 2); grid.add(ipa, 1, 2);
         d.getDialogPane().setContent(grid);
-        d.setResultConverter(b -> b == ok ? createPhone(corp.getText(), pub.getText()) : null);
+        d.setResultConverter(b -> b == ok ? createPhone(corp.getText(), pub.getText(), ipa.getText()) : null);
         d.showAndWait().ifPresent(phone -> runAsync(() -> {
             try {
                 phone.setId(p.getId());
@@ -208,20 +214,17 @@ public class DictionariesTabController extends BaseTabController {
         });
     }
 
-    private Phone createPhone(String c, String p) {
+    private Phone createPhone(String c, String p, String ip) {
         String corp = c == null ? "" : c.trim();
         String pub = p == null ? "" : p.trim();
         if (!corp.matches("\\d{4}")) {
             AlertUtil.error("Ошибка", "Корпоративный номер должен содержать ровно 4 цифры!");
             return null;
         }
-        if (!pub.matches("\\d{6}")) {
-            AlertUtil.error("Ошибка", "Городской номер должен содержать ровно 6 цифр!");
-            return null;
-        }
         Phone phone = new Phone();
         phone.setCorpPhoneNumber(corp);
         phone.setPublicPhoneNumber(pub);
+        phone.setIp(ip);
         phone.setLastChecked(System.currentTimeMillis());
         return phone;
     }

@@ -7,7 +7,22 @@ import java.sql.SQLException;
 
 public class DatabaseClientService implements DatabaseService {
     @Override
+    public void init(Permissible executor) throws SQLException {
+
+    }
+
+    @Override
+    public void recreate(Permissible executor) throws SQLException {
+
+    }
+
+    @Override
     public void removeAll(Permissible executor) throws SQLException {
+
+    }
+
+    @Override
+    public void drop(Permissible executor) throws SQLException {
 
     }
 }

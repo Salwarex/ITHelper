@@ -116,8 +116,9 @@ public class LocationsTabController extends BaseTabController {
                 this::showEmployeeDetails);
 
         setupListView(lvPhones,
-                phone -> (phone.getCorpPhoneNumber() != null ? phone.getCorpPhoneNumber() : "") + " / " +
-                        (phone.getPublicPhoneNumber() != null ? phone.getPublicPhoneNumber() : ""),
+                phone -> (phone.getCorpPhoneNumber() != null ? phone.getCorpPhoneNumber() : "-") + " / " +
+                        (phone.getPublicPhoneNumber() != null ? phone.getPublicPhoneNumber() : "-") +
+                        (phone.getIp() != null ? " - " + phone.getIp() : "") ,
                 this::detachPhone,
                 this::showPhoneDetails);
 
