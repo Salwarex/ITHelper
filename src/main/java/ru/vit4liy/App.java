@@ -3,12 +3,14 @@ package ru.vit4liy;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.stage.Stage;
 import ru.vit4liy.backend.Backend;
 import ru.vit4liy.base.bus.BackendDataBus;
 import ru.vit4liy.base.distribution.DistributionModule;
 import ru.vit4liy.base.util.Log;
 import ru.vit4liy.frontend.Frontend;
+import ru.vit4liy.frontend.dialogs.SplashScreen;
 import ru.vit4liy.it72h.lib.config.Config;
 import ru.vit4liy.it72h.lib.logger.log.FileTerminalLogger;
 import ru.vit4liy.it72h.lib.logger.log.Logger;
@@ -59,28 +61,52 @@ public class App extends Application {
     }
 
     @Override
-    public void start(Stage stage) throws Exception {
+    public void start(Stage primaryStage) throws Exception {
         instance = this;
 
-        moduleLoader = new ApplicationModuleLoader(POOL, false, stage, getParameters(), CONFIG.getBoolean("server.localserver", true));
-        moduleLoader.load();
+        SplashScreen splashScreen = new SplashScreen();
+        splashScreen.show();
 
-        Log.out("Modules initializing...");
+        POOL.execute(() -> {
+            try {
+                Log.out("Modules initializing in background...");
 
-        try {
-            moduleLoader.getModule(Backend.class).run();
-            Thread.sleep(4000L);
-            moduleLoader.initBusAndDeclarations();
-            Thread.sleep(1000L);
-            moduleLoader.getModule(DistributionModule.class).run();
-            Thread.sleep(3000L);
-            moduleLoader.getModule(Frontend.class).run();
-        } catch (Exception e) {
-            Log.err("Can't initialize modules! " + e.getMessage());
-            throw new RuntimeException("Can't initialize modules", e);
-        }
+                moduleLoader = new ApplicationModuleLoader(POOL, false, primaryStage, getParameters(), CONFIG.getBoolean("server.localserver", true));
+                moduleLoader.load();
 
-        Log.out("✅ Modules initialized!");
+                Log.out("Modules loaded. Starting sequence...");
+
+                moduleLoader.getModule(Backend.class).run();
+                Thread.sleep(4000L);
+
+                moduleLoader.initBusAndDeclarations();
+                Thread.sleep(1000L);
+
+                moduleLoader.getModule(DistributionModule.class).run();
+                Thread.sleep(3000L);
+
+                Platform.runLater(() -> {
+                    try {
+                        splashScreen.hide();
+
+                        moduleLoader.getModule(Frontend.class).run();
+
+                        Log.out("✅ Modules initialized!");
+                    } catch (Exception e) {
+                        Log.err("Can't initialize Frontend! " + e.getMessage());
+                        splashScreen.close();
+                        throw new RuntimeException("Can't initialize Frontend", e);
+                    }
+                });
+
+            } catch (Exception e) {
+                Log.err("Can't initialize modules in background! " + e.getMessage());
+                Platform.runLater(() -> {
+                    splashScreen.close();
+                    throw new RuntimeException("Can't initialize modules", e);
+                });
+            }
+        });
     }
 
     public static void main(String[] args) {
@@ -105,6 +131,7 @@ public class App extends Application {
 
         launch(args);
     }
+
 
     public static ObjectMapper getObjectMapper() {
         return objectMapper;
