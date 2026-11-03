@@ -25,7 +25,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
 public class Frontend extends Module {
-    private final static String TITLE = "ITHelper Beta, версия 0.16 — Инструмент сисадмина";
+    private final static String TITLE = "ITHelper Beta, версия 0.16.1 — Инструмент сисадмина";
 
     private final ExecutorService pool;
     private MainController mainController;

@@ -110,7 +110,7 @@ public class SplashScreen {
             bottomBox.getChildren().add(logoLabel);
         }
 
-        Label subtitleLabel = new Label("ITHelper v0.16");
+        Label subtitleLabel = new Label("ITHelper 0.16");
         subtitleLabel.setStyle("-fx-text-fill: white; -fx-font-size: 18px;");
         subtitleLabel.setFont(Font.font("Proxima Nova Rg", FontWeight.NORMAL, 18));
 
